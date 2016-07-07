@@ -3,6 +3,9 @@ import { Platform, ionicBootstrap } from 'ionic-angular';
 import { StatusBar } from 'ionic-native';
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
+import { SellerDashboardPage } from './pages/seller-dashboard/seller-dashboard';
+
+import { SellerShopperViewPage } from './pages/seller-shopper-view/seller-shopper-view';
 
 @Component({
     template: '<ion-nav [root]="rootPage"></ion-nav>'
@@ -12,7 +15,7 @@ export class MyApp {
     private rootPage:any;
 
     constructor(private platform:Platform) {
-        this.rootPage = BuyerDashboardPage;
+        this.rootPage = SellerShopperViewPage;
 
         platform.ready().then(() => {
             // Okay, so the platform is ready and our plugins are available.

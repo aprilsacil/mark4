@@ -19,16 +19,23 @@ form.padding-less-input {
 
 // User Details Card
 .user-details {
+    .item-inner {
+        padding-right: 0;
+    }
+
     .avatar {
-        margin-bottom: 5px;
-        min-width: 10rem;
-        min-height: 10rem;
+        margin: auto auto 5px;
+        width: 10rem;
+        height: 10rem;
 
         img {
             border-radius: 50%;
+            height: 100%;
             margin: auto;
-            max-height: 10rem;
-            max-width: 10rem;
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: cover;
+            width: 100%;
         }
     }
 
@@ -38,6 +45,20 @@ form.padding-less-input {
         .name {
             font-size: 1.7rem;
             font-weight: bold;
+        }
+
+        .stats {
+            span {
+                margin-right: 5px;
+            }
+        }
+
+        .looking-for {
+            padding: 10px 0 5px;
+
+            .product {
+                color: #000000;
+            }
         }
     }
 }

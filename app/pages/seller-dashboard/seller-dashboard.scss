@@ -1,0 +1,36 @@
+.seller-dashboard-page {
+    .shopper {
+        ion-avatar {
+            height: 4rem;
+            width: 4rem;
+
+            img {
+                height: 100%;
+                object-fit: cover;
+                width: 100%;
+            }
+        }
+
+        .stats {
+            span {
+                margin-right: 5px;
+            }
+        }
+
+        .looking-for {
+            .label {
+                font-weight: bold;
+            }
+        }
+    }
+
+    .scanner {
+        .toolbar {
+            min-height: 3rem;
+
+            .toolbar-title {
+                font-size: 1.4rem;
+            }
+        }
+    }
+}

@@ -1,0 +1,76 @@
+<!--
+  Generated template for the SellerShopperViewPage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+    <ion-navbar cheers>
+        <ion-title>Window Shopper</ion-title>
+    </ion-navbar>
+</ion-header>
+
+<ion-content>
+    <!-- Shopper Details -->
+    <ion-card class="user-details">
+        <ion-item>
+            <ion-avatar class="avatar">
+                <img src="http://i2.kym-cdn.com/entries/icons/facebook/000/015/238/hodor.jpg">
+            </ion-avatar>
+            <div class="info">
+                <h2 class="name">Hodor</h2>
+                <p class="work">
+                    Hodor @ Hodor
+                </p>
+                <p class="stats">
+                    <span class="level">
+                        <ion-icon name="star" bright></ion-icon> 300
+                    </span>
+                    <span class="went-by">
+                        <ion-icon name="refresh" cheers></ion-icon> 2
+                    </span>
+                    <span class="conversions">
+                        <ion-icon name="cash" secondary></ion-icon> 10%
+                    </span>
+                </p>
+                <p class="looking-for">
+                    <span class="label">Looking for:</span>
+                    <span class="product">Hodor</span>,
+                    <span class="product">Hodor</span>,
+                    <span class="product">Hodor</span>
+                </p>
+            </div>
+        </ion-item>
+    </ion-card>
+    <!-- End of Shopper Details -->
+
+    <!-- History List -->
+    <ion-list class="history-list">
+        <ion-list-header>History</ion-list-header>
+        <ion-item class="history">
+            <h2>Jaqen H'ghar</h2>
+            <p class="item-bought">Face</p>
+            <p class="price" secondary>P300.00</p>
+            <time class="time-ago" item-right>1d</time>
+        </ion-item>
+        <ion-item class="history">
+            <h2>Melissandre</h2>
+            <p class="item-bought">Immortality</p>
+            <p class="price" secondary>P20,000.00</p>
+            <time class="time-ago" item-right>3d</time>
+        </ion-item>
+        <ion-item class="history">
+            <h2>Bran Stark</h2>
+            <p class="item-bought">Warging Ability</p>
+            <p class="price" secondary>P100,000.00</p>
+            <time class="time-ago" item-right>10d</time>
+        </ion-item>
+    </ion-list>
+</ion-content>
+
+<ion-footer>
+    <ion-toolbar>
+        <button cheers clear block
+            (click)="showAwardModal()">Award Customer</button>
+    </ion-toolbar>
+</ion-footer>
