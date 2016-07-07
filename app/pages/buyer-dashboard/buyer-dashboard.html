@@ -1,0 +1,80 @@
+<!--
+  Generated template for the BuyerDashboardPage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+    <ion-navbar cheers>
+        <ion-title>Dashboard</ion-title>
+
+        <ion-buttons end>
+            <button (click)="goToUpdateProfilePage()">
+                <ion-icon name="settings"></ion-icon>
+            </button>
+        </ion-buttons>
+    </ion-navbar>
+</ion-header>
+
+<ion-content>
+    <!-- Buyer Details -->
+    <ion-card class="user-details">
+        <ion-item>
+            <ion-avatar class="avatar">
+                <img src="https://66.media.tumblr.com/7d65a925636d6e3df94e2ebe30667c29/tumblr_nq1zg0MEn51qg6rkio1_500.jpg">
+            </ion-avatar>
+            <div class="info">
+                <h2 class="name">Buyer Name</h2>
+                <p class="work">
+                    CEO @ Facebook, Inc.
+                </p>
+                <p class="stats">
+                    <span class="level">
+                        <ion-icon name="star" bright></ion-icon> 300
+                    </span>
+                </p>
+            </div>
+        </ion-item>
+    </ion-card>
+    <!-- End of Buyer Details -->
+
+    <!-- Dashboard Lists (Invites, Messages, and Sellers Nearby) -->
+    <ion-list>
+        <!-- Associate Invite -->
+        <ion-item class="associate-invite">
+            <ion-avatar item-left>
+                <img src="https://66.media.tumblr.com/7d65a925636d6e3df94e2ebe30667c29/tumblr_nq1zg0MEn51qg6rkio1_500.jpg">
+            </ion-avatar>
+
+            <h2>Seller Name 1</h2>
+            <p>We want you on our team!</p>
+
+            <div item-right class="invite-controls">
+                <button outline success>
+                    <ion-icon name="checkmark"></ion-icon>
+                </button>
+                <button outline danger>
+                    <ion-icon name="close"></ion-icon>
+                </button>
+            </div>
+        </ion-item>
+        <!-- Award -->
+        <ion-item class="award">
+            <ion-avatar item-left>
+                <img src="https://66.media.tumblr.com/7d65a925636d6e3df94e2ebe30667c29/tumblr_nq1zg0MEn51qg6rkio1_500.jpg">
+            </ion-avatar>
+
+            <h2>Seller Name 21</h2>
+            <p>We are 300% off to all items!</p>
+        </ion-item>
+        <!-- Seller -->
+        <ion-item class="seller-nearby">
+            <ion-avatar item-left>
+                <img src="https://66.media.tumblr.com/7d65a925636d6e3df94e2ebe30667c29/tumblr_nq1zg0MEn51qg6rkio1_500.jpg">
+            </ion-avatar>
+
+            <h2>Seller Name 30</h2>
+            <p>Thank you for buying!</p>
+        </ion-item>
+    </ion-list>
+</ion-content>

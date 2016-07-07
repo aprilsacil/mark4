@@ -1,0 +1,23 @@
+.buyer-signup-page {
+    .store-redirect.item {
+        .item-inner {
+            a {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    form {
+        margin-bottom: 30px;
+    }
+
+    .login-redirect.item {
+        .item-inner {
+            text-align: center;
+
+            a {
+                text-decoration: underline;
+            }
+        }
+    }
+}

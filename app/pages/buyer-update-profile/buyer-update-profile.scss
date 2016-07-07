@@ -1,0 +1,33 @@
+.buyer-update-profile-page {
+    form {
+        .avatar-wrapper {
+            .item-inner {
+                border-bottom: 0;
+                padding-right: 0;
+            }
+
+            ion-avatar {
+                margin-bottom: 5px;
+                min-width: 10rem;
+                min-height: 10rem;
+                position: relative;
+
+                ion-icon.item-icon {
+                    color: #ffffff;
+                    font-size: 4rem;
+                    left: 50%;
+                    position: absolute;
+                    top: 50%;
+                    transform: translate(-50%, -50%);
+                }
+
+                img {
+                    border-radius: 50%;
+                    margin: auto;
+                    max-height: 10rem;
+                    max-width: 10rem;
+                }
+            }
+        }
+    }
+}

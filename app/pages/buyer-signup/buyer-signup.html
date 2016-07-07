@@ -1,0 +1,90 @@
+<!--
+  Generated template for the BuyerSignupPage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-content>
+    <ion-item class="store-redirect item-plain">
+        <a item-right (click)="goToStoreSignupPage()">I'm a store</a>
+    </ion-item>
+
+    <header class="header">
+        <h1 class="app-name">Cheers</h1>
+        <p class="tagline">Where Everyone Knows Your Name</p>
+    </header>
+
+    <form
+        class="padding-less-input"
+        #buyerSignupForm="ngForm"
+        (ngSubmit)="submitSignupForm(buyerSignupForm)"
+        padding>
+        <ion-item>
+            <ion-input
+                type="text"
+                placeholder="What's your name?"
+                required
+                [(ngModel)]="buyer.name"
+                ngControl="buyerName"
+                #buyerName="ngForm"></ion-input>
+
+            <ion-icon
+                name="checkmark-circle"
+                item-right
+                *ngIf="buyerName.touched && buyerName.valid"></ion-icon>
+            <ion-icon
+                name="close-circle"
+                item-right
+                *ngIf="buyerName.touched && !buyerName.valid"></ion-icon>
+        </ion-item>
+
+        <ion-item>
+            <ion-input
+                type="text"
+                placeholder="Pick a username"
+                required
+                [(ngModel)]="buyer.username"
+                ngControl="username"
+                #username="ngForm"></ion-input>
+
+            <ion-icon
+                name="checkmark-circle"
+                item-right
+                *ngIf="username.touched && username.valid"></ion-icon>
+            <ion-icon
+                name="close-circle"
+                item-right
+                *ngIf="username.touched && !username.valid"></ion-icon>
+        </ion-item>
+
+        <ion-item>
+            <ion-input
+                type="password"
+                placeholder="Password"
+                required
+                [(ngModel)]="buyer.password"
+                ngControl="password"
+                #password="ngForm"></ion-input>
+
+            <ion-icon
+                name="checkmark-circle"
+                item-right
+                *ngIf="password.touched && password.valid"></ion-icon>
+            <ion-icon
+                name="close-circle"
+                item-right
+                *ngIf="password.touched && !password.valid"></ion-icon>
+        </ion-item>
+
+        <div class="submit-button" padding-top>
+            <button
+                block cheers
+                [disabled]="!buyerSignupForm.valid"
+                padding>Begin</button>
+        </div>
+    </form>
+
+    <ion-item class="login-redirect item-plain">
+        <a (click)="goToLoginPage()">I have a login</a>
+    </ion-item>
+</ion-content>

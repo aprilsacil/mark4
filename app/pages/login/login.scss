@@ -1,0 +1,15 @@
+.login-page {
+    form {
+        margin-bottom: 30px;
+    }
+
+    .signup-redirect.item {
+        .item-inner {
+            text-align: center;
+
+            a {
+                text-decoration: underline;
+            }
+        }
+    }
+}

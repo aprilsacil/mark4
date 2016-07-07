@@ -1,0 +1,43 @@
+// Removes some padding and fixes the input in a form
+form.padding-less-input {
+    .item {
+        padding-left: 0;
+        padding-right: 0;
+
+        &:after {
+            left: 0;
+        }
+    }
+}
+
+// ion-item with no border-bottom
+.item.item-plain {
+    .item-inner {
+        border-bottom: 0;
+    }
+}
+
+// User Details Card
+.user-details {
+    .avatar {
+        margin-bottom: 5px;
+        min-width: 10rem;
+        min-height: 10rem;
+
+        img {
+            border-radius: 50%;
+            margin: auto;
+            max-height: 10rem;
+            max-width: 10rem;
+        }
+    }
+
+    .info {
+        text-align: center;
+
+        .name {
+            font-size: 1.7rem;
+            font-weight: bold;
+        }
+    }
+}

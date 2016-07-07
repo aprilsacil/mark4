@@ -1,0 +1,71 @@
+<!--
+  Generated template for the BuyerUpdateProfilePage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+    <ion-navbar cheers>
+        <ion-title>Update Information</ion-title>
+
+        <ion-buttons end>
+            <button (click)="saveProfileDetails(updateProfileForm)">
+                Save
+            </button>
+        </ion-buttons>
+    </ion-navbar>
+</ion-header>
+
+<ion-content>
+    <form
+        padding
+        class="padding-less-input"
+        #updateProfileForm="ngForm">
+        <ion-item class="avatar-wrapper">
+            <ion-avatar>
+                <ion-icon name="camera"></ion-icon>
+                <img src="https://66.media.tumblr.com/7d65a925636d6e3df94e2ebe30667c29/tumblr_nq1zg0MEn51qg6rkio1_500.jpg">
+            </ion-avatar>
+
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>Name</ion-label>
+            <ion-input
+                type="text"
+                placeholder="What's your name?"
+                [(ngModel)]="user.name"
+                required
+                ngControl="buyerName"
+                #buyerName="ngForm"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>Job Description</ion-label>
+            <ion-input
+                type="text"
+                placeholder="What's your job description?"
+                [(ngModel)]="user.job_description"
+                required
+                ngControl="jobDescription"
+                #jobDescription="ngForm"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>Company Name</ion-label>
+            <ion-input
+                type="text"
+                placeholder="Where do you work?"
+                [(ngModel)]="user.company_name"
+                required
+                ngControl="companyName"
+                #companyName="ngForm"></ion-input>
+        </ion-item>
+    </form>
+</ion-content>
+
+<ion-footer>
+    <ion-toolbar>
+        <button clear block (click)="logout()">Logout</button>
+    </ion-toolbar>
+</ion-footer>
