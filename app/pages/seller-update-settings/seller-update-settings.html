@@ -1,0 +1,52 @@
+<!--
+  Generated template for the SellerUpdateSettingsPage page.
+
+  See http://ionicframework.com/docs/v2/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+    <ion-navbar cheers>
+        <ion-title>Settings</ion-title>
+
+        <ion-buttons end>
+            <button (click)="saveStoreSettings(updateSettingsForm)">
+                Save
+            </button>
+        </ion-buttons>
+    </ion-navbar>
+</ion-header>
+
+<ion-content>
+    <form
+        padding
+        class="padding-less-input"
+        #updateSettingsForm="ngForm">
+        <ion-item class="avatar-wrapper">
+            <ion-avatar (click)="openTheCamera()">
+                <ion-icon name="camera"></ion-icon>
+                <img src="http://ia.media-imdb.com/images/M/MV5BMTM4OTI2MTEwOV5BMl5BanBnXkFtZTcwMDc1MDc0Mw@@._V1_UX214_CR0,0,214,317_AL_.jpg" *ngIf="!seller.image">
+                <img [src]="seller.image" *ngIf="seller.image">
+            </ion-avatar>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>Store Name</ion-label>
+            <ion-input
+                type="text"
+                placeholder="What's your store name?"
+                [(ngModel)]="seller.store_name"
+                required
+                ngControl="storeName"
+                #storeName="ngForm"></ion-input>
+
+            <ion-icon
+                name="checkmark-circle"
+                item-right
+                *ngIf="storeName.touched && storeName.valid"></ion-icon>
+            <ion-icon
+                name="close-circle"
+                item-right
+                *ngIf="storeName.touched && !storeName.valid"></ion-icon>
+        </ion-item>
+    </form>
+</ion-content>

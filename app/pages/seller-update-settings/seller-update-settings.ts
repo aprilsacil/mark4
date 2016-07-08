@@ -1,55 +1,52 @@
 import { Component } from '@angular/core';
 import { Alert, Loading, NavController, Toast } from 'ionic-angular';
-import { LoginPage } from '../login/login';
+import { Camera } from 'ionic-native';
 
 /*
-  Generated class for the BuyerUpdateProfilePage page.
+  Generated class for the SellerUpdateSettingsPage page.
 
   See http://ionicframework.com/docs/v2/components/#navigation for more info on
   Ionic pages and navigation.
 */
 @Component({
-  templateUrl: 'build/pages/buyer-update-profile/buyer-update-profile.html',
+  templateUrl: 'build/pages/seller-update-settings/seller-update-settings.html',
 })
-export class BuyerUpdateProfilePage {
-    user: Object = {};
+export class SellerUpdateSettingsPage {
+    seller = {
+        image: <string> null
+    };
+
     constructor(private nav: NavController) {}
 
     /**
-     * User logs out
+     * Opens up the camera and waits for the image to be fetched.
      */
-    logout() {
-        // initialize the Alert component
-        let alert = Alert.create({
-            title: 'Log out',
-            message : 'Are you sure you want to log out of Cheers?',
-            buttons: [{
-                text: 'Cancel',
-                handler: data => {
-                    // do something?
-                }
-            },
-            {
-                text: 'OK',
-                handler: data => {
-                    // remove data of the user from the storage
-                    // redirect to login page
-                    setTimeout(() => {
-                        this.nav.setRoot(LoginPage);
-                    }, 1000);
-                }
-            }]
-        });
+    openTheCamera() {
+        let options = {
+            destinationType: 0,
+            sourceType: 1,
+            encodingType: 0,
+            quality:100,
+            allowEdit: false,
+            saveToPhotoAlbum: false
+        };
 
-        // render it
-        this.nav.present(alert);
+        // once the user accepted the taken photo to be used
+        Camera.getPicture(options).then((data) => {
+            let imgdata = "data:image/jpeg;base64," + data;
+
+            // assign the image to the user object
+            this.seller.image = imgdata;
+        }, (error) => {
+            // bring out a toast error message
+        });
     }
 
     /**
      * Saves the provided data in the form.
      */
-    saveProfileDetails(updateProfileForm) {
-        if (!updateProfileForm.valid) {
+    saveStoreSettings(updateSettingsForm) {
+        if (!updateSettingsForm.valid) {
             // prompt that something is wrong in the form
             let alert = Alert.create({
                 title: 'Ooops...',

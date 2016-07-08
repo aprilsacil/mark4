@@ -38,6 +38,15 @@
                 required
                 ngControl="buyerName"
                 #buyerName="ngForm"></ion-input>
+
+            <ion-icon
+                name="checkmark-circle"
+                item-right
+                *ngIf="buyerName.touched && buyerName.valid"></ion-icon>
+            <ion-icon
+                name="close-circle"
+                item-right
+                *ngIf="buyerName.touched && !buyerName.valid"></ion-icon>
         </ion-item>
 
         <ion-item>
@@ -49,6 +58,15 @@
                 required
                 ngControl="jobDescription"
                 #jobDescription="ngForm"></ion-input>
+
+            <ion-icon
+                name="checkmark-circle"
+                item-right
+                *ngIf="jobDescription.touched && jobDescription.valid"></ion-icon>
+            <ion-icon
+                name="close-circle"
+                item-right
+                *ngIf="jobDescription.touched && !jobDescription.valid"></ion-icon>
         </ion-item>
 
         <ion-item>
@@ -60,6 +78,15 @@
                 required
                 ngControl="companyName"
                 #companyName="ngForm"></ion-input>
+
+            <ion-icon
+                name="checkmark-circle"
+                item-right
+                *ngIf="companyName.touched && companyName.valid"></ion-icon>
+            <ion-icon
+                name="close-circle"
+                item-right
+                *ngIf="companyName.touched && !companyName.valid"></ion-icon>
         </ion-item>
     </form>
 </ion-content>

@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { Modal, NavController, ViewController } from 'ionic-angular';
+import { SellerAssociatesPage } from '../seller-associates/seller-associates';
+import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
 import { SellerShopperViewPage } from '../seller-shopper-view/seller-shopper-view';
+import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-update-settings';
 
 /*
   Generated class for the SellerDashboardPage page.
@@ -13,9 +16,40 @@ import { SellerShopperViewPage } from '../seller-shopper-view/seller-shopper-vie
 })
 export class SellerDashboardPage {
     shoppers: Object = {};
-    constructor(private nav: NavController) {}
+    constructor(
+        private nav: NavController,
+        private view: ViewController
+    ) {}
 
+    /**
+     * Goes to the associates page
+     */
+    goToAssociatesPage() {
+        this.nav.push(SellerAssociatesPage);
+    }
+
+    /**
+     * Views the details of the shopper
+     */
     goToShopperDetails() {
         this.nav.push(SellerShopperViewPage);
+    }
+
+    /**
+     * Goes to update settings page
+     */
+    goToUpdateSettingsPage() {
+        this.nav.push(SellerUpdateSettingsPage);
+    }
+
+    /**
+     * Show the Emote modal
+     */
+    showEmoteModal() {
+        // initialize the modal
+        let modal = Modal.create(SellerEmoteModalPage);
+
+        // render
+        this.nav.present(modal);
     }
 }

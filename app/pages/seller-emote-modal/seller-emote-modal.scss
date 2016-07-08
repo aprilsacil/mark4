@@ -1,0 +1,46 @@
+.seller-emote-modal-page {
+    ion-navbar {
+        ion-avatar.avatar {
+            height: 4rem;
+            width: 4rem;
+
+            img {
+                height: 100%;
+                object-fit: cover;
+                width: 100%;
+            }
+        }
+    }
+
+    // textarea should be covering the height of the whitespace
+    form {
+        height: 100%;
+
+        ion-item {
+            height: 100%;
+
+            .item-inner {
+                border: 0;
+                height: 100%;
+                padding: 0;
+
+                textarea.text-input {
+                    height: 100%;
+                }
+            }
+
+            &:after {
+                display: none;
+            }
+        }
+    }
+
+    .counter {
+        color: color($colors, light);
+        text-align: right;
+    }
+
+    .counter.limit {
+        color: color($colors, danger);
+    }
+}

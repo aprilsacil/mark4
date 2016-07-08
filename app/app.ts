@@ -5,8 +5,6 @@ import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from './pages/seller-dashboard/seller-dashboard';
 
-import { SellerShopperViewPage } from './pages/seller-shopper-view/seller-shopper-view';
-
 @Component({
     template: '<ion-nav [root]="rootPage"></ion-nav>'
 })
@@ -15,7 +13,7 @@ export class MyApp {
     private rootPage:any;
 
     constructor(private platform:Platform) {
-        this.rootPage = SellerShopperViewPage;
+        this.rootPage = BuyerDashboardPage;
 
         platform.ready().then(() => {
             // Okay, so the platform is ready and our plugins are available.

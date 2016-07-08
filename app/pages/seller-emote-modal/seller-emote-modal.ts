@@ -2,21 +2,32 @@ import { Component } from '@angular/core';
 import { Alert, Loading, NavController, Toast, ViewController } from 'ionic-angular';
 
 /*
-  Generated class for the SellerAwardModalPage page.
+  Generated class for the SellerEmoteModalPage page.
 
   See http://ionicframework.com/docs/v2/components/#navigation for more info on
   Ionic pages and navigation.
 */
 @Component({
-  templateUrl: 'build/pages/seller-award-modal/seller-award-modal.html',
+  templateUrl: 'build/pages/seller-emote-modal/seller-emote-modal.html',
 })
-export class SellerAwardModalPage {
-    award: Object = {};
+export class SellerEmoteModalPage {
+    maxCharacterLimit = 140;
+    remainingCharacters = 140;
+    emote = {};
 
     constructor(
         private nav: NavController,
         private view: ViewController
     ) {}
+
+    characterCounter(value) {
+        if (!value || value.length === 0 ) {
+            this.remainingCharacters = this.maxCharacterLimit;
+        }
+
+        // compute
+        this.remainingCharacters = this.maxCharacterLimit - value.length;
+    }
 
     /**
      * Closes the modal
@@ -39,19 +50,28 @@ export class SellerAwardModalPage {
     }
 
     /**
-     * Validates and submit the award to be given to the customer.
+     * Sends out the emote to nearby shoppers.
      */
-    submitAwardCustomer(awardCustomerForm) {
-        if (!awardCustomerForm.valid) {
-            // tell something that form is not valid
+    submitEmote(emoteForm) {
+        if (!emoteForm.valid) {
+            // prompt that something is wrong in the form
+            let alert = Alert.create({
+                title: 'Ooops...',
+                subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
+                buttons: ['OK']
+            });
+
+            // render in the template
+            this.nav.present(alert);
+            return;
         }
 
         // initialize the loader
         let loading = Loading.create({
-            content: 'Sending award to the customer...'
+            content: 'Sending out your emote...'
         });
 
-        // render
+        // render in the template
         this.nav.present(loading);
 
         // TODO: add thingy here
@@ -65,7 +85,7 @@ export class SellerAwardModalPage {
                 // delay it for a second
                 setTimeout(() => {
                     // show a toast
-                    this.showToast('You have successfully gave the customer an award.');
+                    this.showToast('You have successfully sent out your emote.');
                 }, 400);
             });
         }, 3000);

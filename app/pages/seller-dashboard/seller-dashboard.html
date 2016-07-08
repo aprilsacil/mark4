@@ -9,13 +9,17 @@
         <ion-title>Cheers</ion-title>
 
         <ion-buttons start>
-            <button>
+            <button (click)="goToAssociatesPage()">
                 <ion-icon name="contacts"></ion-icon>
             </button>
         </ion-buttons>
 
         <ion-buttons end>
-            <button (click)="goToUpdateProfilePage()">
+            <button (click)="showEmoteModal()">
+                <ion-icon name="megaphone"></ion-icon>
+            </button>
+
+            <button (click)="goToUpdateSettingsPage()">
                 <ion-icon name="settings"></ion-icon>
             </button>
         </ion-buttons>
