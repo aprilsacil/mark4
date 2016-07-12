@@ -2,7 +2,10 @@ import { Component } from '@angular/core';
 import { Alert, Loading, NavController } from 'ionic-angular';
 import { LoginPage } from '../login/login';
 import { SellerSignupPage } from '../seller-signup/seller-signup';
-import { PouchService } from '../../providers/pouch-service/pouch-service';
+// import { PouchService } from '../../providers/pouch-service/pouch-service';
+
+var PouchDB = require('pouchdb');
+PouchDB.plugin(require('pouchdb-authentication'));
 
 /*
   Generated class for the BuyerSignupPage page.
@@ -11,16 +14,25 @@ import { PouchService } from '../../providers/pouch-service/pouch-service';
   Ionic pages and navigation.
 */
 @Component({
-    templateUrl: 'build/pages/buyer-signup/buyer-signup.html',
-    providers: [PouchService]
+    templateUrl: 'build/pages/buyer-signup/buyer-signup.html'
 })
 export class BuyerSignupPage {
+    private db;
+
     buyer: Object = {};
 
     constructor(
-        private nav: NavController,
-        private pouch: PouchService
-    ) {}
+        private nav: NavController
+    ) {
+        // couch db integration
+        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+
+        // local integration
+        let local = new PouchDB('cheers');
+
+        // this will sync locally
+        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+    }
 
     /**
      * Redirects to the login page
@@ -54,11 +66,16 @@ export class BuyerSignupPage {
             return;
         }
 
+        this.db.signup('username', 'password', (err, response) => {
+            console.log(err);
+            console.log(response);
+        });
+
         // process the signup thing
         // validate
 
-        this.pouch.add(this.buyer).then((res) => {
-            console.log(res);
-        });
+        // this.pouch.add(this.buyer).then((res) => {
+        //     console.log(res);
+        // });
     }
 }

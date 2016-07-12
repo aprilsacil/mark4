@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {Storage, SqlStorage} from 'ionic-angular';
 
 var PouchDB = require('pouchdb');
+PouchDB.plugin(require('pouchdb-authentication'));
 
 /*
   Generated class for the PouchService provider.
