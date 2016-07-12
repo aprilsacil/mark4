@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { Alert, NavController } from 'ionic-angular';
+import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
 
 /*
   Generated class for the SellerSignupPage page.
@@ -16,10 +17,10 @@ export class SellerSignupPage {
     constructor(private nav: NavController) {}
 
     /**
-     * It will just redirects back
+     * Redirects to the buyer
      */
     goToBuyerSignupPage() {
-        this.nav.pop();
+        this.nav.push(BuyerSignupPage);
     }
 
     /**
