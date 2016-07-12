@@ -1,0 +1,51 @@
+.relogin-page {
+    .header {
+        padding-top: 50px;
+    }
+
+    form {
+        margin-bottom: 20px;
+    }
+
+    .to-login-user {
+        margin-bottom: 10px;
+
+        .avatar {
+            height: 10rem;
+            width: 10rem;
+
+            img {
+                border-radius: 50%;
+                height: 100%;
+                max-height: 10rem;
+                max-width: 10rem;
+                object-fit: cover;
+                width: 100%;
+            }
+        }
+
+        .name {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .contact-number {
+            @extend .name;
+            font-weight: normal;
+        }
+
+        .item-inner {
+            border-bottom: 0;
+        }
+    }
+
+    .item-plain {
+        background: none;
+        text-align: center;
+
+        a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+    }
+}
