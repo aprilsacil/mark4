@@ -4,6 +4,7 @@ import { StatusBar } from 'ionic-native';
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from './pages/seller-dashboard/seller-dashboard';
+import { ReloginPage } from './pages/relogin/relogin';
 // import * as PouchDB from 'pouchdb';
 
 @Component({
@@ -14,7 +15,7 @@ export class MyApp {
     private rootPage:any;
 
     constructor(private platform:Platform) {
-        this.rootPage = SellerDashboardPage;
+        this.rootPage = BuyerSignupPage;
 
         platform.ready().then(() => {
             // Okay, so the platform is ready and our plugins are available.
