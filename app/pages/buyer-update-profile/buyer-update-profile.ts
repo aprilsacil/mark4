@@ -57,7 +57,7 @@ export class BuyerUpdateProfilePage {
             destinationType: 0,
             sourceType: 1,
             encodingType: 0,
-            quality:100,
+            quality:25,
             allowEdit: false,
             saveToPhotoAlbum: false
         };

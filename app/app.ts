@@ -14,7 +14,7 @@ export class MyApp {
     private rootPage:any;
 
     constructor(private platform:Platform) {
-        this.rootPage = BuyerSignupPage;
+        this.rootPage = SellerDashboardPage;
 
         platform.ready().then(() => {
             // Okay, so the platform is ready and our plugins are available.
