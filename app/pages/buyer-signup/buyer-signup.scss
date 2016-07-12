@@ -2,6 +2,7 @@
     .store-redirect.item {
         .item-inner {
             a {
+                color: #ffffff;
                 text-decoration: underline;
             }
         }
@@ -16,8 +17,13 @@
             text-align: center;
 
             a {
+                color: #ffffff;
                 text-decoration: underline;
             }
         }
+    }
+
+    .item-plain {
+        background-color: transparent;
     }
 }

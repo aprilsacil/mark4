@@ -50,10 +50,10 @@
             <p>The man wants you be with the Many-Faced God.</p>
 
             <div item-right class="invite-controls">
-                <button outline success>
+                <button outline success (click)="acceptInvitation()">
                     <ion-icon name="checkmark"></ion-icon>
                 </button>
-                <button outline danger>
+                <button outline danger (click)="rejectInvitation()">
                     <ion-icon name="close"></ion-icon>
                 </button>
             </div>

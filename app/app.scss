@@ -1,11 +1,46 @@
+.cheers-bg-image {
+    background-image: url(../../img/bg-image.jpg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.header {
+    padding: 5px 15px;
+
+    img {
+        display: block;
+        width: 100%;
+    }
+
+    p.tagline {
+        color: #ffffff;
+        font-size: 1.6rem;
+        text-align: center;
+    }
+}
+
 // Removes some padding and fixes the input in a form
 form.padding-less-input {
     .item {
+        background: none;
         padding-left: 0;
         padding-right: 0;
 
+        .text-input {
+            color: #ffffff;
+
+            &::placeholder {
+                color: #ffffff;
+            }
+        }
+
         &:after {
             left: 0;
+        }
+
+        ion-icon {
+            color: #ffffff;
         }
     }
 }

@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { Alert, Loading, NavController } from 'ionic-angular';
 import { LoginPage } from '../login/login';
 import { SellerSignupPage } from '../seller-signup/seller-signup';
+import { PouchService } from '../../providers/pouch-service/pouch-service';
 
 /*
   Generated class for the BuyerSignupPage page.
@@ -11,11 +12,15 @@ import { SellerSignupPage } from '../seller-signup/seller-signup';
 */
 @Component({
     templateUrl: 'build/pages/buyer-signup/buyer-signup.html',
+    providers: [PouchService]
 })
 export class BuyerSignupPage {
     buyer: Object = {};
 
-    constructor(private nav: NavController) {}
+    constructor(
+        private nav: NavController,
+        private pouch: PouchService
+    ) {}
 
     /**
      * Redirects to the login page
@@ -36,7 +41,24 @@ export class BuyerSignupPage {
      */
     submitSignupForm(buyerSignupForm) {
         // check if the form is not valid
+        if (!buyerSignupForm.valid) {
+            // prompt that something is wrong in the form
+            let alert = Alert.create({
+                title: 'Ooops...',
+                subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
+                buttons: ['OK']
+            });
+
+            // render in the template
+            this.nav.present(alert);
+            return;
+        }
+
         // process the signup thing
         // validate
+
+        this.pouch.add(this.buyer).then((res) => {
+            console.log(res);
+        });
     }
 }

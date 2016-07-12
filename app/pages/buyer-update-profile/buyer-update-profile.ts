@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Alert, Loading, NavController, Toast } from 'ionic-angular';
+import { Camera } from 'ionic-native';
 import { LoginPage } from '../login/login';
 
 /*
@@ -12,7 +13,10 @@ import { LoginPage } from '../login/login';
   templateUrl: 'build/pages/buyer-update-profile/buyer-update-profile.html',
 })
 export class BuyerUpdateProfilePage {
-    user: Object = {};
+    user = {
+        image: <string> null
+    };
+
     constructor(private nav: NavController) {}
 
     /**
@@ -43,6 +47,30 @@ export class BuyerUpdateProfilePage {
 
         // render it
         this.nav.present(alert);
+    }
+
+    /**
+     * Opens up the camera and waits for the image to be fetched.
+     */
+    openTheCamera() {
+        let options = {
+            destinationType: 0,
+            sourceType: 1,
+            encodingType: 0,
+            quality:100,
+            allowEdit: false,
+            saveToPhotoAlbum: false
+        };
+
+        // once the user accepted the taken photo to be used
+        Camera.getPicture(options).then((data) => {
+            let imgdata = "data:image/jpeg;base64," + data;
+
+            // assign the image to the user object
+            this.user.image = imgdata;
+        }, (error) => {
+            // bring out a toast error message
+        });
     }
 
     /**
