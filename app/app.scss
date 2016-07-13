@@ -27,7 +27,13 @@
 
 //white text
 .text-white {
-    color: #ffffff;
+    .text-input {
+            color: #ffffff;
+
+            &::placeholder {
+                color: #ffffff;
+            }
+        }
 }
 
 // Removes some padding and fixes the input in a form
@@ -36,13 +42,6 @@ form.padding-less-input {
         background: none;
         padding-left: 0;
         padding-right: 0;
-
-        .text-input {
-
-            &::placeholder {
-                color: #ffffff;
-            }
-        }
 
         &:after {
             left: 0;
