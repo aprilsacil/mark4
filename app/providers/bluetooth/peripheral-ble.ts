@@ -173,7 +173,8 @@ export class PeripheralBle {
         // do we have a status?
         if(JSON.stringify(data) === '{}') {
             // no peripheral status
-
+            console.log('nope');
+            console.log(data);
             return;
         }
 
