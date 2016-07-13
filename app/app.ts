@@ -5,7 +5,8 @@ import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from './pages/seller-dashboard/seller-dashboard';
 import { ReloginPage } from './pages/relogin/relogin';
-// import * as PouchDB from 'pouchdb';
+
+var CentralBLE = require('../bluetooth/central');
 
 @Component({
     template: '<ion-nav [root]="rootPage"></ion-nav>'
@@ -22,6 +23,8 @@ export class MyApp {
             // Here you can do any higher level native things you might need.
             StatusBar.styleDefault();
         });
+
+
     }
 }
 
