@@ -25,13 +25,13 @@ export class BuyerSignupPage {
         private nav: NavController
     ) {
         // couch db integration
-        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+        // this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
         // local integration
-        let local = new PouchDB('cheers');
+        // let local = new PouchDB('cheers');
 
         // this will sync locally
-        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+        // local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
     }
 
     /**
@@ -66,10 +66,10 @@ export class BuyerSignupPage {
             return;
         }
 
-        this.db.signup('username', 'password', (err, response) => {
-            console.log(err);
-            console.log(response);
-        });
+        // this.db.signup('username', 'password', (err, response) => {
+        //     console.log(err);
+        //     console.log(response);
+        // });
 
         // process the signup thing
         // validate
