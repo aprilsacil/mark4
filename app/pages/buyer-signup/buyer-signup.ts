@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Alert, Loading, NavController } from 'ionic-angular';
 import { LoginPage } from '../login/login';
 import { SellerSignupPage } from '../seller-signup/seller-signup';
+import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
 // import { PouchService } from '../../providers/pouch-service/pouch-service';
 
 var PouchDB = require('pouchdb');
@@ -18,12 +19,9 @@ PouchDB.plugin(require('pouchdb-authentication'));
 })
 export class BuyerSignupPage {
     private db;
+    buyer = { username: <string> null, password: <string> null, name: <string> null };
 
-    buyer: Object = {};
-
-    constructor(
-        private nav: NavController
-    ) {
+    constructor( private nav: NavController ) {
         // couch db integration
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
@@ -32,6 +30,18 @@ export class BuyerSignupPage {
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+
+        this.db.getSession(function (err, response) {
+            console.log(err);
+            console.log(response);
+          if (err) {
+            // network error
+          } else if (!response.userCtx.name) {
+            // nobody's logged in
+          } else {
+            // response.userCtx.name is the current user
+          }
+        });
     }
 
     /**
@@ -52,6 +62,7 @@ export class BuyerSignupPage {
      * Validates and submits the buyer data.
      */
     submitSignupForm(buyerSignupForm) {
+        var self = this;
         // check if the form is not valid
         if (!buyerSignupForm.valid) {
             // prompt that something is wrong in the form
@@ -66,16 +77,24 @@ export class BuyerSignupPage {
             return;
         }
 
-        this.db.signup('username', 'password', (err, response) => {
-            console.log(err);
-            console.log(response);
+        this.db.signup(this.buyer.username, this.buyer.password, {
+            metadata : { fullname : this.buyer.name, roles : ['buyer'] }
+        }, function (err, response) {
+          if(!err) {
+            self.goToLoginPage();
+          } else {
+            if(err.name === 'conflict') {
+                var message = 'username already exists';
+            }
+
+            let alert = Alert.create({
+                subTitle: message
+            });
+
+            // render in the template
+            self.nav.present(alert);
+            return;
+          }
         });
-
-        // process the signup thing
-        // validate
-
-        // this.pouch.add(this.buyer).then((res) => {
-        //     console.log(res);
-        // });
     }
 }
