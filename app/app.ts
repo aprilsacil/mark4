@@ -6,10 +6,11 @@ import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from './pages/seller-dashboard/seller-dashboard';
 import { ReloginPage } from './pages/relogin/relogin';
 import { CentralBle } from './providers/bluetooth/central-ble';
+import { PeripheralBle } from './providers/bluetooth/peripheral-ble';
 
 @Component({
     template: '<ion-nav [root]="rootPage"></ion-nav>',
-    providers: [CentralBle]
+    providers: [CentralBle, PeripheralBle]
 })
 export class MyApp {
     private peripherals:any;
@@ -18,6 +19,7 @@ export class MyApp {
 
     constructor(
         private centralBle: CentralBle,
+        private peripheralBle: PeripheralBle,
         private platform:Platform
     ) {
         this.rootPage = BuyerSignupPage;

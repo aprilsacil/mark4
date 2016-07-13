@@ -4,7 +4,7 @@ declare var bluetoothle: any;
 declare var BLECentral: any;
 
 /*
-  Generated class for the PouchService provider.
+  Generated class for the Central Bluetooth Low Energy provider.
 
   See https://angular.io/docs/ts/latest/guide/dependency-injection.html
   for more info on providers and Angular 2 DI.
