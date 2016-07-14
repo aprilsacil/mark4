@@ -93,12 +93,20 @@ export class LoginPage {
             return;
         }*/
 
-        this.db.login(this.login.username, this.login.password, function (err, response) {
+        var ajaxOpts = {
+            ajax: {
+                headers: {
+                    Authorization: 'Basic ' + window.btoa(this.login.username + ':' + this.login.password)
+                }
+            }
+        };
+
+
+        this.db.login(this.login.username, this.login.password, ajaxOpts, function (err, response) {
             if(!err) {
                 // if seller redirect to seller dashboard
                 if(response.roles[0] === 'seller') {
                     return self.goToSellerDashboardPage();
-
                 }
 
                 // if buyer redirect to buyer dashboard
