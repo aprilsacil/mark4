@@ -54,7 +54,6 @@ export class BuyerUpdateProfilePage {
                     // redirect to login page
                     setTimeout(() => {
                         self.db.logout(function (err, response) {
-                            err = true;
                             if (err) {
                                 let alert = Alert.create({
                                     subTitle: 'Server Error'
