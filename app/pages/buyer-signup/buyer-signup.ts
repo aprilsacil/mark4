@@ -3,6 +3,7 @@ import { Alert, Loading, NavController } from 'ionic-angular';
 import { LoginPage } from '../login/login';
 import { SellerSignupPage } from '../seller-signup/seller-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
+import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
 // import { PouchService } from '../../providers/pouch-service/pouch-service';
 
 var PouchDB = require('pouchdb');
@@ -22,6 +23,7 @@ export class BuyerSignupPage {
     buyer = { username: <string> null, password: <string> null, name: <string> null };
 
     constructor( private nav: NavController ) {
+        var self = this;
         // couch db integration
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
@@ -32,15 +34,21 @@ export class BuyerSignupPage {
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
 
         this.db.getSession(function (err, response) {
-            console.log(err);
-            console.log(response);
-          if (err) {
-            // network error
-          } else if (!response.userCtx.name) {
-            // nobody's logged in
-          } else {
-            // response.userCtx.name is the current user
-          }
+            if (err) {
+                // network error
+            }
+
+            if (response.userCtx.name) {
+                // if seller redirect to seller dashboard
+                if(response.userCtx.roles[0] == 'seller') {
+                    self.goToSellerDashboardPage();
+                }
+
+                // if buyer redirect to buyer dashboard
+                if(response.userCtx.roles[0] == 'buyer') {
+                    self.goToBuyerDashboardPage();
+                }
+            }
         });
     }
 
@@ -56,6 +64,20 @@ export class BuyerSignupPage {
      */
     goToStoreSignupPage() {
         this.nav.push(SellerSignupPage);
+    }
+
+    /**
+     * Redirects to the seller dashboard
+     */
+    goToSellerDashboardPage() {
+        this.nav.push(SellerDashboardPage);
+    }
+
+    /**
+     * Redirects to the buyer dashboard
+     */
+    goToBuyerDashboardPage() {
+        this.nav.push(BuyerDashboardPage);
     }
 
     /**
@@ -80,6 +102,7 @@ export class BuyerSignupPage {
         this.db.signup(this.buyer.username, this.buyer.password, {
             metadata : { fullname : this.buyer.name, roles : ['buyer'] }
         }, function (err, response) {
+            console.log(err);
           if(!err) {
             self.goToLoginPage();
           } else {
