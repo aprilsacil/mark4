@@ -1,6 +1,10 @@
 import { Component } from '@angular/core';
 import { Alert, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
+import { LoginPage } from '../login/login';
+
+var PouchDB = require('pouchdb');
+PouchDB.plugin(require('pouchdb-authentication'));
 
 /*
   Generated class for the SellerUpdateSettingsPage page.
@@ -12,11 +16,65 @@ import { Camera } from 'ionic-native';
   templateUrl: 'build/pages/seller-update-settings/seller-update-settings.html',
 })
 export class SellerUpdateSettingsPage {
+    private db;
     seller = {
         image: <string> null
     };
 
-    constructor(private nav: NavController) {}
+    constructor(private nav: NavController) {
+        // couch db integration
+        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+
+        // local integration
+        let local = new PouchDB('cheers');
+
+        // this will sync locally
+        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+    }
+
+    /**
+     * User logs out
+     */
+    logout() {
+        var self = this;
+        // initialize the Alert component
+        let alert = Alert.create({
+            title: 'Log out',
+            message : 'Are you sure you want to log out of Cheers?',
+            buttons: [{
+                text: 'Cancel',
+                handler: data => {
+                    // do something?
+                }
+            },
+            {
+                text: 'Yes',
+                handler: data => {
+                    // remove data of the user from the storage
+                    // redirect to login page
+                    setTimeout(() => {
+                        self.db.logout(function (err, response) {
+                            if (err) {
+                                let alert = Alert.create({
+                                    subTitle: 'Server Error'
+                                });
+
+                                // render in the template
+                                self.nav.present(alert);
+                                return;
+                            } else {
+                                self.nav.setRoot(LoginPage);
+                            }
+                        });
+                    }, 1000);
+                }
+            }]
+        });
+
+        // render it
+        this.nav.present(alert);
+    }
+
 
     /**
      * Opens up the camera and waits for the image to be fetched.
@@ -53,6 +111,8 @@ export class SellerUpdateSettingsPage {
                 subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
                 buttons: ['OK']
             });
+
+
 
             // render in the template
             this.nav.present(alert);
