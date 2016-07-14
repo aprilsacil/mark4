@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { Alert, Loading, NavController } from 'ionic-angular';
 import { LoginPage } from '../login/login';
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
+import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
+import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -25,6 +27,7 @@ export class SellerSignupPage {
     };
 
     constructor(private nav: NavController) {
+        var self = this;
         // couch db integration
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
@@ -35,14 +38,20 @@ export class SellerSignupPage {
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
 
         this.db.getSession(function (err, response) {
-            console.log(err);
-            console.log(response);
             if (err) {
-            // network error
-            } else if (!response.userCtx.name) {
-            // nobody's logged in
-            } else {
-            // response.userCtx.name is the current user
+                // network error
+            }
+
+            if (response.userCtx.name) {
+                // if seller redirect to seller dashboard
+                if(response.userCtx.roles[0] == 'seller') {
+                    self.goToSellerDashboardPage();
+                }
+
+                // if buyer redirect to buyer dashboard
+                if(response.userCtx.roles[0] == 'buyer') {
+                    self.goToBuyerDashboardPage();
+                }
             }
         });
     }
@@ -59,6 +68,20 @@ export class SellerSignupPage {
      */
     goToBuyerSignupPage() {
         this.nav.push(BuyerSignupPage);
+    }
+
+    /**
+     * Redirects to the seller dashboard
+     */
+    goToSellerDashboardPage() {
+        this.nav.push(SellerDashboardPage);
+    }
+
+    /**
+     * Redirects to the buyer dashboard
+     */
+    goToBuyerDashboardPage() {
+        this.nav.push(BuyerDashboardPage);
     }
 
     /**

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Alert, Loading, NavController } from 'ionic-angular';
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
+import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -20,6 +21,7 @@ export class LoginPage {
     login = { username: <string> null, password: <string> null };
 
     constructor(private nav: NavController) {
+        var self = this;
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
         // local integration
@@ -27,6 +29,25 @@ export class LoginPage {
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+
+        this.db.getSession(function (err, response) {
+            if (err) {
+                // network error
+            }
+
+            if (response.userCtx.name) {
+                // if seller redirect to seller dashboard
+                if(response.userCtx.roles[0] == 'seller') {
+                    self.goToSellerDashboardPage();
+                }
+
+                // if buyer redirect to buyer dashboard
+                if(response.userCtx.roles[0] == 'buyer') {
+                    self.goToBuyerDashboardPage();
+                }
+            }
+        });
+
     }
 
     /**
@@ -41,6 +62,13 @@ export class LoginPage {
      */
     goToBuyerSignupPage() {
         this.nav.push(BuyerSignupPage);
+    }
+
+    /**
+     * Redirects to the seller dashboard
+     */
+    goToSellerDashboardPage() {
+        this.nav.push(SellerDashboardPage);
     }
 
     /**
