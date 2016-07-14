@@ -17,19 +17,24 @@ export class CentralBle {
     init() {
         console.log('Starting central process.');
 
+        let self = this;
+
+        // init the peripherals object
+        self.peripherals = {};
+
         // init ble central
-        this.central = BLECentral();
+        self.central = BLECentral();
 
         // debug
-        this.central.setDebug(true);
+        self.central.setDebug(true);
 
         // on debug
-        this.central.onDebug((message) => {
+        self.central.onDebug((message) => {
             console.log(message);
         });
 
         // on subscribe notify
-        this.central.onSubscribe((response) => {
+        self.central.onSubscribe((response) => {
             // notification from server?
             if(response.status === 'subscribedResult') {
                 // get encoded data
@@ -43,7 +48,7 @@ export class CentralBle {
 
         // start scanning for peripherals
         setTimeout(() => {
-            this.scan();
+            self.scan();
         }, 2000);
     }
 
@@ -51,17 +56,19 @@ export class CentralBle {
      * Start scanning for devices
      */
     scan() {
+        let self = this;
+
         // start scanning
         this.central.scan((response) => {
             // peripheral result?
             if(response.status === 'scanResult') {
                 // maximum rssi?
-                if(Math.abs(response.rssi) >= Math.abs(this.central.RSSI_MAX)) {
+                if(Math.abs(response.rssi) >= Math.abs(self.central.RSSI_MAX)) {
                     console.log('Device too far away...');
                 }
 
                 // update peripherals
-                this.peripherals = this.handleScan(response);
+                self.peripherals = self.handleScan(response);
             }
         }, (response) => {
 
@@ -69,15 +76,15 @@ export class CentralBle {
 
         setTimeout(() => {
             // stop the scan
-            this.central.stopScan((response) => {
+            self.central.stopScan((response) => {
                 // update peripheral list
-                this.updatePeripheralList(this.peripherals);
+                self.updatePeripheralList(self.peripherals);
 
                 // connect to peripheral
-                this.connectToPeripherals(this.peripherals);
+                self.connectToPeripherals(self.peripherals);
 
                 setTimeout(() => {
-                    this.scan();
+                    self.scan();
                 }, 10000);
             });
         }, 2000);
@@ -87,52 +94,54 @@ export class CentralBle {
      * Handle scan results
      */
     handleScan(peripheral) {
+        let self = this;
+
         peripheral.rssi = null;
 
         // peripheral exists?
         if(!(peripheral.name in this.peripherals)) {
             // set peripheral key
-            this.peripherals[peripheral.name] = {};
+            self.peripherals[peripheral.name] = {};
 
             // set peripheral info
-            this.peripherals[peripheral.name].info   = peripheral;
+            self.peripherals[peripheral.name].info   = peripheral;
             // set peripheral status
-            this.peripherals[peripheral.name].status = 'disconnected';
+            self.peripherals[peripheral.name].status = 'disconnected';
             // set peripheral timestamp
-            this.peripherals[peripheral.name].added  = Date.now();
+            self.peripherals[peripheral.name].added  = Date.now();
             // set peripheral expire
-            this.peripherals[peripheral.name].expire = Date.now() + (60000 * 5);
+            self.peripherals[peripheral.name].expire = Date.now() + (60000 * 5);
 
-            return this.peripherals;
+            return self.peripherals;
         }
 
         // peripheral exists?
-        if(peripheral.name in this.peripherals) {
+        if(peripheral.name in self.peripherals) {
             // get the original
-            var original = JSON.stringify(this.peripherals[peripheral.name].info);
+            var original = JSON.stringify(self.peripherals[peripheral.name].info);
             // get the recent
             var recent   = JSON.stringify(peripheral);
 
             // has the same info?
             if(recent === original) {
                 // nothing to do
-                return this.peripherals;
+                return self.peripherals;
             } else {
                 console.log('Device information updated.');
 
                 // is it expired?
                 if(this.peripherals[peripheral.name].expire <= Date.now()) {
                     // remove the peripheral
-                    delete this.peripherals[peripheral.name];
+                    delete self.peripherals[peripheral.name];
 
-                    return this.peripherals;
+                    return self.peripherals;
                 }
 
                 // set peripheral info
-                this.peripherals[peripheral.name].info   = peripheral;
+                self.peripherals[peripheral.name].info   = peripheral;
             }
 
-            return this.peripherals;
+            return self.peripherals;
         }
     }
 
@@ -140,22 +149,23 @@ export class CentralBle {
      * Connect to peripherals
      */
     connectToPeripherals(list) {
-        // do we have peripherals?
-        if(JSON.stringify(this.peripherals) === '{}') {
-            console.log('No peripherals found.');
+        let self = this;
 
-            return this;
+        // do we have peripherals?
+        if(JSON.stringify(self.peripherals) === '{}') {
+            console.log('No peripherals found.');
+            return;
         }
 
         // device length
-        var max   = this.objLength(list);
+        var max   = self.objLength(list);
         var index = 0;
 
         // iterate on each peripherals
         for(var i in list) {
             // connect to peripheral
             (function(i, list, peripherals) {
-                this.central.connect(
+                self.central.connect(
                 list[i].info.address,
 
                 // on success connection / disconnect
@@ -168,7 +178,7 @@ export class CentralBle {
                     // are we good?
                     if(index === max) {
                         // update device list
-                        this.updatePeripheralList(peripherals);
+                        self.updatePeripheralList(peripherals);
                     }
                 },
 
@@ -179,12 +189,12 @@ export class CentralBle {
                     // are we good?
                     if(index === max) {
                         // update peripheral list
-                        this.updatePeripheralList(peripherals);
+                        self.updatePeripheralList(peripherals);
                     }
                 });
 
                 index = index + 1;
-            })(i, list, this.peripherals);
+            })(i, list, self.peripherals);
         }
     }
 
@@ -196,7 +206,7 @@ export class CentralBle {
         if(JSON.stringify(peripherals) === '{}') {
             // TODO: tell that there no available peripherals
             console.log('No available peripherals');
-            return this;
+            return;
         }
 
         // get the peripheral template
@@ -221,7 +231,7 @@ export class CentralBle {
         // update peripheral container
         // peripheralContainer.innerHTML = combined;
 
-        return this;
+        return;
     }
 
     /**
