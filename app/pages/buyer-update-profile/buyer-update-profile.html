@@ -35,7 +35,7 @@
             <ion-input
                 type="text"
                 placeholder="What's your name?"
-                [(ngModel)]="user.name"
+                [(ngModel)]="user.fullname"
                 required
                 ngControl="buyerName"
                 #buyerName="ngForm"></ion-input>
@@ -56,7 +56,6 @@
                 type="text"
                 placeholder="What's your job description?"
                 [(ngModel)]="user.job_description"
-                required
                 ngControl="jobDescription"
                 #jobDescription="ngForm"></ion-input>
 
@@ -76,7 +75,6 @@
                 type="text"
                 placeholder="Where do you work?"
                 [(ngModel)]="user.company_name"
-                required
                 ngControl="companyName"
                 #companyName="ngForm"></ion-input>
 

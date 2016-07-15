@@ -50,63 +50,6 @@ export class BuyerDashboardPage {
                 handler: data => {
                     var self = this;
 
-                    this.db.getSession(function (errSession, responseSession) {
-                        console.log(errSession);
-                        if (errSession) {
-                            // network error
-                        } else if (!responseSession.userCtx.name) {
-                            // nobody's logged in
-                        } else {
-                            // response.userCtx.name is the current user
-                            console.log(responseSession);
-                            // get user info
-                            self.db.getUser(responseSession.userCtx.name, function (errUser, responseUser){
-                                console.log(errUser);
-                                if (errUser) {
-                                    if (errUser.name === 'not_found') {
-                                      // typo, or you don't have the privileges to see this user
-                                    } else {
-                                      // some other error
-                                    }
-                                } else {
-                                    // response is the user object
-                                    console.log(responseUser);
-                                    self.db.putUser(responseSession.userCtx.name, {
-                                        metadata : { roles: ['seller'] }
-                                    }, function (errUser, responseUser){
-                                        console.log(errUser);
-                                        if (errUser) {
-                                            if (errUser.name === 'not_found') {
-                                              // typo, or you don't have the privileges to see this user
-                                            } else {
-                                              // some other error
-                                            }
-                                        } else {
-                                            // response is the user object
-                                            console.log(responseUser);
-                                        }
-                                    });
-                                }
-                            });
-                            // self.db.putUser(responseSession.userCtx.name, {
-                            //     metadata : { roles: ['seller'] }
-                            // }, function (errUser, responseUser){
-                            //     console.log(errUser);
-                            //     if (errUser) {
-                            //         if (errUser.name === 'not_found') {
-                            //           // typo, or you don't have the privileges to see this user
-                            //         } else {
-                            //           // some other error
-                            //         }
-                            //     } else {
-                            //         // response is the user object
-                            //         console.log(responseUser);
-                            //     }
-                            // });
-
-                        }
-                    });
-
                     // show a loader and re-login the user showing the buyer dashboard
                     let loading = Loading.create({
                         content: "Working on it..."
@@ -115,12 +58,43 @@ export class BuyerDashboardPage {
                     // show the loader
                     this.nav.present(loading);
 
-                    // redirect
-                    setTimeout(() => {
-                        loading.dismiss();
-
-                        this.nav.setRoot(SellerDashboardPage);
-                    }, 5000);
+                    this.db.getSession(function (errSession, responseSession) {
+                        if (errSession) {
+                            // network error
+                        } else if (!responseSession.userCtx.name) {
+                            // nobody's logged in
+                        } else {
+                            // response.userCtx.name is the current user
+                            // get user info
+                            self.db.getUser(responseSession.userCtx.name, function (errUser, responseUser){
+                                if (errUser) {
+                                    if (errUser.name === 'not_found') {
+                                      // typo, or you don't have the privileges to see this user
+                                    } else {
+                                      // some other error
+                                    }
+                                } else {
+                                    // response is the user object
+                                    self.db.putUser(responseSession.userCtx.name, {
+                                        metadata : { roles: ['seller'], store_name: 'Store Name' }
+                                    }, function (errUser, responseUser) {
+                                        if (errUser) {
+                                            if (errUser.name === 'not_found') {
+                                              // typo, or you don't have the privileges to see this user
+                                            } else {
+                                              // some other error
+                                            }
+                                        } else {
+                                            // if no error redirect to seller dashboard now
+                                            loading.dismiss();
+                                            
+                                            return self.nav.setRoot(SellerDashboardPage);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
                 }
             }]
         });

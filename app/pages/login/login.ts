@@ -33,17 +33,20 @@ export class LoginPage {
         this.db.getSession(function (err, response) {
             if (err) {
                 // network error
+                console.log(err);
+                return;
             }
 
             if (response.userCtx.name) {
                 // if seller redirect to seller dashboard
-                if(response.userCtx.roles[0] == 'seller') {
-                    self.goToSellerDashboardPage();
+                if(response.userCtx.roles[0] === 'seller') {
+                    return self.goToSellerDashboardPage();
+
                 }
 
                 // if buyer redirect to buyer dashboard
-                if(response.userCtx.roles[0] == 'buyer') {
-                    self.goToBuyerDashboardPage();
+                if(response.userCtx.roles[0] === 'buyer') {
+                    return self.goToBuyerDashboardPage();
                 }
             }
         });
@@ -90,20 +93,36 @@ export class LoginPage {
             return;
         }*/
 
-        this.db.login(this.login.username, this.login.password, function (err, response) {
-            if(!err) {
-                self.goToBuyerDashboardPage();
-            } else {
-                console.log(err);
-                // prompt that something is wrong in the form
-                let alert = Alert.create({
-                    subTitle: err.message
-                });
-
-                // render in the template
-                self.nav.present(alert);
-                return;
+        var ajaxOpts = {
+            ajax: {
+                headers: {
+                    Authorization: 'Basic ' + window.btoa(this.login.username + ':' + this.login.password)
+                }
             }
+        };
+
+
+        this.db.login(this.login.username, this.login.password, ajaxOpts, function (err, response) {
+            if(!err) {
+                // if seller redirect to seller dashboard
+                if(response.roles[0] === 'seller') {
+                    return self.goToSellerDashboardPage();
+                }
+
+                // if buyer redirect to buyer dashboard
+                if(response.roles[0] === 'buyer') {
+                    return self.goToBuyerDashboardPage();
+                }
+            }
+
+            // prompt that something is wrong in the form
+            let alert = Alert.create({
+                subTitle: err.message
+            });
+
+            // render in the template
+            self.nav.present(alert);
+            return;
         });
 
         // process the signup thing
