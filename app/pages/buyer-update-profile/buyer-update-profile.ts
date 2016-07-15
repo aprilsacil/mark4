@@ -18,7 +18,11 @@ PouchDB.plugin(require('pouchdb-authentication'));
 export class BuyerUpdateProfilePage {
     private db;
     user = {
-        image: <string> null
+        image: <string> null,
+        name: <string> null,
+        fullname: <string> null,
+        job_description: <string> null,
+        company_name: <string> null
     };
 
     constructor(private nav: NavController) {
@@ -30,6 +34,36 @@ export class BuyerUpdateProfilePage {
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+
+        var self = this;
+        this.db.getSession(function (err, response) {
+            if (err) {
+                // network error
+                console.log(err);
+                return;
+            } else if (!response.userCtx.name) {
+               self.goToLoginPage();
+            } else {
+                self.db.getUser(response.userCtx.name, function (err, response) {
+                    if (err) {
+                        if (err.name === 'not_found') {
+                            // typo, or you don't have the privileges to see this user
+                        } else {
+                            // some other error
+                        }
+                    } else {
+                        self.user = response;
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Redirects to the login page
+     */
+    goToLoginPage() {
+        this.nav.push(LoginPage);
     }
 
     /**
@@ -124,15 +158,30 @@ export class BuyerUpdateProfilePage {
         // render in the template
         this.nav.present(loading);
 
-        // TODO: add the couch integration here
-        setTimeout(() => {
-            // dismiss the loader
-            loading.dismiss()
+        var self = this;
+        this.db.putUser(this.user.name, {
+            metadata : { 
+                fullname: this.user.fullname,
+                job_description: this.user.job_description,
+                company_name: this.user.company_name,
+            }
+        }, function (err, response) {
+            if (err) {
+                if (err.name === 'not_found') {
+                  // typo, or you don't have the privileges to see this user
+                } else {
+                  // some other error
+                }
+            } else {
+                // if no error remove the preloader now
+                loading.dismiss()
                 .then(() => {
                     // show a toast
-                    this.showToast('You have successfully updated your profile.');
+                    self.showToast('You have successfully updated your profile.');
                 });
-        }, 3000);
+                
+            }
+        });
     }
 
     /**
