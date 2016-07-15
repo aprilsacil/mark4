@@ -14,7 +14,7 @@ export class PeripheralBle {
     private central: any;
     private peripheral: any;
 
-    init() {
+    init(data) {
         console.log('Starting peripheral process.');
 
         // init ble peripheral
@@ -71,6 +71,21 @@ export class PeripheralBle {
                 // set subscription data
                 this.central.subscribe = response;
 
+                var param = {
+                    'address'           : this.central.address,
+                    'service'           : this.central.subscribe.service,
+                    'characteristic'    : this.central.subscribe.characteristic,
+                    'value'             : JSON.stringify(data)
+                };
+
+                for(var i = 0; i < 5; i ++) {
+                    this.peripheral.notifyByChunk(param, function(response) {
+                        console.log(response);
+                    }, function(response) {
+                        console.log(response);
+                    });
+                }
+
                 console.log(this.central.address + ' has been subscribed.');
             }
 
@@ -104,6 +119,8 @@ export class PeripheralBle {
     advertise() {
         // start advertising
         this.peripheral.advertise((response) => {
+            console.log(response);
+
             // advertising started?
             if(response.status === 'advertisingStarted') {
                 // update peripheral information
@@ -114,27 +131,29 @@ export class PeripheralBle {
         });
     }
 
-    // notify() {
-    //     // set message
-    //     var message = prompt('Enter your message: ');
+    /**
+     * Sends a notify to the central
+     */
+    notify(message) {
+        var self = this;
 
-    //     // set request params
-    //     var param = {
-    //         'address'           : central.address,
-    //         'service'           : central.subscribe.service,
-    //         'characteristic'    : central.subscribe.characteristic,
-    //         'value'             : message
-    //     };
+        // set request params
+        var param = {
+            'address'           : self.central.address,
+            'service'           : self.central.subscribe.service,
+            'characteristic'    : self.central.subscribe.characteristic,
+            'value'             : message
+        };
 
-    //     // send notify request
-    //     for(var i = 0; i < 5; i ++) {
-    //         peripheral.notify(param, function(response) {
-    //             log(response);
-    //         }, function(response) {
-    //             log(response);
-    //         });
-    //     }
-    // }
+        // send notify request
+        for(var i = 0; i < 5; i ++) {
+            self.peripheral.notify(param, function(response) {
+                console.log(response);
+            }, function(response) {
+                console.log(response);
+            });
+        }
+    }
 
     /**
      * Update central list
@@ -149,20 +168,6 @@ export class PeripheralBle {
 
         // details of the central thingy
         console.log(central);
-
-        // get the central template
-        // var baseTpl  = centralTpl.innerHTML;
-        // var tpl      = baseTpl;
-
-        // tpl = tpl
-        // .replace('{{name}}', central.name)
-        // .replace('{{id}}', central.address)
-        // .replace('{{id}}', central.address)
-        // .replace('{{status}}', central.status);
-
-        // // update central container
-        // centralContainer.innerHTML = tpl;
-
         return this;
     }
 
@@ -173,24 +178,11 @@ export class PeripheralBle {
         // do we have a status?
         if(JSON.stringify(data) === '{}') {
             // no peripheral status
-            console.log('nope');
-            console.log(data);
+            console.log('No peripheral status');
             return;
         }
 
         // peripheral status
         console.log(data);
-
-        // // get the template
-        // var tpl = statusTpl.innerHTML;
-
-        // tpl = tpl
-        // .replace('{{mode}}', data.mode)
-        // .replace('{{timeout}}', data.timeout)
-        // .replace('{{tx}}', data.txPowerLevel)
-        // .replace('{{connectable}}', data.isConnectable)
-        // .replace('{{status}}', data.status);
-
-        // peripheralInfo.innerHTML = tpl;
     }
 }

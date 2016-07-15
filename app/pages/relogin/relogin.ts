@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { Events, NavController } from 'ionic-angular';
 
 /*
   Generated class for the ReloginPage page.
@@ -8,14 +8,17 @@ import { NavController } from 'ionic-angular';
   Ionic pages and navigation.
 */
 @Component({
-  templateUrl: 'build/pages/relogin/relogin.html',
+  templateUrl: 'build/pages/relogin/relogin.html'
 })
 export class ReloginPage {
     relogin = {
         password: <string> null
     }
 
-    constructor(private nav: NavController) {}
+    constructor(
+        private events: Events,
+        private nav: NavController
+    ) {}
 
     changeUser() {}
 

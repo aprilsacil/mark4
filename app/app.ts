@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Platform, ionicBootstrap } from 'ionic-angular';
+import { Events, Platform, ionicBootstrap } from 'ionic-angular';
 import { StatusBar } from 'ionic-native';
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
@@ -13,24 +13,51 @@ import { PeripheralBle } from './providers/bluetooth/peripheral-ble';
     providers: [CentralBle, PeripheralBle]
 })
 export class MyApp {
-    private peripherals:any;
-    private central:any;
     private rootPage:any;
 
     constructor(
         private centralBle: CentralBle,
+        private events: Events,
         private peripheralBle: PeripheralBle,
         private platform:Platform
     ) {
-        this.rootPage = BuyerSignupPage;
+        this.rootPage = ReloginPage;
 
         platform.ready().then(() => {
             // Okay, so the platform is ready and our plugins are available.
             // Here you can do any higher level native things you might need.
             StatusBar.styleDefault();
 
-            this.centralBle.init();
+            // trigger a buyer event
+            this.buyerEvents();
         });
+    }
+
+    /**
+     * Buyer event listeners
+     */
+    buyerEvents() {
+        var self = this;
+
+        // initialize this
+        self.centralBle.init();
+
+        this.events.subscribe('central:startScan', (eventData) => {
+            // start scanning
+        });
+
+        // write event
+        this.events.subscribe('central:write', (eventData) => {
+            console.log('writing...');
+            self.centralBle.write(eventData[0]);
+        });
+    }
+
+    /**
+     * Seller event listeners
+     */
+    sellerEvents() {
+
     }
 }
 

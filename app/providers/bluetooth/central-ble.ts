@@ -12,12 +12,12 @@ declare var BLECentral: any;
 @Injectable()
 export class CentralBle {
     private central: any;
-    private peripherals: any;
+    peripherals: any;
 
     init() {
         console.log('Starting central process.');
 
-        let self = this;
+        var self = this;
 
         // init the peripherals object
         self.peripherals = {};
@@ -35,14 +35,19 @@ export class CentralBle {
 
         // on subscribe notify
         self.central.onSubscribe((response) => {
+            console.log(response);
+
             // notification from server?
             if(response.status === 'subscribedResult') {
                 // get encoded data
-                var bytes  = bluetoothle.encodedStringToBytes(response.value);
+                // var bytes  = bluetoothle.encodedStringToBytes(response.value);
                 // get the string
-                var string = bluetoothle.bytesToString(bytes);
+                // var string = bluetoothle.bytesToString(bytes);
 
-                console.log('Notify: ' + string);
+                // console.log('Notify: ' + string);
+                var result = self.central.handleChunkNotify.call(self, response);
+
+                console.log('tada', result);
             }
         });
 
@@ -56,10 +61,12 @@ export class CentralBle {
      * Start scanning for devices
      */
     scan() {
-        let self = this;
+        var self = this;
+
+        console.log('scanning');
 
         // start scanning
-        this.central.scan((response) => {
+        self.central.scan((response) => {
             // peripheral result?
             if(response.status === 'scanResult') {
                 // maximum rssi?
@@ -88,13 +95,15 @@ export class CentralBle {
                 }, 10000);
             });
         }, 2000);
+
+        return this;
     }
 
     /**
      * Handle scan results
      */
     handleScan(peripheral) {
-        let self = this;
+        var self = this;
 
         peripheral.rssi = null;
 
@@ -149,7 +158,7 @@ export class CentralBle {
      * Connect to peripherals
      */
     connectToPeripherals(list) {
-        let self = this;
+        var self = this;
 
         // do we have peripherals?
         if(JSON.stringify(self.peripherals) === '{}') {
@@ -234,6 +243,84 @@ export class CentralBle {
         return;
     }
 
+    write(data) {
+        var self = this;
+
+        var message = data;
+
+        console.log(self.peripherals);
+
+        // prompt for message
+        // var message = prompt('Enter your message: ');
+
+        // get the address
+        // var address         = e.getAttribute('data-id');
+        // var address = self.peripherals[0].info.address;
+        // get the information
+        var information: any;
+
+        // look for that id
+        for(var i in self.peripherals) {
+            // matched the id?
+            // if(self.peripherals[i].info.address === address) {
+                // get the information
+                information = self.peripherals[i];
+
+                // break;
+            // }
+        }
+
+        // get the services
+        var services = information.device.services;
+        // look for our service
+        var service: any;
+
+        for(var i in services) {
+            var uuid = services[i].uuid;
+
+            if(uuid === '1000') {
+                service = services[i];
+            }
+        }
+
+        message = [
+            '12345678901234567890',
+            '12345678911234567891',
+            '12345678921234567892',
+            '12345678931234567893',
+            '12345678941234567894',
+            '12345678951234567895',
+            '12345678961234567896',
+            '12345678971234567897',
+            '12345678981234567898',
+            '12345678991234567899',
+            'abcdef',
+            'ghijklmnop'
+        ].join('');
+
+        // set request params
+        var param = {
+            'address'           : information.info.address,
+            'service'           : service.uuid,
+            'characteristic'    : service.characteristics[0].uuid,
+            'type'              : 'noResponse',
+            'value'             : message
+        };
+
+        // write to device
+        // central.write(param, function(response) {
+        //     log(response);
+        // }, function(response) {
+        //     log(response);
+        // });
+
+        self.central.writeByChunk(param, function(response) {
+            console.log('write', response);
+        }, function(response) {
+
+        });
+    }
+
     /**
      * Object length helper
      */
@@ -245,5 +332,25 @@ export class CentralBle {
         }
 
         return len;
+    }
+
+    /**
+     * Stops the ongoing scan
+     */
+    stopScan() {
+        var self = this;
+
+        self.central.stopScan((response) => {
+            console.log(response);
+            // // update peripheral list
+            // self.updatePeripheralList(self.peripherals);
+
+            // // connect to peripheral
+            // self.connectToPeripherals(self.peripherals);
+
+            // setTimeout(() => {
+            //     self.scan();
+            // }, 10000);
+        });
     }
 }

@@ -135,10 +135,12 @@
 
 <ion-footer class="scanner">
     <ion-toolbar cheers>
-        <ion-title>Scanning...</ion-title>
+        <ion-title *ngIf="scanning">Scanning...</ion-title>
+        <ion-title *ngIf="!scanning">Scan</ion-title>
         <ion-buttons end>
-            <button>
-                <ion-icon name="pause"></ion-icon>
+            <button (click)="toggleScan()">
+                <ion-icon name="play" *ngIf="!scanning"></ion-icon>
+                <ion-icon name="pause" *ngIf="scanning"></ion-icon>
             </button>
         </ion-buttons>
     </ion-toolbar>

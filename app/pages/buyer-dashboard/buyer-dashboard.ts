@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { Alert, Loading, NavController } from 'ionic-angular';
+import { Modal, ViewController } from 'ionic-angular';
 import { BuyerUpdateProfilePage } from '../buyer-update-profile/buyer-update-profile';
+import { BuyerLookingforModalPage } from '../buyer-lookingfor-modal/buyer-lookingfor-modal';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
 
 /*
@@ -79,5 +81,16 @@ export class BuyerDashboardPage {
 
         // render
         this.nav.present(confirm);
+    }
+
+    /**
+     * Show the Lookingfor modal
+     */
+    showLookingforModal() {
+        // initialize the modal
+        let modal = Modal.create(BuyerLookingforModalPage);
+
+        // render
+        this.nav.present(modal);
     }
 }

@@ -30,9 +30,11 @@ var BLECentral = function() {
 
         // set deubg
         setDebug : function(debug) {
-            this.log = typeof debug === 'boolean' ? debug : false;
+            var self = this;
 
-            return this;
+            self.log = typeof debug === 'boolean' ? debug : false;
+
+            return self;
         },
 
         // init bluetooth
@@ -513,16 +515,20 @@ var BLECentral = function() {
 
         // on subscribe
         onSubscribe : function(callback) {
-            this.subscribeFn = callback;
+            var self = this;
 
-            return this;
+            self.subscribeFn = callback;
+
+            return self;
         },
 
         // on debug
         onDebug : function(callback) {
-            this.debugFn = callback;
+            var self = this;
 
-            return this;
+            self.debugFn = callback;
+
+            return self;
         }
     };
 };
