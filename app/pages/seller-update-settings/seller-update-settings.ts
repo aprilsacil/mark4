@@ -18,10 +18,14 @@ PouchDB.plugin(require('pouchdb-authentication'));
 export class SellerUpdateSettingsPage {
     private db;
     seller = {
-        image: <string> null
+        image: <string> null,
+        fullname: <string> null,
+        store_name: <string> null,
+        name: <string> null
     };
 
     constructor(private nav: NavController) {
+        var self = this;
         // couch db integration
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
@@ -30,6 +34,35 @@ export class SellerUpdateSettingsPage {
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+
+        this.db.getSession(function (err, response) {
+            if (err) {
+                // network error
+                console.log(err);
+                return;
+            } else if (!response.userCtx.name) {
+               self.goToLoginPage();
+            } else {
+                self.db.getUser(response.userCtx.name, function (err, response) {
+                    if (err) {
+                        if (err.name === 'not_found') {
+                            // typo, or you don't have the privileges to see this user
+                        } else {
+                            // some other error
+                        }
+                    } else {
+                        self.seller = response;
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Redirects to the login page
+     */
+    goToLoginPage() {
+        this.nav.push(LoginPage);
     }
 
     /**
@@ -112,8 +145,6 @@ export class SellerUpdateSettingsPage {
                 buttons: ['OK']
             });
 
-
-
             // render in the template
             this.nav.present(alert);
             return;
@@ -126,16 +157,27 @@ export class SellerUpdateSettingsPage {
 
         // render in the template
         this.nav.present(loading);
+        var self = this;
 
-        // TODO: add the couch integration here
-        setTimeout(() => {
-            // dismiss the loader
-            loading.dismiss()
+        this.db.putUser(this.seller.name, {
+            metadata : { store_name: 'Store Name', fullname: this.seller.fullname }
+        }, function (err, response) {
+            if (err) {
+                if (err.name === 'not_found') {
+                  // typo, or you don't have the privileges to see this user
+                } else {
+                  // some other error
+                }
+            } else {
+                // if no error redirect to seller dashboard now
+                loading.dismiss()
                 .then(() => {
                     // show a toast
-                    this.showToast('You have successfully updated your profile.');
+                    self.showToast('You have successfully updated your profile.');
                 });
-        }, 3000);
+                
+            }
+        });
     }
 
     /**

@@ -48,6 +48,25 @@
                 item-right
                 *ngIf="storeName.touched && !storeName.valid"></ion-icon>
         </ion-item>
+        <ion-item>
+            <ion-label stacked>Your name</ion-label>
+            <ion-input
+                type="text"
+                placeholder="What's your store name?"
+                [(ngModel)]="seller.fullname"
+                required
+                ngControl="sellerName"
+                #sellerName="ngForm"></ion-input>
+
+            <ion-icon
+                name="checkmark-circle"
+                item-right
+                *ngIf="sellerName.touched && sellerName.valid"></ion-icon>
+            <ion-icon
+                name="close-circle"
+                item-right
+                *ngIf="sellerName.touched && !sellerName.valid"></ion-icon>
+        </ion-item>
     </form>
 </ion-content>
 <ion-footer>
