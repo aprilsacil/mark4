@@ -30,7 +30,7 @@ export class MyApp {
 
             // trigger a buyer event
             // this.sellerEvents();
-            this.peripheralBle.init();
+            // this.buyerEvents();
         });
     }
 
@@ -58,7 +58,8 @@ export class MyApp {
      * Buyer event listeners
      */
     buyerEvents() {
-
+        // initialize the peripheral ble
+        this.peripheralBle.init();
     }
 }
 
