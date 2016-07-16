@@ -4,6 +4,7 @@ import { Modal, ViewController } from 'ionic-angular';
 import { BuyerUpdateProfilePage } from '../buyer-update-profile/buyer-update-profile';
 import { BuyerLookingforModalPage } from '../buyer-lookingfor-modal/buyer-lookingfor-modal';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -16,12 +17,17 @@ PouchDB.plugin(require('pouchdb-authentication'));
 */
 @Component({
     templateUrl: 'build/pages/buyer-dashboard/buyer-dashboard.html',
+    providers: [LocalStorageProvider]
 })
 export class BuyerDashboardPage {
     private db;
-    associate = { username: <string> null, roles: <string> null  }
+    seller: Object = {};
+    associate = {
+        username: <string> null,
+        roles: <string> null
+    }
 
-    constructor(private nav: NavController) {
+    constructor(private localStorage: LocalStorageProvider, private nav: NavController) {
         // couch db integration
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
@@ -30,6 +36,10 @@ export class BuyerDashboardPage {
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+
+        this.localStorage.getFromLocal('user').then((data) => {
+            this.seller = JSON.parse(data);
+        });
     }
 
     /**
@@ -87,7 +97,7 @@ export class BuyerDashboardPage {
                                         } else {
                                             // if no error redirect to seller dashboard now
                                             loading.dismiss();
-                                            
+
                                             return self.nav.setRoot(SellerDashboardPage);
                                         }
                                     });

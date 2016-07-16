@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Alert, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
 import { LoginPage } from '../login/login';
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -25,7 +26,10 @@ export class BuyerUpdateProfilePage {
         company_name: <string> null
     };
 
-    constructor(private nav: NavController) {
+    constructor(
+        private localStorage: LocalStorageProvider,
+        private nav: NavController
+    ) {
         // couch db integration
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
@@ -35,27 +39,12 @@ export class BuyerUpdateProfilePage {
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
 
-        var self = this;
-        this.db.getSession(function (err, response) {
-            if (err) {
-                // network error
-                console.log(err);
-                return;
-            } else if (!response.userCtx.name) {
-               self.goToLoginPage();
-            } else {
-                self.db.getUser(response.userCtx.name, function (err, response) {
-                    if (err) {
-                        if (err.name === 'not_found') {
-                            // typo, or you don't have the privileges to see this user
-                        } else {
-                            // some other error
-                        }
-                    } else {
-                        self.user = response;
-                    }
-                });
-            }
+        this.localStorage.getFromLocal('user').then((data) => {
+            var user = JSON.parse(data);
+
+            // set some data
+            this.user.name = user.name;
+            this.user.fullname = user.fullname;
         });
     }
 
@@ -87,18 +76,23 @@ export class BuyerUpdateProfilePage {
                     // remove data of the user from the storage
                     // redirect to login page
                     setTimeout(() => {
-                        self.db.logout(function (err, response) {
+                        self.db.logout((err, response) => {
                             if (err) {
-                                let alert = Alert.create({
-                                    subTitle: 'Server Error'
+                                var alert = Alert.create({
+                                    title: 'Server Error',
+                                    buttons : ['OK']
                                 });
 
                                 // render in the template
                                 self.nav.present(alert);
                                 return;
-                            } else {
-                                self.nav.setRoot(LoginPage);
                             }
+
+                            // remove from the local storage
+                            self.localStorage.removeFromLocal('user');
+
+                            // set to login page
+                            self.nav.setRoot(LoginPage);
                         });
                     }, 1000);
                 }
@@ -160,7 +154,7 @@ export class BuyerUpdateProfilePage {
 
         var self = this;
         this.db.putUser(this.user.name, {
-            metadata : { 
+            metadata : {
                 fullname: this.user.fullname,
                 job_description: this.user.job_description,
                 company_name: this.user.company_name,
@@ -179,7 +173,7 @@ export class BuyerUpdateProfilePage {
                     // show a toast
                     self.showToast('You have successfully updated your profile.');
                 });
-                
+
             }
         });
     }

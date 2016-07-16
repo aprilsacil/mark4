@@ -3,6 +3,7 @@ import { Alert, Loading, NavController } from 'ionic-angular';
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -15,12 +16,17 @@ PouchDB.plugin(require('pouchdb-authentication'));
 */
 @Component({
   templateUrl: 'build/pages/login/login.html',
+  providers: [LocalStorageProvider]
 })
 export class LoginPage {
     private db;
-    login = { username: <string> null, password: <string> null };
 
-    constructor(private nav: NavController) {
+    login = {
+        username: <string> null,
+        password: <string> null
+    };
+
+    constructor(private nav: NavController, private localStorage: LocalStorageProvider) {
         var self = this;
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
@@ -29,35 +35,13 @@ export class LoginPage {
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
-
-        this.db.getSession(function (err, response) {
-            if (err) {
-                // network error
-                console.log(err);
-                return;
-            }
-
-            if (response.userCtx.name) {
-                // if seller redirect to seller dashboard
-                if(response.userCtx.roles[0] === 'seller') {
-                    return self.goToSellerDashboardPage();
-
-                }
-
-                // if buyer redirect to buyer dashboard
-                if(response.userCtx.roles[0] === 'buyer') {
-                    return self.goToBuyerDashboardPage();
-                }
-            }
-        });
-
     }
 
     /**
      * Redirects to the buyer dashboard
      */
     goToBuyerDashboardPage() {
-        this.nav.push(BuyerDashboardPage);
+        this.nav.setRoot(BuyerDashboardPage);
     }
 
     /**
@@ -71,7 +55,7 @@ export class LoginPage {
      * Redirects to the seller dashboard
      */
     goToSellerDashboardPage() {
-        this.nav.push(SellerDashboardPage);
+        this.nav.setRoot(SellerDashboardPage);
     }
 
     /**
@@ -79,8 +63,9 @@ export class LoginPage {
      */
     submitLogin(loginForm) {
         var self = this;
+
         // check if the form is not valid
-        /**if (!loginForm.valid) {
+        if (!loginForm.valid) {
             // prompt that something is wrong in the form
             let alert = Alert.create({
                 title: 'Ooops...',
@@ -91,8 +76,11 @@ export class LoginPage {
             // render in the template
             this.nav.present(alert);
             return;
-        }*/
+        }
 
+        // TODO: add a loader
+
+        // provide some ajax headers for authorization
         var ajaxOpts = {
             ajax: {
                 headers: {
@@ -101,31 +89,48 @@ export class LoginPage {
             }
         };
 
+        // login the user
+        this.db.login(this.login.username, this.login.password, ajaxOpts, (err, response) => {
+            console.log('login response', response);
 
-        this.db.login(this.login.username, this.login.password, ajaxOpts, function (err, response) {
+            var loginResponse = response;
+
             if(!err) {
-                // if seller redirect to seller dashboard
-                if(response.roles[0] === 'seller') {
-                    return self.goToSellerDashboardPage();
-                }
+                // get user details
+                this.db.getUser(loginResponse.name, (err, response) => {
+                    console.log('get user response', response);
 
-                // if buyer redirect to buyer dashboard
-                if(response.roles[0] === 'buyer') {
-                    return self.goToBuyerDashboardPage();
-                }
+                    // delete the password and salt
+                    delete response.password_scheme;
+                    delete response.salt
+
+                    // save user data to the local storage
+                    self.localStorage.setToLocal('user', JSON.stringify(response));
+                    self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
+
+                    // if seller redirect to seller dashboard
+                    if(response.roles[0] === 'seller') {
+                        return self.goToSellerDashboardPage();
+                    }
+
+                    // if buyer redirect to buyer dashboard
+                    if(response.roles[0] === 'buyer') {
+                        return self.goToBuyerDashboardPage();
+                    }
+                });
+
+                return;
             }
 
-            // prompt that something is wrong in the form
-            let alert = Alert.create({
-                subTitle: err.message
+            var alert = Alert.create({
+                title: 'Error!',
+                subTitle: err.message,
+                buttons: ['OK']
             });
 
             // render in the template
             self.nav.present(alert);
             return;
         });
-
-        // process the signup thing
-        // validate
     }
 }

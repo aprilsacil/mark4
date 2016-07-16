@@ -32,24 +32,6 @@ export class BuyerSignupPage {
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
-
-        this.db.getSession(function (err, response) {
-            if (err) {
-                // network error
-            }
-
-            if (response.userCtx.name) {
-                // if seller redirect to seller dashboard
-                if(response.userCtx.roles[0] == 'seller') {
-                    self.goToSellerDashboardPage();
-                }
-
-                // if buyer redirect to buyer dashboard
-                if(response.userCtx.roles[0] == 'buyer') {
-                    self.goToBuyerDashboardPage();
-                }
-            }
-        });
     }
 
     /**
@@ -85,10 +67,11 @@ export class BuyerSignupPage {
      */
     submitSignupForm(buyerSignupForm) {
         var self = this;
+
         // check if the form is not valid
         if (!buyerSignupForm.valid) {
             // prompt that something is wrong in the form
-            let alert = Alert.create({
+            var alert = Alert.create({
                 title: 'Ooops...',
                 subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
                 buttons: ['OK']
@@ -100,24 +83,43 @@ export class BuyerSignupPage {
         }
 
         this.db.signup(this.buyer.username, this.buyer.password, {
-            metadata : { fullname : this.buyer.name, roles : ['buyer'] }
-        }, function (err, response) {
-            console.log(err);
-          if(!err) {
-            self.goToLoginPage();
-          } else {
-            if(err.name === 'conflict') {
-                var message = 'username already exists';
+            metadata : {
+                fullname : this.buyer.name,
+                roles : ['buyer']
+            }
+        }, (err, response) => {
+            console.log('signup response: ', response);
+
+            if(!err) {
+                // no error, go to login page
+                // TODO: put a toast or something to tell the user that he/she is
+                // logged in.
+                self.goToLoginPage();
+                return;
             }
 
-            let alert = Alert.create({
-                subTitle: message
+            // there's an error, handle it
+
+            var message;
+
+            switch (err.name) {
+                case 'conflict':
+                    message = 'Username already exists.';
+                    break;
+                case 'forbidden':
+                    message = 'Something went wrong. Please try again later.';
+                    break;
+            }
+
+            var alert = Alert.create({
+                title: 'Error!',
+                subTitle: message,
+                buttons: ['OK']
             });
 
             // render in the template
             self.nav.present(alert);
             return;
-          }
         });
     }
 }
