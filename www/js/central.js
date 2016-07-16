@@ -16,6 +16,9 @@ var BLECentral = function() {
             'callbackType'      : bluetoothle.CALLBACK_TYPE_ALL_MATCHES
         },
 
+        // write buffer
+        writeBuffer : {},
+
         // scan in progress?
         scanInProgress : false,
 
@@ -41,8 +44,6 @@ var BLECentral = function() {
 
             // bluetooth enabled?
             bluetoothle.isEnabled(function(response) {
-                console.log(response);
-
                 // not enabled?
                 if(!response.isEnabled) {
                     // initialize it
@@ -325,7 +326,13 @@ var BLECentral = function() {
 
                 // initialize subscribe
                 this.initSubscribe(param, function(response) {
-                    this.debug(response);
+                    // subscribe result by chunk?
+                    // write chunk?
+                    if(response.status === 'subscribedResult'
+                    && response.value.indexOf('LQ') === 0) {
+                        // defer callback and handle write
+                        return this.handleChunkNotify.call(this, response);
+                    }
 
                     this.subscribeFn.call(this, response);
 
@@ -479,10 +486,8 @@ var BLECentral = function() {
             }, 80);
         },
 
-        // handle write chunk and defer write callback
+        // handle notify chunk and defer write callback
         handleChunkNotify : function(data) {
-            console.log(data);
-
             // decode string to bytes
             var decodedBytes    = bluetoothle.encodedStringToBytes(data.value);
             // decode bytes to string
@@ -524,7 +529,7 @@ var BLECentral = function() {
                 delete this.writeBuffer[writeId];
 
                 // invoke defered callback
-                return this.initPeripheralFn.call(this, data);
+                return this.subscribeFn.call(this, data);
             }
 
             // push data

@@ -29,14 +29,15 @@ export class MyApp {
             StatusBar.styleDefault();
 
             // trigger a buyer event
-            this.buyerEvents();
+            // this.sellerEvents();
+            this.peripheralBle.init();
         });
     }
 
     /**
-     * Buyer event listeners
+     * Seller event listeners
      */
-    buyerEvents() {
+    sellerEvents() {
         var self = this;
 
         // initialize this
@@ -54,9 +55,9 @@ export class MyApp {
     }
 
     /**
-     * Seller event listeners
+     * Buyer event listeners
      */
-    sellerEvents() {
+    buyerEvents() {
 
     }
 }
