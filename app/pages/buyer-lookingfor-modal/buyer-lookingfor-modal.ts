@@ -68,7 +68,7 @@ export class BuyerLookingforModalPage {
 
         // initialize the loader
         let loading = Loading.create({
-            content: 'Sending out your emote...'
+            content: 'Sending...'
         });
 
         // render in the template
@@ -85,7 +85,7 @@ export class BuyerLookingforModalPage {
                 // delay it for a second
                 setTimeout(() => {
                     // show a toast
-                    this.showToast('You have successfully sent out your emote.');
+                    this.showToast('Success!');
                 }, 400);
             });
         }, 3000);

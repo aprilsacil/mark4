@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Alert, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
 import { LoginPage } from '../login/login';
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -13,10 +14,12 @@ PouchDB.plugin(require('pouchdb-authentication'));
   Ionic pages and navigation.
 */
 @Component({
-  templateUrl: 'build/pages/seller-update-settings/seller-update-settings.html',
+    templateUrl: 'build/pages/seller-update-settings/seller-update-settings.html',
+    providers: [LocalStorageProvider]
 })
 export class SellerUpdateSettingsPage {
     private db;
+    private dbLocal;
     seller = {
         image: <string> null,
         fullname: <string> null,
@@ -24,37 +27,22 @@ export class SellerUpdateSettingsPage {
         name: <string> null
     };
 
-    constructor(private nav: NavController) {
+    constructor(
+        private localStorage: LocalStorageProvider,
+        private nav: NavController
+    ) {
         var self = this;
         // couch db integration
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
         // local integration
-        let local = new PouchDB('cheers');
+        this.dbLocal = new PouchDB('cheers');
 
         // this will sync locally
-        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+        this.db.sync(this.dbLocal, {live: true, retry: true}).on('error', console.log.bind(console));
 
-        this.db.getSession(function (err, response) {
-            if (err) {
-                // network error
-                console.log(err);
-                return;
-            } else if (!response.userCtx.name) {
-               self.goToLoginPage();
-            } else {
-                self.db.getUser(response.userCtx.name, function (err, response) {
-                    if (err) {
-                        if (err.name === 'not_found') {
-                            // typo, or you don't have the privileges to see this user
-                        } else {
-                            // some other error
-                        }
-                    } else {
-                        self.seller = response;
-                    }
-                });
-            }
+        this.localStorage.getFromLocal('user').then((data) => {
+            this.seller = JSON.parse(data);
         });
     }
 
@@ -89,15 +77,20 @@ export class SellerUpdateSettingsPage {
                         self.db.logout(function (err, response) {
                             if (err) {
                                 let alert = Alert.create({
-                                    subTitle: 'Server Error'
+                                    title: 'Server Error',
+                                    buttons: ['OK']
                                 });
 
                                 // render in the template
                                 self.nav.present(alert);
                                 return;
-                            } else {
-                                self.nav.setRoot(LoginPage);
                             }
+
+                            // remove from the local storage
+                            self.localStorage.removeFromLocal('user');
+
+                            // set to login page
+                            self.nav.setRoot(LoginPage);
                         });
                     }, 1000);
                 }
@@ -162,6 +155,8 @@ export class SellerUpdateSettingsPage {
         this.db.putUser(this.seller.name, {
             metadata : { store_name: 'Store Name', fullname: this.seller.fullname }
         }, function (err, response) {
+            console.log(err);
+            console.log(response);
             if (err) {
                 if (err.name === 'not_found') {
                   // typo, or you don't have the privileges to see this user
@@ -175,7 +170,7 @@ export class SellerUpdateSettingsPage {
                     // show a toast
                     self.showToast('You have successfully updated your profile.');
                 });
-                
+
             }
         });
     }

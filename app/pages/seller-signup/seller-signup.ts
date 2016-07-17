@@ -19,9 +19,9 @@ PouchDB.plugin(require('pouchdb-authentication'));
 })
 export class SellerSignupPage {
     private db;
-    seller = { 
-        username: <string> null, 
-        password: <string> null, 
+    seller = {
+        username: <string> null,
+        password: <string> null,
         name: <string> null,
         store_name: <string> null
     };
@@ -36,24 +36,6 @@ export class SellerSignupPage {
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
-
-        this.db.getSession(function (err, response) {
-            if (err) {
-                // network error
-            }
-
-            if (response.userCtx.name) {
-                // if seller redirect to seller dashboard
-                if(response.userCtx.roles[0] == 'seller') {
-                    self.goToSellerDashboardPage();
-                }
-
-                // if buyer redirect to buyer dashboard
-                if(response.userCtx.roles[0] == 'buyer') {
-                    self.goToBuyerDashboardPage();
-                }
-            }
-        });
     }
 
     /**
@@ -92,7 +74,7 @@ export class SellerSignupPage {
         // check if the form is not valid
         if (!sellerForm.valid) {
             // prompt that something is wrong in the form
-            let alert = Alert.create({
+            var alert = Alert.create({
                 title: 'Ooops...',
                 subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
                 buttons: ['OK']
@@ -103,30 +85,44 @@ export class SellerSignupPage {
             return;
         }
 
+        // TODO: add loader here
+
         this.db.signup(this.seller.username, this.seller.password, {
             metadata : {
                 store_name: this.seller.store_name,
-                fullname : this.seller.name, 
+                fullname : this.seller.name,
                 roles : ['seller'],
             }
-        }, function (err, response) {
+        }, (err, response) => {
             if(!err) {
+                // TODO: add a success thingy here
+
                 self.goToLoginPage();
-            } else {
-                if(err.name === 'conflict') {
-                    var message = 'username already exists';
-                } else {
-                    console.log(err);
-                }
-
-                let alert = Alert.create({
-                    subTitle: message
-                });
-
-                // render in the template
-                self.nav.present(alert);
                 return;
             }
+
+            // there's an error
+            var message;
+
+            // check what type of error has occurred
+            switch (err.name) {
+                case 'conflict':
+                    message = 'Username already exists.';
+                    break;
+                case 'forbidden':
+                    message = 'Something went wrong. Please try again later.';
+                    break;
+            }
+
+            var alert = Alert.create({
+                title: 'Error!',
+                subTitle: message,
+                buttons: ['OK']
+            });
+
+            // render in the template
+            self.nav.present(alert);
+            return;
         });
     }
 }

@@ -19,6 +19,7 @@ import { LocalStorageProvider } from '../../providers/storage/local-storage-prov
 export class SellerDashboardPage {
     user: Object = {};
     shoppers: Object = {};
+    scanning: boolean = false;
 
     constructor(
         private localStorage: LocalStorageProvider,
@@ -26,7 +27,7 @@ export class SellerDashboardPage {
         private view: ViewController
     ) {
         this.localStorage.getFromLocal('user').then((data) => {
-            this.user = data;
+            this.user = JSON.parse(data);
         });
     }
 

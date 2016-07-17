@@ -20,15 +20,18 @@ PouchDB.plugin(require('pouchdb-authentication'));
 })
 export class BuyerSignupPage {
     private db;
-    buyer = { username: <string> null, password: <string> null, name: <string> null };
+    buyer = {
+        username: <string> null,
+        password: <string> null,
+        name: <string> null
+    };
 
     constructor( private nav: NavController ) {
-        var self = this;
         // couch db integration
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
         // local integration
-        let local = new PouchDB('cheers');
+        var local = new PouchDB('cheers');
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));

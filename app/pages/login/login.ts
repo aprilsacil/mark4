@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Alert, Loading, NavController } from 'ionic-angular';
+import { Alert, Events, Loading, NavController } from 'ionic-angular';
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
@@ -26,7 +26,11 @@ export class LoginPage {
         password: <string> null
     };
 
-    constructor(private nav: NavController, private localStorage: LocalStorageProvider) {
+    constructor(
+        private events: Events,
+        private nav: NavController,
+        private localStorage: LocalStorageProvider
+    ) {
         var self = this;
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
@@ -104,17 +108,24 @@ export class LoginPage {
                     delete response.password_scheme;
                     delete response.salt
 
+                    var user = JSON.stringify(response);
+
                     // save user data to the local storage
-                    self.localStorage.setToLocal('user', JSON.stringify(response));
+                    self.localStorage.setToLocal('user', user);
                     self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
 
                     // if seller redirect to seller dashboard
                     if(response.roles[0] === 'seller') {
+                        // broadcast event
+                        this.events.publish('central:start', user);
+
                         return self.goToSellerDashboardPage();
                     }
 
                     // if buyer redirect to buyer dashboard
                     if(response.roles[0] === 'buyer') {
+                        this.events.publish('peripheral:start', user);
+
                         return self.goToBuyerDashboardPage();
                     }
                 });

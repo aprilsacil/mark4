@@ -21,7 +21,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 })
 export class BuyerDashboardPage {
     private db;
-    seller: Object = {};
+    buyer: Object = {};
     associate = {
         username: <string> null,
         roles: <string> null
@@ -32,13 +32,13 @@ export class BuyerDashboardPage {
         this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
 
         // local integration
-        let local = new PouchDB('cheers');
+        var local = new PouchDB('cheers');
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
 
         this.localStorage.getFromLocal('user').then((data) => {
-            this.seller = JSON.parse(data);
+            this.buyer = JSON.parse(data);
         });
     }
 
@@ -47,8 +47,10 @@ export class BuyerDashboardPage {
      * upgrading the user to be a seller.
      */
     acceptInvitation() {
+        var self = this;
+
         // initialize the Alert component
-        let alert = Alert.create({
+        var alert = Alert.create({
             title: 'Be an associate?',
             message: 'Are you sure you want to be an associate which means you\'ll become a seller?',
             buttons: [{
@@ -58,17 +60,15 @@ export class BuyerDashboardPage {
             {
                 text: 'Agree',
                 handler: data => {
-                    var self = this;
-
                     // show a loader and re-login the user showing the buyer dashboard
-                    let loading = Loading.create({
+                    var loading = Loading.create({
                         content: "Working on it..."
                     });
 
                     // show the loader
                     this.nav.present(loading);
 
-                    this.db.getSession(function (errSession, responseSession) {
+                    this.db.getSession((errSession, responseSession) => {
                         if (errSession) {
                             // network error
                         } else if (!responseSession.userCtx.name) {
@@ -76,7 +76,7 @@ export class BuyerDashboardPage {
                         } else {
                             // response.userCtx.name is the current user
                             // get user info
-                            self.db.getUser(responseSession.userCtx.name, function (errUser, responseUser){
+                            self.db.getUser(responseSession.userCtx.name, (errUser, responseUser) => {
                                 if (errUser) {
                                     if (errUser.name === 'not_found') {
                                       // typo, or you don't have the privileges to see this user
@@ -122,7 +122,7 @@ export class BuyerDashboardPage {
 
     rejectInvitation() {
         // show a confirmation alert
-        let confirm = Alert.create({
+        var confirm = Alert.create({
             title: 'Are you sure?',
             message: 'This will be gone forever if you remove this',
             buttons: [{

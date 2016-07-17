@@ -34,9 +34,9 @@
                 <img src="http://blogs-images.forbes.com/erikkain/files/2016/06/Screenshot-424-1200x675.png">
             </ion-avatar>
             <div class="info">
-                <h2 class="name">Winter's Coming</h2>
+                <h2 class="name">{{user.store_name}}</h2>
                 <p class="work">
-                    Jon Snow
+                    {{user.fullname}}
                 </p>
             </div>
         </ion-item>
@@ -135,10 +135,12 @@
 
 <ion-footer class="scanner">
     <ion-toolbar cheers>
-        <ion-title>Scanning...</ion-title>
+        <ion-title *ngIf="scanning">Scanning...</ion-title>
+        <ion-title *ngIf="!scanning">Press the button to start scanning</ion-title>
         <ion-buttons end>
             <button>
-                <ion-icon name="pause"></ion-icon>
+                <ion-icon name="pause" *ngIf="scanning"></ion-icon>
+                <ion-icon name="play" *ngIf="!scanning"></ion-icon>
             </button>
         </ion-buttons>
     </ion-toolbar>

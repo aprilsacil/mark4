@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Platform, ionicBootstrap } from 'ionic-angular';
+import { Events, Platform, ionicBootstrap } from 'ionic-angular';
 import { StatusBar } from 'ionic-native';
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
@@ -15,7 +15,11 @@ export class MyApp {
 
     private rootPage:any;
 
-    constructor(private localStorage: LocalStorageProvider, private platform:Platform) {
+    constructor(
+        private events: Events,
+        private localStorage: LocalStorageProvider,
+        private platform:Platform
+    ) {
         this.rootPage = BuyerSignupPage;
 
         platform.ready().then(() => {
@@ -24,10 +28,13 @@ export class MyApp {
             StatusBar.styleDefault();
         });
 
-        this.checkForLoggedInUsers();
+        this.authEvents();
     }
 
-    checkForLoggedInUsers() {
+    /**
+     * Listens for events like logout, login, and change of role.
+     */
+    authEvents() {
         // check if there are logged in users
         this.localStorage.getFromLocal('user').then((data) => {
             if (data) {
@@ -51,6 +58,17 @@ export class MyApp {
                     return;
                 }
             }
+        });
+
+        // register some event listeners here
+        // central
+        this.events.subscribe('central:start', (eventData) => {
+            // initialize the central ble events
+        });
+
+        // peripheral
+        this.events.subscribe('peripheral:start', (eventData) => {
+            // initialize the peripheral ble events
         });
     }
 }
