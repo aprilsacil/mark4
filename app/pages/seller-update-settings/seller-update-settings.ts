@@ -188,7 +188,7 @@ export class SellerUpdateSettingsPage {
             }
 
             // get user details
-            self.db.getUser(self.user.name, (err, response) => {
+            self.db.getUser(self.seller.name, (err, response) => {
                 console.log(response);
                 // delete the password and salt
                 delete response.password_scheme;
