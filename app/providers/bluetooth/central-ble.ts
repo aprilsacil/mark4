@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Events } from 'ionic-angular';
 
 declare var bluetoothle: any;
 declare var BLECentral: any;
@@ -13,6 +14,8 @@ declare var BLECentral: any;
 export class CentralBle {
     private central: any;
     peripherals: any;
+
+    constructor(private events: Events) {}
 
     init() {
         console.log('Starting central process.');
@@ -44,6 +47,9 @@ export class CentralBle {
 
                 console.log('Notify: ' + string);
                 console.log('Notify Bytes: ' + bytes);
+
+                // create an event
+                self.events.publish('central:buyersNearby', string);
             }
         });
 

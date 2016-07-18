@@ -46,7 +46,45 @@
 
     <!-- List of Nearby Shoppers -->
     <ion-list>
-        <button ion-item class="shopper" (click)="goToShopperDetails()">
+        <div *ngIf="shoppers.length">
+            <button ion-item class="shopper" *ngFor="let shopper of shoppers"
+            (click)="goToShopperDetails(shopper)">
+                <ion-avatar item-left>
+                    <img src="img/default_avatar.jpg" *ngIf="!shopper.image">
+                    <img [src]="shopper.image" *ngIf="shopper.image">
+                </ion-avatar>
+
+                <h2>{{shopper.fullname}}</h2>
+                <p class="work">
+                    <span class="job-description" *ngIf="shopper.job_description">
+                        {{shopper.job_description}}
+                    </span>
+                    <span *ngIf="shopper.job_description && shopper.company_name">@</span>
+                    <span class="company" *ngIf="shopper.company_name">
+                        {{shopper.company_name}}
+                    </span>
+                </p>
+                <p class="stats">
+                    <span class="level">
+                        <ion-icon name="star" bright></ion-icon> 0
+                    </span>
+                    <span class="went-by">
+                        <ion-icon name="refresh" cheers></ion-icon> 0
+                    </span>
+                    <span class="conversions">
+                        <ion-icon name="cash" secondary></ion-icon> 0%
+                    </span>
+                </p>
+                <p class="looking-for" *ngIf="shopper.looking_for">
+                    <span class="label">Looking for:</span>
+                    <span class="product">His Head</span>
+                </p>
+            </button>
+        </div>
+        <div *ngIf="!shoppers.length">
+            <ion-item class="item-plain">No shoppers nearby...</ion-item>
+        </div>
+        <!-- <button ion-item class="shopper" (click)="goToShopperDetails()">
             <ion-avatar item-left>
                 <img src="http://blog.siobhanwalsh.ca/assignment01/wp-content/uploads/2015/01/eddardstark.jpg">
             </ion-avatar>
@@ -130,7 +168,7 @@
                 <span class="product">Wine</span>,
                 <span class="product">Alcohol</span>
             </p>
-        </button>
+        </button> -->
     </ion-list>
 </ion-content>
 

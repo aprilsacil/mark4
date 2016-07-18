@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Modal, NavController } from 'ionic-angular';
+import { Modal, NavController, NavParams } from 'ionic-angular';
 import { SellerAwardModalPage } from '../seller-award-modal/seller-award-modal';
 
 /*
@@ -12,8 +12,14 @@ import { SellerAwardModalPage } from '../seller-award-modal/seller-award-modal';
   templateUrl: 'build/pages/seller-shopper-view/seller-shopper-view.html',
 })
 export class SellerShopperViewPage {
+    private shopper: Object = {};
 
-    constructor(private nav: NavController) {}
+    constructor(
+        private nav: NavController,
+        private params: NavParams
+    ) {
+        this.shopper = this.params.get('shopper');
+    }
 
     /**
      * Shows the award customer modal

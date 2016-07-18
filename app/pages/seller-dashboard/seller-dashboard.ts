@@ -18,7 +18,7 @@ import { LocalStorageProvider } from '../../providers/storage/local-storage-prov
 })
 export class SellerDashboardPage {
     user: Object = {};
-    shoppers: Object = {};
+    shoppers = [];
     scanning: boolean = false;
 
     constructor(
@@ -35,7 +35,34 @@ export class SellerDashboardPage {
         });
     }
 
-    getNearbyShopperDevices() {}
+    getNearbyShopperDevices() {
+        // initialize the event to listen
+        this.events.subscribe('central:buyersNearby', (eventData) => {
+            var buyer = JSON.parse(eventData[0]);
+
+            // check if the buyer already exists in the object
+            if (this.shoppers) {
+                var existing = this.shoppers.some((element) => {
+                    return (element.name === buyer.name) ? element : false;
+                });
+
+                // if it doesn't exists, push it
+                if (!existing) {
+                    this.shoppers.push(buyer);
+                }
+
+                // if it exists, update the current data
+                if (existing) {
+                    console.log(existing);
+                }
+            }
+
+            // no shoppers, just push it
+            if (!this.shoppers) {
+                this.shoppers.push(buyer);
+            }
+        });
+    }
 
     /**
      * Goes to the associates page
@@ -47,8 +74,8 @@ export class SellerDashboardPage {
     /**
      * Views the details of the shopper
      */
-    goToShopperDetails() {
-        this.nav.push(SellerShopperViewPage);
+    goToShopperDetails(shopper) {
+        this.nav.push(SellerShopperViewPage, { shopper : shopper });
     }
 
     /**
