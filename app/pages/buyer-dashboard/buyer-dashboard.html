@@ -47,9 +47,22 @@
 
     <!-- Dashboard Lists (Invites, Messages, and Sellers Nearby) -->
     <ion-list>
+        <div *ngIf="sellers.length">
+            <ion-item class="seller seller-nearby" *ngFor="let seller of sellers">
+                <ion-avatar item-left>
+                    <img src="img/default_avatar.jpg" *ngIf="!seller.image">
+                    <img [src]="seller.image" *ngIf="seller.image">
+                </ion-avatar>
+
+                <h2>{{seller.store_name}}</h2>
+                <p>{{seller.emote}}</p>
+            </ion-item>
+        </div>
+
         <!-- No buyers nearby -->
-        <ion-item class="item-plain">
-            It seems nobody is around you :(
+        <ion-item class="item-plain empty-dashboard" *ngIf="!sellers.length">
+            <ion-icon name="sad" bright></ion-icon>
+            It seems nobody is around you...
         </ion-item>
 
         <!-- Associate Invite -->
@@ -70,6 +83,7 @@
                 </button>
             </div>
         </ion-item>
+
         <!-- Award -->
         <ion-item class="seller award" style="display: none;">
             <ion-avatar item-left>
@@ -78,15 +92,6 @@
 
             <h2>Jaqen H'ghar</h2>
             <p>The man is selling some faces.</p>
-        </ion-item>
-        <!-- Seller -->
-        <ion-item class="seller seller-nearby" style="display: none;">
-            <ion-avatar item-left>
-                <img src="http://vignette2.wikia.nocookie.net/gameofthrones/images/3/3b/AManSeason5.jpg/revision/latest?cb=20150421020227">
-            </ion-avatar>
-
-            <h2>Jaqen H'ghar</h2>
-            <p>The man says thanks for buying his items.</p>
         </ion-item>
     </ion-list>
 </ion-content>

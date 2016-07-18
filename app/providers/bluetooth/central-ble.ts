@@ -14,11 +14,13 @@ declare var BLECentral: any;
 export class CentralBle {
     private central: any;
     peripherals: any;
+    private scanTimeout: any;
+    private stopScanTimeout: any;
 
     constructor(private events: Events) {}
 
     init() {
-        console.log('Starting central process.');
+        console.log('Central is ready...');
 
         var self = this;
 
@@ -83,7 +85,7 @@ export class CentralBle {
 
         });
 
-        setTimeout(() => {
+        this.scanTimeout = setTimeout(() => {
             // stop the scan
             self.central.stopScan((response) => {
                 // update peripheral list
@@ -92,7 +94,7 @@ export class CentralBle {
                 // connect to peripheral
                 self.connectToPeripherals(self.peripherals);
 
-                setTimeout(() => {
+                self.stopScanTimeout = setTimeout(() => {
                     self.scan();
                 }, 10000);
             });
@@ -250,8 +252,6 @@ export class CentralBle {
 
         var message = data;
 
-        console.log(self.peripherals);
-
         // prompt for message
         // var message = prompt('Enter your message: ');
 
@@ -272,6 +272,8 @@ export class CentralBle {
             // }
         }
 
+        console.log('device', information);
+
         // get the services
         var services = information.device.services;
         // look for our service
@@ -285,21 +287,6 @@ export class CentralBle {
             }
         }
 
-        message = [
-            '12345678901234567890',
-            '12345678911234567891',
-            '12345678921234567892',
-            '12345678931234567893',
-            '12345678941234567894',
-            '12345678951234567895',
-            '12345678961234567896',
-            '12345678971234567897',
-            '12345678981234567898',
-            '12345678991234567899',
-            'abcdef',
-            'ghijklmnop'
-        ].join('');
-
         // set request params
         var param = {
             'address'           : information.info.address,
@@ -308,13 +295,6 @@ export class CentralBle {
             'type'              : 'noResponse',
             'value'             : message
         };
-
-        // write to device
-        // central.write(param, function(response) {
-        //     log(response);
-        // }, function(response) {
-        //     log(response);
-        // });
 
         self.central.writeByChunk(param, function(response) {
             console.log('write', response);
@@ -339,20 +319,14 @@ export class CentralBle {
     /**
      * Stops the ongoing scan
      */
-    stopScan() {
+    stop() {
         var self = this;
+
+        clearTimeout(self.scanTimeout);
+        clearTimeout(self.stopScanTimeout);
 
         self.central.stopScan((response) => {
             console.log(response);
-            // // update peripheral list
-            // self.updatePeripheralList(self.peripherals);
-
-            // // connect to peripheral
-            // self.connectToPeripherals(self.peripherals);
-
-            // setTimeout(() => {
-            //     self.scan();
-            // }, 10000);
         });
     }
 }

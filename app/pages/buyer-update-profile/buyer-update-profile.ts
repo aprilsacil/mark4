@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { Alert, Loading, NavController, Toast } from 'ionic-angular';
+import { Alert, Events, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
 import { LoginPage } from '../login/login';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
@@ -27,6 +27,7 @@ export class BuyerUpdateProfilePage {
     };
 
     constructor(
+        private events: Events,
         private localStorage: LocalStorageProvider,
         private nav: NavController,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
@@ -48,6 +49,7 @@ export class BuyerUpdateProfilePage {
             this.user.fullname = user.fullname;
             this.user.job_description = user.job_description;
             this.user.company_name = user.company_name;
+            this.user.image = user.image;
         });
     }
 
@@ -76,6 +78,9 @@ export class BuyerUpdateProfilePage {
             {
                 text: 'Yes',
                 handler: data => {
+                    // unsubscribe events
+                    this.unsubscribeEvents();
+
                     // remove data of the user from the storage
                     // redirect to login page
                     setTimeout(() => {
@@ -149,6 +154,7 @@ export class BuyerUpdateProfilePage {
                 fullname: this.user.fullname,
                 job_description: this.user.job_description,
                 company_name: this.user.company_name,
+                image: this.user.image
             }
         }, function (err, response) {
             console.log(response);
@@ -159,8 +165,6 @@ export class BuyerUpdateProfilePage {
                 // determine the error
                 switch (err.name) {
                     case 'not_found':
-                        message = 'Something went wrong while processing your request. Please try again later.';
-                        break;
                     default:
                         message = 'Something went wrong while processing your request. Please try again later.';
                         break;
@@ -218,5 +222,16 @@ export class BuyerUpdateProfilePage {
 
         // render in the template
         this.nav.present(toast);
+    }
+
+    /**
+     * Unsubscribe to all peripheral events
+     */
+    unsubscribeEvents() {
+        // TODO: stop advertising
+        this.events.publish('peripheral:stop');
+
+        this.events.unsubscribe('peripheral:start', () => {});
+        this.events.unsubscribe('peripheral:emoteFound', () => {});
     }
 }

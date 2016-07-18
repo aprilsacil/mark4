@@ -82,7 +82,10 @@
             </button>
         </div>
         <div *ngIf="!shoppers.length">
-            <ion-item class="item-plain">No shoppers nearby...</ion-item>
+            <ion-item class="item-plain empty-dashboard">
+                <ion-icon name="sad" bright></ion-icon>
+                No shoppers nearby...
+            </ion-item>
         </div>
         <!-- <button ion-item class="shopper" (click)="goToShopperDetails()">
             <ion-avatar item-left>

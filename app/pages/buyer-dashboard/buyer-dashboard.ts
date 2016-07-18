@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { Alert, Loading, NavController } from 'ionic-angular';
+import { Alert, Events, Loading, NavController } from 'ionic-angular';
 import { Modal, ViewController } from 'ionic-angular';
 import { BuyerUpdateProfilePage } from '../buyer-update-profile/buyer-update-profile';
 import { BuyerLookingforModalPage } from '../buyer-lookingfor-modal/buyer-lookingfor-modal';
@@ -22,12 +22,14 @@ PouchDB.plugin(require('pouchdb-authentication'));
 export class BuyerDashboardPage {
     private db;
     user: Object = {};
+    sellers = [];
     associate = {
         username: <string> null,
         roles: <string> null
     }
 
     constructor(
+        private events: Events,
         private localStorage: LocalStorageProvider,
         private nav: NavController,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
@@ -43,6 +45,60 @@ export class BuyerDashboardPage {
 
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = JSON.parse(data);
+        });
+
+        // listens for buyers that sends out an emote
+        this.events.subscribe('peripheral:emoteFound', (eventData) => {
+            var seller = {
+                name: <string> null
+            };
+
+            console.log('ev', eventData);
+
+            // convert the encoded data to object
+            // split by ampersand
+            var encodedData = eventData[0].split('&');
+
+            // loop
+            encodedData.forEach((data) => {
+                // split by equal sign
+                data = data.split('=');
+
+                seller[data[0]] = decodeURIComponent(data[1] || '');
+            });
+
+            // check if the seller already exists in the object
+            if (this.sellers) {
+                var existing = this.sellers.some((element) => {
+                    return element.name === seller.name;
+                });
+
+                // if it doesn't exists, push it
+                if (!existing) {
+                    this.sellers.push(seller);
+                }
+
+                // if it exists, update the current data
+                if (existing) {
+                    var index;
+
+                    // get the index of the seller by looping all the sellers
+                    for (var s in this.sellers) {
+                        if (this.sellers[s].name == seller.name) {
+                            index = 0;
+                            break;
+                        }
+                    }
+
+                    // update
+                    this.sellers[index] = seller;
+                }
+            }
+
+            // no sellers, just push it
+            if (!this.sellers) {
+                this.sellers.push(seller);
+            }
         });
     }
 

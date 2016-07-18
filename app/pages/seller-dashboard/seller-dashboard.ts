@@ -53,7 +53,18 @@ export class SellerDashboardPage {
 
                 // if it exists, update the current data
                 if (existing) {
-                    console.log(existing);
+                    var index;
+
+                    // get the index of the shopper by looping all the shoppers
+                    for (var s in this.shoppers) {
+                        if (this.shoppers[s].name == buyer.name) {
+                            index = 0;
+                            break;
+                        }
+                    }
+
+                    // update
+                    this.shoppers[index] = buyer;
                 }
             }
 
@@ -109,7 +120,7 @@ export class SellerDashboardPage {
             this.scanning = false;
 
             // stop the scan
-            // this.centralBle.stopScan();
+            this.events.publish('central:stopScan');
             return;
         }
 

@@ -83,7 +83,13 @@ export class LoginPage {
             return;
         }
 
-        // TODO: add a loader
+        // show a loader
+        var loading = Loading.create({
+            content: 'Logging in...'
+        });
+
+        // render in the template
+        this.nav.present(loading);
 
         // provide some ajax headers for authorization
         var ajaxOpts = {
@@ -117,31 +123,58 @@ export class LoginPage {
 
                     // if seller redirect to seller dashboard
                     if(response.roles[0] === 'seller') {
-                        // broadcast event
+                        // broadcast event to start some event listeners
                         this.events.publish('central:start', user);
 
-                        return self.goToSellerDashboardPage();
+                        // remove loader and set the root page
+                        loading.dismiss().then(() => {
+                            return self.goToSellerDashboardPage();
+                        });
                     }
 
                     // if buyer redirect to buyer dashboard
                     if(response.roles[0] === 'buyer') {
+                        // broadcast event to start some event listeners
                         this.events.publish('peripheral:start', user);
 
-                        return self.goToBuyerDashboardPage();
+                        // remove loader and set the root page
+                        loading.dismiss().then(() => {
+                            return self.goToBuyerDashboardPage();
+                        });
                     }
                 });
 
                 return;
             }
 
-            var alert = Alert.create({
-                title: 'Error!',
-                subTitle: err.message,
-                buttons: ['OK']
+            // remove the loader
+            loading.dismiss().then(() => {
+                var message;
+
+                // check the error message
+                switch (err.message) {
+                    case 'ETIMEDOUT':
+                        message = 'Can\'t connect to the server. Please try again.';
+                        break;
+                    default:
+                        message = err.message;
+                        break;
+                }
+
+                // show an alert
+                setTimeout(() => {
+                    var alert = Alert.create({
+                        title: 'Error!',
+                        subTitle: message,
+                        buttons: ['OK']
+                    });
+
+                    // render in the template
+                    self.nav.present(alert);
+                }, 300);
             });
 
-            // render in the template
-            self.nav.present(alert);
+
             return;
         });
     }

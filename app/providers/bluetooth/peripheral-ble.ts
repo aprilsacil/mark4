@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Events } from 'ionic-angular';
 
 declare var bluetoothle: any;
 declare var BLEPeripheral: any;
@@ -11,8 +12,11 @@ declare var BLEPeripheral: any;
 */
 @Injectable()
 export class PeripheralBle {
+    private advertising: any;
     private central: any;
     private peripheral: any;
+
+    constructor(private events: Events) {}
 
     init(data) {
         console.log('Starting peripheral process.');
@@ -24,7 +28,7 @@ export class PeripheralBle {
         this.peripheral.setDebug(true);
 
         // init advertise
-        var advertise = setInterval(() => {
+        this.advertising = setInterval(() => {
             this.advertise();
         }, 5000);
 
@@ -50,13 +54,15 @@ export class PeripheralBle {
                 this.updateCentralList(this.central);
 
                 // stop advertising this device
-                clearInterval(advertise);
+                clearInterval(this.advertising);
 
                 return;
             }
 
             // write request?
             if(response.status === 'writeRequested') {
+                console.log('write requested', response);
+
                 // get encoded data
                 var bytes  = bluetoothle.encodedStringToBytes(response.value);
                 // get the string
@@ -64,6 +70,9 @@ export class PeripheralBle {
 
                 console.log('Write: ' + string);
                 console.log('Write Bytes: ' + bytes);
+
+                // trigger an event
+                this.events.publish('peripheral:emoteFound', string);
             }
 
             // subscription?
@@ -89,10 +98,10 @@ export class PeripheralBle {
                 this.updatePeripheralStatus({});
 
                 // restart interval
-                clearInterval(advertise);
+                clearInterval(this.advertising);
 
                 // start interval
-                advertise = setInterval(() => {
+                this.advertising = setInterval(() => {
                     this.advertise();
                 }, 10000);
 
@@ -169,5 +178,9 @@ export class PeripheralBle {
 
         // peripheral status
         console.log(data);
+    }
+
+    stop() {
+        clearInterval(this.advertising);
     }
 }

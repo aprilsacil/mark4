@@ -48,6 +48,8 @@ export class MyApp {
 
                 // set the page based on the given role
                 if (role == 'buyer') {
+                    delete user.image;
+
                     // start the peripheral device events
                     this.buyerEvents(user);
 
@@ -96,9 +98,15 @@ export class MyApp {
             self.centralBle.scan();
         });
 
+        this.events.subscribe('central:stopScan', (eventData) => {
+            console.log('event: stop scan');
+            // stop scanning
+            self.centralBle.stop();
+        });
+
         // write event
         this.events.subscribe('central:write', (eventData) => {
-            console.log('event: write');
+            console.log('event: write', eventData[0]);
             self.centralBle.write(eventData[0]);
         });
     }
@@ -109,8 +117,13 @@ export class MyApp {
     buyerEvents(user) {
         // initialize the peripheral ble
         this.peripheralBle.init(user);
+
+        this.events.subscribe('peripheral:stop', (eventData) => {
+            this.peripheralBle.stop();
+        })
     }
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.101:5984/'})])
+    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.101:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://127.0.0.1/api/'})])

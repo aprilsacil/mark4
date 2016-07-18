@@ -20,4 +20,15 @@
             }
         }
     }
+
+    .empty-dashboard {
+        text-align: center;
+
+        .item-icon {
+            display: block;
+            font-size: 5rem;
+            margin: auto auto 10px;
+            text-align: center;
+        }
+    }
 }
