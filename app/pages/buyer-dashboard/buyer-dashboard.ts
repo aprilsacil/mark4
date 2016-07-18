@@ -50,7 +50,7 @@ export class BuyerDashboardPage {
         // listens for buyers that sends out an emote
         this.events.subscribe('peripheral:emoteFound', (eventData) => {
             var seller = {
-                name: <string> null
+                _id: <string> null
             };
 
             console.log('ev', eventData);
@@ -70,7 +70,7 @@ export class BuyerDashboardPage {
             // check if the seller already exists in the object
             if (this.sellers) {
                 var existing = this.sellers.some((element) => {
-                    return element.name === seller.name;
+                    return element._id === seller._id;
                 });
 
                 // if it doesn't exists, push it
@@ -84,7 +84,7 @@ export class BuyerDashboardPage {
 
                     // get the index of the seller by looping all the sellers
                     for (var s in this.sellers) {
-                        if (this.sellers[s].name == seller.name) {
+                        if (this.sellers[s]._id == seller._id) {
                             index = 0;
                             break;
                         }

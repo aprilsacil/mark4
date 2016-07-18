@@ -51,7 +51,10 @@ export class MyApp {
                     delete user.image;
 
                     // start the peripheral device events
-                    this.buyerEvents(user);
+                    this.buyerEvents();
+
+                    // set data
+                    this.events.publish('peripheral:setData', user);
 
                     // set the dashboard
                     this.rootPage = BuyerDashboardPage;
@@ -79,7 +82,7 @@ export class MyApp {
         // peripheral
         this.events.subscribe('peripheral:start', (eventData) => {
             // initialize the peripheral ble events
-            this.buyerEvents(eventData[0]);
+            this.buyerEvents();
         });
     }
 
@@ -114,9 +117,9 @@ export class MyApp {
     /**
      * Buyer event listeners
      */
-    buyerEvents(user) {
+    buyerEvents() {
         // initialize the peripheral ble
-        this.peripheralBle.init(user);
+        this.peripheralBle.init();
 
         this.events.subscribe('peripheral:stop', (eventData) => {
             this.peripheralBle.stop();

@@ -135,7 +135,9 @@ export class LoginPage {
                     // if buyer redirect to buyer dashboard
                     if(response.roles[0] === 'buyer') {
                         // broadcast event to start some event listeners
-                        this.events.publish('peripheral:start', user);
+                        this.events.publish('peripheral:start');
+
+                        this.events.publish('peripheral:setData', user);
 
                         // remove loader and set the root page
                         loading.dismiss().then(() => {

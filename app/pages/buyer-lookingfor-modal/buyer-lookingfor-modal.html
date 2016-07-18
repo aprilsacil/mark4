@@ -6,6 +6,10 @@
 -->
 <ion-header>
     <ion-navbar cheers>
+        <ion-avatar class="avatar">
+            <img src="img/default_avatar.jpg" *ngIf="!user.image">
+            <img [src]="user.image" *ngIf="user.image">
+        </ion-avatar>
         <ion-buttons end>
             <button (click)="dismiss()">
                 <!-- <span primary showWhen="ios">Cancel</span>
@@ -17,15 +21,14 @@
 </ion-header>
 
 <ion-content>
-    <form #emoteForm="ngForm" padding-top>
+    <form #lookingForForm="ngForm" padding-top>
         <ion-item>
-            <ion-input
+            <ion-textarea
                 placeholder="What are you looking for?"
-                [(ngModel)]="emote.message"
+                [(ngModel)]="lookingFor.product"
                 required
-                ngControl="emoteMessage"
-                #emoteMessage="ngForm"
-                (input)="characterCounter($event.target.value)"></ion-input>
+                ngControl="product"
+                #product="ngForm"></ion-textarea>
         </ion-item>
     </form>
 </ion-content>
@@ -34,8 +37,8 @@
     <ion-toolbar cheers>
         <ion-buttons end>
             <button light outline
-                [disabled]="!emoteForm.valid || remainingCharacters < 0"
-                (click)="submitEmote(emoteForm)">
+                [disabled]="!lookingForForm.valid"
+                (click)="submitLookingFor(lookingForForm)">
                 Post
             </button>
         </ion-buttons>

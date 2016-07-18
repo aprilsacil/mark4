@@ -43,7 +43,7 @@ export class SellerDashboardPage {
             // check if the buyer already exists in the object
             if (this.shoppers) {
                 var existing = this.shoppers.some((element) => {
-                    return (element.name === buyer.name) ? element : false;
+                    return (element._id === buyer._id) ? element : false;
                 });
 
                 // if it doesn't exists, push it
@@ -57,7 +57,7 @@ export class SellerDashboardPage {
 
                     // get the index of the shopper by looping all the shoppers
                     for (var s in this.shoppers) {
-                        if (this.shoppers[s].name == buyer.name) {
+                        if (this.shoppers[s]._id == buyer._id) {
                             index = 0;
                             break;
                         }

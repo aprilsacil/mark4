@@ -13,12 +13,26 @@ declare var BLEPeripheral: any;
 @Injectable()
 export class PeripheralBle {
     private advertising: any;
+    private advertiseData: any;
     private central: any;
     private peripheral: any;
 
-    constructor(private events: Events) {}
+    constructor(private events: Events) {
+        // listen for this event
+        this.events.subscribe('peripheral:setData', (eventData) => {
+            // remove user image
+            delete eventData[0].image;
+            delete eventData[0].derived_key;
+            delete eventData[0]._rev;
+            delete eventData[0].iterations;
+            delete eventData[0].roles;
+            delete eventData[0].type;
 
-    init(data) {
+            this.advertiseData = eventData[0];
+        });
+    }
+
+    init() {
         console.log('Starting peripheral process.');
 
         // init ble peripheral
@@ -81,7 +95,9 @@ export class PeripheralBle {
                 this.central.subscribe = response;
 
                 // once the central is now subscribed, let's send a notify
-                this.notify(JSON.stringify(data));
+                if (this.advertiseData) {
+                    this.notify(JSON.stringify(this.advertiseData));
+                }
 
                 console.log(this.central.address + ' has been subscribed.');
             }

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { Alert, Loading, NavController, Toast, ViewController } from 'ionic-angular';
+import { Alert, Events, Loading, NavController, Toast, ViewController } from 'ionic-angular';
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 /*
   Generated class for the BuyerLookingforModalPage page.
@@ -8,25 +9,27 @@ import { Alert, Loading, NavController, Toast, ViewController } from 'ionic-angu
   Ionic pages and navigation.
 */
 @Component({
-  templateUrl: 'build/pages/buyer-lookingfor-modal/buyer-lookingfor-modal.html',
+    templateUrl: 'build/pages/buyer-lookingfor-modal/buyer-lookingfor-modal.html',
+    providers: [LocalStorageProvider]
 })
 export class BuyerLookingforModalPage {
-	maxCharacterLimit = 140;
-    remainingCharacters = 140;
-    emote = {};
+    lookingFor = {
+        product: <string> null
+    };
+
+    user = {};
 
 	constructor(
+        private events: Events,
+        private localStorage: LocalStorageProvider,
 		private nav: NavController,
 		private view: ViewController
-	) {}
+	) {
+        this.localStorage.getFromLocal('user').then((data) => {
+            var user = JSON.parse(data);
 
-	characterCounter(value) {
-        if (!value || value.length === 0 ) {
-            this.remainingCharacters = this.maxCharacterLimit;
-        }
-
-        // compute
-        this.remainingCharacters = this.maxCharacterLimit - value.length;
+            this.user = user;
+        });
     }
 
     /**
@@ -50,10 +53,12 @@ export class BuyerLookingforModalPage {
     }
 
     /**
-     * Sends out the emote to nearby sellers.
+     * Sends out the looking for to nearby sellers.
      */
-    submitEmote(emoteForm) {
-        if (!emoteForm.valid) {
+    submitLookingFor(lookingForForm) {
+        var peripheralData: any;
+
+        if (!lookingForForm.valid) {
             // prompt that something is wrong in the form
             let alert = Alert.create({
                 title: 'Ooops...',
@@ -74,6 +79,15 @@ export class BuyerLookingforModalPage {
         // render in the template
         this.nav.present(loading);
 
+        // prepare the data
+        peripheralData = this.user;
+
+        // set new data
+        peripheralData.looking_for = this.lookingFor.product;
+
+        // set data to be sent via ble
+        this.events.publish('peripheral:setData', peripheralData);
+
         // TODO: add thingy here
         setTimeout(() => {
             // dismiss the loader
@@ -86,7 +100,7 @@ export class BuyerLookingforModalPage {
                 setTimeout(() => {
                     // show a toast
                     this.showToast('Success!');
-                }, 400);
+                }, 600);
             });
         }, 3000);
     }
