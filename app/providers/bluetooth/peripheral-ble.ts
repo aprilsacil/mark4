@@ -14,7 +14,7 @@ export class PeripheralBle {
     private central: any;
     private peripheral: any;
 
-    init() {
+    init(data) {
         console.log('Starting peripheral process.');
 
         // init ble peripheral
@@ -72,7 +72,7 @@ export class PeripheralBle {
                 this.central.subscribe = response;
 
                 // once the central is now subscribed, let's send a notify
-                this.notify('messssssaggegeeeeeee');
+                this.notify(JSON.stringify(data));
 
                 console.log(this.central.address + ' has been subscribed.');
             }

@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Alert, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
 import { LoginPage } from '../login/login';
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -18,18 +19,43 @@ PouchDB.plugin(require('pouchdb-authentication'));
 export class BuyerUpdateProfilePage {
     private db;
     user = {
-        image: <string> null
+        image: <string> null,
+        name: <string> null,
+        fullname: <string> null,
+        job_description: <string> null,
+        company_name: <string> null
     };
 
-    constructor(private nav: NavController) {
+    constructor(
+        private localStorage: LocalStorageProvider,
+        private nav: NavController,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+    ) {
         // couch db integration
-        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
         let local = new PouchDB('cheers');
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+
+        this.localStorage.getFromLocal('user').then((data) => {
+            var user = JSON.parse(data);
+
+            // set some data
+            this.user.name = user.name;
+            this.user.fullname = user.fullname;
+            this.user.job_description = user.job_description;
+            this.user.company_name = user.company_name;
+        });
+    }
+
+    /**
+     * Redirects to the login page
+     */
+    goToLoginPage() {
+        this.nav.push(LoginPage);
     }
 
     /**
@@ -53,20 +79,11 @@ export class BuyerUpdateProfilePage {
                     // remove data of the user from the storage
                     // redirect to login page
                     setTimeout(() => {
-                        self.db.logout(function (err, response) {
-                            err = true;
-                            if (err) {
-                                let alert = Alert.create({
-                                    subTitle: 'Server Error'
-                                });
+                        // remove from the local storage
+                        self.localStorage.removeFromLocal('user');
 
-                                // render in the template
-                                self.nav.present(alert);
-                                return;
-                            } else {
-                                self.nav.setRoot(LoginPage);
-                            }
-                        });
+                        // set to login page
+                        self.nav.setRoot(LoginPage);
                     }, 1000);
                 }
             }]
@@ -104,6 +121,8 @@ export class BuyerUpdateProfilePage {
      * Saves the provided data in the form.
      */
     saveProfileDetails(updateProfileForm) {
+        var self = this;
+
         if (!updateProfileForm.valid) {
             // prompt that something is wrong in the form
             let alert = Alert.create({
@@ -125,15 +144,67 @@ export class BuyerUpdateProfilePage {
         // render in the template
         this.nav.present(loading);
 
-        // TODO: add the couch integration here
-        setTimeout(() => {
-            // dismiss the loader
-            loading.dismiss()
+        this.db.putUser(this.user.name, {
+            metadata : {
+                fullname: this.user.fullname,
+                job_description: this.user.job_description,
+                company_name: this.user.company_name,
+            }
+        }, function (err, response) {
+            console.log(response);
+
+            if (err) {
+                var message;
+
+                // determine the error
+                switch (err.name) {
+                    case 'not_found':
+                        message = 'Something went wrong while processing your request. Please try again later.';
+                        break;
+                    default:
+                        message = 'Something went wrong while processing your request. Please try again later.';
+                        break;
+                }
+
+                // render the error
+                loading.dismiss().then(() => {
+                    var alert = Alert.create({
+                        title: 'Ooops...',
+                        subTitle: message,
+                        buttons: ['OK']
+                    });
+
+                    // render in the template
+                    self.nav.present(alert);
+                    return;
+                });
+
+                return;
+            }
+
+            // get user details
+            self.db.getUser(self.user.name, (err, response) => {
+                console.log(response);
+                // delete the password and salt
+                delete response.password_scheme;
+                delete response.salt
+
+                var user = JSON.stringify(response);
+
+                // update user data to the local storage
+                self.localStorage.setToLocal('user', user);
+
+                // TODO: broadcast that we have update the user details
+
+
+                // if no error remove the preloader now
+                loading.dismiss()
                 .then(() => {
                     // show a toast
-                    this.showToast('You have successfully updated your profile.');
+                    self.showToast('You have successfully updated your profile.');
                 });
-        }, 3000);
+            });
+        });
     }
 
     /**

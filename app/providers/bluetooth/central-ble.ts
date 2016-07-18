@@ -48,9 +48,9 @@ export class CentralBle {
         });
 
         // start scanning for peripherals
-        setTimeout(() => {
-            self.scan();
-        }, 2000);
+        // setTimeout(() => {
+        //     self.scan();
+        // }, 2000);
     }
 
     /**

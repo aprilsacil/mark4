@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Alert, Loading, NavController } from 'ionic-angular';
 import { LoginPage } from '../login/login';
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
+import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
+import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -17,34 +19,26 @@ PouchDB.plugin(require('pouchdb-authentication'));
 })
 export class SellerSignupPage {
     private db;
-    seller = { 
-        username: <string> null, 
-        password: <string> null, 
+    seller = {
+        username: <string> null,
+        password: <string> null,
         name: <string> null,
         store_name: <string> null
     };
 
-    constructor(private nav: NavController) {
+    constructor(
+        private nav: NavController,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+    ) {
+        var self = this;
         // couch db integration
-        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
         let local = new PouchDB('cheers');
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
-
-        this.db.getSession(function (err, response) {
-            console.log(err);
-            console.log(response);
-            if (err) {
-            // network error
-            } else if (!response.userCtx.name) {
-            // nobody's logged in
-            } else {
-            // response.userCtx.name is the current user
-            }
-        });
     }
 
     /**
@@ -62,6 +56,20 @@ export class SellerSignupPage {
     }
 
     /**
+     * Redirects to the seller dashboard
+     */
+    goToSellerDashboardPage() {
+        this.nav.push(SellerDashboardPage);
+    }
+
+    /**
+     * Redirects to the buyer dashboard
+     */
+    goToBuyerDashboardPage() {
+        this.nav.push(BuyerDashboardPage);
+    }
+
+    /**
      * Validates and submits the data of the seller.
      */
     submitSellerForm(sellerForm) {
@@ -69,7 +77,7 @@ export class SellerSignupPage {
         // check if the form is not valid
         if (!sellerForm.valid) {
             // prompt that something is wrong in the form
-            let alert = Alert.create({
+            var alert = Alert.create({
                 title: 'Ooops...',
                 subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
                 buttons: ['OK']
@@ -80,30 +88,45 @@ export class SellerSignupPage {
             return;
         }
 
+        // TODO: add loader here
+
         this.db.signup(this.seller.username, this.seller.password, {
             metadata : {
                 store_name: this.seller.store_name,
-                fullname : this.seller.name, 
+                fullname : this.seller.name,
+                level: 0,
                 roles : ['seller'],
             }
-        }, function (err, response) {
+        }, (err, response) => {
             if(!err) {
+                // TODO: add a success thingy here
+
                 self.goToLoginPage();
-            } else {
-                if(err.name === 'conflict') {
-                    var message = 'username already exists';
-                } else {
-                    console.log(err);
-                }
-
-                let alert = Alert.create({
-                    subTitle: message
-                });
-
-                // render in the template
-                self.nav.present(alert);
                 return;
             }
+
+            // there's an error
+            var message;
+
+            // check what type of error has occurred
+            switch (err.name) {
+                case 'conflict':
+                    message = 'Username already exists.';
+                    break;
+                case 'forbidden':
+                    message = 'Something went wrong. Please try again later.';
+                    break;
+            }
+
+            var alert = Alert.create({
+                title: 'Error!',
+                subTitle: message,
+                buttons: ['OK']
+            });
+
+            // render in the template
+            self.nav.present(alert);
+            return;
         });
     }
 }

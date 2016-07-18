@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
-import { Modal, NavController, ViewController } from 'ionic-angular';
+import { Component, Inject } from '@angular/core';
+import { Events, Modal, NavController, ViewController } from 'ionic-angular';
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
 import { SellerShopperViewPage } from '../seller-shopper-view/seller-shopper-view';
 import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-update-settings';
-import { CentralBle } from '../../providers/bluetooth/central-ble';
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 /*
   Generated class for the SellerDashboardPage page.
@@ -14,23 +14,28 @@ import { CentralBle } from '../../providers/bluetooth/central-ble';
 */
 @Component({
   templateUrl: 'build/pages/seller-dashboard/seller-dashboard.html',
-  providers: [CentralBle]
+  providers: [LocalStorageProvider]
 })
 export class SellerDashboardPage {
+    user: Object = {};
     shoppers: Object = {};
-    scanning: boolean;
+    scanning: boolean = false;
 
     constructor(
-        private centralBle: CentralBle,
+        private events: Events,
+        private localStorage: LocalStorageProvider,
         private nav: NavController,
-        private view: ViewController
+        private view: ViewController,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
         this.scanning = false;
+
+        this.localStorage.getFromLocal('user').then((data) => {
+            this.user = JSON.parse(data);
+        });
     }
 
-    getNearbyShopperDevices() {
-
-    }
+    getNearbyShopperDevices() {}
 
     /**
      * Goes to the associates page
@@ -64,6 +69,9 @@ export class SellerDashboardPage {
         this.nav.present(modal);
     }
 
+    /**
+     * Will start or stop the scanning of devices nearby the user.
+     */
     toggleScan() {
         var self = this;
 
@@ -82,7 +90,7 @@ export class SellerDashboardPage {
         this.scanning = true;
 
         // scan
-        // this.centralBle.scan();
+        this.events.publish('central:startScan');
 
         // get the list of shoppers detected
         this.getNearbyShopperDevices();

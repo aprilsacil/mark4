@@ -20,7 +20,7 @@ export class SellerShopperViewPage {
      */
     showAwardModal() {
         // initialize the modal
-        let modal = Modal.create(SellerAwardModalPage);
+        var modal = Modal.create(SellerAwardModalPage);
 
         // render it
         this.nav.present(modal);

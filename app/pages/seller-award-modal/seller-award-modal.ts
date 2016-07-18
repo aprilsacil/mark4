@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Alert, Loading, NavController, Toast, ViewController } from 'ionic-angular';
 
 /*

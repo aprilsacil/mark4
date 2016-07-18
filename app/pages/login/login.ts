@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
-import { Alert, Loading, NavController } from 'ionic-angular';
+import { Component, Inject } from '@angular/core';
+import { Alert, Events, Loading, NavController } from 'ionic-angular';
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
+import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -14,13 +16,24 @@ PouchDB.plugin(require('pouchdb-authentication'));
 */
 @Component({
   templateUrl: 'build/pages/login/login.html',
+  providers: [LocalStorageProvider]
 })
 export class LoginPage {
     private db;
-    login = { username: <string> null, password: <string> null };
 
-    constructor(private nav: NavController) {
-        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+    login = {
+        username: <string> null,
+        password: <string> null
+    };
+
+    constructor(
+        private events: Events,
+        private nav: NavController,
+        private localStorage: LocalStorageProvider,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+    ) {
+        var self = this;
+        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
         let local = new PouchDB('cheers');
@@ -33,7 +46,7 @@ export class LoginPage {
      * Redirects to the buyer dashboard
      */
     goToBuyerDashboardPage() {
-        this.nav.push(BuyerDashboardPage);
+        this.nav.setRoot(BuyerDashboardPage);
     }
 
     /**
@@ -44,12 +57,20 @@ export class LoginPage {
     }
 
     /**
+     * Redirects to the seller dashboard
+     */
+    goToSellerDashboardPage() {
+        this.nav.setRoot(SellerDashboardPage);
+    }
+
+    /**
      * Validates and submits the buyer data.
      */
     submitLogin(loginForm) {
         var self = this;
+
         // check if the form is not valid
-        /**if (!loginForm.valid) {
+        if (!loginForm.valid) {
             // prompt that something is wrong in the form
             let alert = Alert.create({
                 title: 'Ooops...',
@@ -60,25 +81,68 @@ export class LoginPage {
             // render in the template
             this.nav.present(alert);
             return;
-        }*/
+        }
 
-        this.db.login(this.login.username, this.login.password, function (err, response) {
+        // TODO: add a loader
+
+        // provide some ajax headers for authorization
+        var ajaxOpts = {
+            ajax: {
+                headers: {
+                    Authorization: 'Basic ' + window.btoa(this.login.username + ':' + this.login.password)
+                }
+            }
+        };
+
+        // login the user
+        this.db.login(this.login.username, this.login.password, ajaxOpts, (err, response) => {
+            console.log('login response', response);
+
+            var loginResponse = response;
+
             if(!err) {
-                self.goToBuyerDashboardPage();
-            } else {
-                console.log(err);
-                // prompt that something is wrong in the form
-                let alert = Alert.create({
-                    subTitle: err.message
+                // get user details
+                this.db.getUser(loginResponse.name, (err, response) => {
+                    console.log('get user response', response);
+
+                    // delete the password and salt
+                    delete response.password_scheme;
+                    delete response.salt
+
+                    var user = JSON.stringify(response);
+
+                    // save user data to the local storage
+                    self.localStorage.setToLocal('user', user);
+                    self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
+
+                    // if seller redirect to seller dashboard
+                    if(response.roles[0] === 'seller') {
+                        // broadcast event
+                        this.events.publish('central:start', user);
+
+                        return self.goToSellerDashboardPage();
+                    }
+
+                    // if buyer redirect to buyer dashboard
+                    if(response.roles[0] === 'buyer') {
+                        this.events.publish('peripheral:start', user);
+
+                        return self.goToBuyerDashboardPage();
+                    }
                 });
 
-                // render in the template
-                self.nav.present(alert);
                 return;
             }
-        });
 
-        // process the signup thing
-        // validate
+            var alert = Alert.create({
+                title: 'Error!',
+                subTitle: err.message,
+                buttons: ['OK']
+            });
+
+            // render in the template
+            self.nav.present(alert);
+            return;
+        });
     }
 }

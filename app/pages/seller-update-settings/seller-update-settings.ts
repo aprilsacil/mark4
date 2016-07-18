@@ -1,6 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Alert, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
+import { LoginPage } from '../login/login';
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
+var PouchDB = require('pouchdb');
+PouchDB.plugin(require('pouchdb-authentication'));
 
 /*
   Generated class for the SellerUpdateSettingsPage page.
@@ -9,14 +14,81 @@ import { Camera } from 'ionic-native';
   Ionic pages and navigation.
 */
 @Component({
-  templateUrl: 'build/pages/seller-update-settings/seller-update-settings.html',
+    templateUrl: 'build/pages/seller-update-settings/seller-update-settings.html',
+    providers: [LocalStorageProvider]
 })
 export class SellerUpdateSettingsPage {
+    private db;
+    private dbLocal;
     seller = {
-        image: <string> null
+        image: <string> null,
+        fullname: <string> null,
+        store_name: <string> null,
+        name: <string> null
     };
 
-    constructor(private nav: NavController) {}
+    constructor(
+        private localStorage: LocalStorageProvider,
+        private nav: NavController,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+    ) {
+        var self = this;
+        // couch db integration
+        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
+
+        // local integration
+        this.dbLocal = new PouchDB('cheers');
+
+        // this will sync locally
+        this.db.sync(this.dbLocal, {live: true, retry: true}).on('error', console.log.bind(console));
+
+        this.localStorage.getFromLocal('user').then((data) => {
+            this.seller = JSON.parse(data);
+        });
+    }
+
+    /**
+     * Redirects to the login page
+     */
+    goToLoginPage() {
+        this.nav.push(LoginPage);
+    }
+
+    /**
+     * User logs out
+     */
+    logout() {
+        var self = this;
+        // initialize the Alert component
+        let alert = Alert.create({
+            title: 'Log out',
+            message : 'Are you sure you want to log out of Cheers?',
+            buttons: [{
+                text: 'Cancel',
+                handler: data => {
+                    // do something?
+                }
+            },
+            {
+                text: 'Yes',
+                handler: data => {
+                    // remove data of the user from the storage
+                    // redirect to login page
+                    setTimeout(() => {
+                        // remove from the local storage
+                        self.localStorage.removeFromLocal('user');
+
+                        // set to login page
+                        self.nav.setRoot(LoginPage);
+                    }, 1000);
+                }
+            }]
+        });
+
+        // render it
+        this.nav.present(alert);
+    }
+
 
     /**
      * Opens up the camera and waits for the image to be fetched.
@@ -46,9 +118,11 @@ export class SellerUpdateSettingsPage {
      * Saves the provided data in the form.
      */
     saveStoreSettings(updateSettingsForm) {
+        var self = this;
+
         if (!updateSettingsForm.valid) {
             // prompt that something is wrong in the form
-            let alert = Alert.create({
+            var alert = Alert.create({
                 title: 'Ooops...',
                 subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
                 buttons: ['OK']
@@ -67,15 +141,65 @@ export class SellerUpdateSettingsPage {
         // render in the template
         this.nav.present(loading);
 
-        // TODO: add the couch integration here
-        setTimeout(() => {
-            // dismiss the loader
-            loading.dismiss()
+        this.db.putUser(this.seller.name, {
+            metadata : { store_name: 'Store Name', fullname: this.seller.fullname }
+        }, function (err, response) {
+            console.log(err);
+            console.log(response);
+            if (err) {
+                var message;
+
+                // determine the error
+                switch (err.name) {
+                    case 'not_found':
+                        message = 'Something went wrong while processing your request. Please try again later.';
+                        break;
+                    default:
+                        message = 'Something went wrong while processing your request. Please try again later.';
+                        break;
+                }
+
+                // render the error
+                loading.dismiss().then(() => {
+                    var alert = Alert.create({
+                        title: 'Ooops...',
+                        subTitle: message,
+                        buttons: ['OK']
+                    });
+
+                    // render in the template
+                    self.nav.present(alert);
+                    return;
+                });
+
+                return;
+            }
+
+            // get user details
+            self.db.getUser(self.seller.name, (err, response) => {
+                console.log(response);
+                // delete the password and salt
+                delete response.password_scheme;
+                delete response.salt
+
+                var user = JSON.stringify(response);
+
+                // update user data to the local storage
+                self.localStorage.setToLocal('user', user);
+
+                // TODO: broadcast that we have update the user details
+
+
+                // if no error remove the preloader now
+                loading.dismiss()
                 .then(() => {
                     // show a toast
-                    this.showToast('You have successfully updated your profile.');
+                    self.showToast('You have successfully updated your profile.');
                 });
-        }, 3000);
+            });
+
+            return;
+        });
     }
 
     /**

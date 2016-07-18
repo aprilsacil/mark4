@@ -25,16 +25,19 @@
     <ion-card class="user-details">
         <ion-item>
             <ion-avatar class="avatar">
-                <img src="http://az801229.vo.msecnd.net/wetpaint/2016/06/game-of-thrones-season-6-finale-margaery-tyrell-natalie-dormer-photo.png">
+                <img src="img/default_avatar.jpg" *ngIf="!user.image">
+                <img [src]="user.image" *ngIf="user.image">
             </ion-avatar>
             <div class="info">
-                <h2 class="name">Margaery Tyrell</h2>
+                <h2 class="name">{{user.fullname}}</h2>
                 <p class="work">
-                    Queen @ Westeros
+                    <span *ngIf="user.job_description">{{user.job_description}}</span>
+                    <span *ngIf="user.job_description && user.company_name">@</span>
+                    <span *ngIf="user.company_name">{{user.company_name}}</span>
                 </p>
                 <p class="stats">
                     <span class="level">
-                        <ion-icon name="star" bright></ion-icon> 300
+                        <ion-icon name="star" bright></ion-icon> 0
                     </span>
                 </p>
             </div>
@@ -44,8 +47,13 @@
 
     <!-- Dashboard Lists (Invites, Messages, and Sellers Nearby) -->
     <ion-list>
+        <!-- No buyers nearby -->
+        <ion-item class="item-plain">
+            It seems nobody is around you :(
+        </ion-item>
+
         <!-- Associate Invite -->
-        <ion-item class="seller associate-invite">
+        <ion-item class="seller associate-invite" style="display: none;">
             <ion-avatar item-left>
                 <img src="http://vignette2.wikia.nocookie.net/gameofthrones/images/3/3b/AManSeason5.jpg/revision/latest?cb=20150421020227">
             </ion-avatar>
@@ -63,7 +71,7 @@
             </div>
         </ion-item>
         <!-- Award -->
-        <ion-item class="seller award">
+        <ion-item class="seller award" style="display: none;">
             <ion-avatar item-left>
                 <img src="http://vignette2.wikia.nocookie.net/gameofthrones/images/3/3b/AManSeason5.jpg/revision/latest?cb=20150421020227">
             </ion-avatar>
@@ -72,7 +80,7 @@
             <p>The man is selling some faces.</p>
         </ion-item>
         <!-- Seller -->
-        <ion-item class="seller seller-nearby">
+        <ion-item class="seller seller-nearby" style="display: none;">
             <ion-avatar item-left>
                 <img src="http://vignette2.wikia.nocookie.net/gameofthrones/images/3/3b/AManSeason5.jpg/revision/latest?cb=20150421020227">
             </ion-avatar>
