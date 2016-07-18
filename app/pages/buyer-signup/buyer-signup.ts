@@ -88,6 +88,7 @@ export class BuyerSignupPage {
         this.db.signup(this.buyer.username, this.buyer.password, {
             metadata : {
                 fullname : this.buyer.name,
+                level: 0,
                 roles : ['buyer']
             }
         }, (err, response) => {

@@ -21,7 +21,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 })
 export class BuyerDashboardPage {
     private db;
-    buyer: Object = {};
+    user: Object = {};
     associate = {
         username: <string> null,
         roles: <string> null
@@ -38,7 +38,7 @@ export class BuyerDashboardPage {
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
 
         this.localStorage.getFromLocal('user').then((data) => {
-            this.buyer = JSON.parse(data);
+            this.user = JSON.parse(data);
         });
     }
 
@@ -146,7 +146,7 @@ export class BuyerDashboardPage {
      */
     showLookingforModal() {
         // initialize the modal
-        let modal = Modal.create(BuyerLookingforModalPage);
+        var modal = Modal.create(BuyerLookingforModalPage);
 
         // render
         this.nav.present(modal);

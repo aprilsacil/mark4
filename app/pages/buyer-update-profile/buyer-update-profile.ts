@@ -45,6 +45,8 @@ export class BuyerUpdateProfilePage {
             // set some data
             this.user.name = user.name;
             this.user.fullname = user.fullname;
+            this.user.job_description = user.job_description;
+            this.user.company_name = user.company_name;
         });
     }
 
@@ -131,6 +133,8 @@ export class BuyerUpdateProfilePage {
      * Saves the provided data in the form.
      */
     saveProfileDetails(updateProfileForm) {
+        var self = this;
+
         if (!updateProfileForm.valid) {
             // prompt that something is wrong in the form
             let alert = Alert.create({
@@ -152,7 +156,6 @@ export class BuyerUpdateProfilePage {
         // render in the template
         this.nav.present(loading);
 
-        var self = this;
         this.db.putUser(this.user.name, {
             metadata : {
                 fullname: this.user.fullname,
@@ -160,21 +163,59 @@ export class BuyerUpdateProfilePage {
                 company_name: this.user.company_name,
             }
         }, function (err, response) {
+            console.log(response);
+
             if (err) {
-                if (err.name === 'not_found') {
-                  // typo, or you don't have the privileges to see this user
-                } else {
-                  // some other error
+                var message;
+
+                // determine the error
+                switch (err.name) {
+                    case 'not_found':
+                        message = 'Something went wrong while processing your request. Please try again later.';
+                        break;
+                    default:
+                        message = 'Something went wrong while processing your request. Please try again later.';
+                        break;
                 }
-            } else {
+
+                // render the error
+                loading.dismiss().then(() => {
+                    var alert = Alert.create({
+                        title: 'Ooops...',
+                        subTitle: message,
+                        buttons: ['OK']
+                    });
+
+                    // render in the template
+                    self.nav.present(alert);
+                    return;
+                });
+
+                return;
+            }
+
+            // get user details
+            self.db.getUser(self.user.name, (err, response) => {
+                console.log(response);
+                // delete the password and salt
+                delete response.password_scheme;
+                delete response.salt
+
+                var user = JSON.stringify(response);
+
+                // update user data to the local storage
+                self.localStorage.setToLocal('user', user);
+
+                // TODO: broadcast that we have update the user details
+
+
                 // if no error remove the preloader now
                 loading.dismiss()
                 .then(() => {
                     // show a toast
                     self.showToast('You have successfully updated your profile.');
                 });
-
-            }
+            });
         });
     }
 

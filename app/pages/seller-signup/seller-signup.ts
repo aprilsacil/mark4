@@ -91,6 +91,7 @@ export class SellerSignupPage {
             metadata : {
                 store_name: this.seller.store_name,
                 fullname : this.seller.name,
+                level: 0,
                 roles : ['seller'],
             }
         }, (err, response) => {

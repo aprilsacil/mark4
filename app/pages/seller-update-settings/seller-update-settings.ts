@@ -130,9 +130,11 @@ export class SellerUpdateSettingsPage {
      * Saves the provided data in the form.
      */
     saveStoreSettings(updateSettingsForm) {
+        var self = this;
+
         if (!updateSettingsForm.valid) {
             // prompt that something is wrong in the form
-            let alert = Alert.create({
+            var alert = Alert.create({
                 title: 'Ooops...',
                 subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
                 buttons: ['OK']
@@ -150,7 +152,6 @@ export class SellerUpdateSettingsPage {
 
         // render in the template
         this.nav.present(loading);
-        var self = this;
 
         this.db.putUser(this.seller.name, {
             metadata : { store_name: 'Store Name', fullname: this.seller.fullname }
@@ -158,20 +159,58 @@ export class SellerUpdateSettingsPage {
             console.log(err);
             console.log(response);
             if (err) {
-                if (err.name === 'not_found') {
-                  // typo, or you don't have the privileges to see this user
-                } else {
-                  // some other error
+                var message;
+
+                // determine the error
+                switch (err.name) {
+                    case 'not_found':
+                        message = 'Something went wrong while processing your request. Please try again later.';
+                        break;
+                    default:
+                        message = 'Something went wrong while processing your request. Please try again later.';
+                        break;
                 }
-            } else {
-                // if no error redirect to seller dashboard now
+
+                // render the error
+                loading.dismiss().then(() => {
+                    var alert = Alert.create({
+                        title: 'Ooops...',
+                        subTitle: message,
+                        buttons: ['OK']
+                    });
+
+                    // render in the template
+                    self.nav.present(alert);
+                    return;
+                });
+
+                return;
+            }
+
+            // get user details
+            self.db.getUser(self.user.name, (err, response) => {
+                console.log(response);
+                // delete the password and salt
+                delete response.password_scheme;
+                delete response.salt
+
+                var user = JSON.stringify(response);
+
+                // update user data to the local storage
+                self.localStorage.setToLocal('user', user);
+
+                // TODO: broadcast that we have update the user details
+
+
+                // if no error remove the preloader now
                 loading.dismiss()
                 .then(() => {
                     // show a toast
                     self.showToast('You have successfully updated your profile.');
                 });
+            });
 
-            }
+            return;
         });
     }
 

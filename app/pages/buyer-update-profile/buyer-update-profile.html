@@ -24,7 +24,7 @@
         <ion-item class="avatar-wrapper">
             <ion-avatar (click)="openTheCamera()">
                 <ion-icon name="camera"></ion-icon>
-                <img src="http://ia.media-imdb.com/images/M/MV5BMTM4OTI2MTEwOV5BMl5BanBnXkFtZTcwMDc1MDc0Mw@@._V1_UX214_CR0,0,214,317_AL_.jpg" *ngIf="!user.image">
+                <img src="img/default_avatar.jpg" *ngIf="!user.image">
                 <img [src]="user.image" *ngIf="user.image">
             </ion-avatar>
 
