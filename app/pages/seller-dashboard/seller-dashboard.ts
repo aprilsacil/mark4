@@ -17,7 +17,7 @@ import { LocalStorageProvider } from '../../providers/storage/local-storage-prov
   providers: [LocalStorageProvider]
 })
 export class SellerDashboardPage {
-    user: Object = {};
+    user = { image: <string> null };
     shoppers: Object = {};
     scanning: boolean = false;
 
