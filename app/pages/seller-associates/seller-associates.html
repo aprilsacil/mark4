@@ -11,35 +11,45 @@
 </ion-header>
 
 <ion-content>
-    <ion-searchbar placeholder="Search by username"></ion-searchbar>
-    <ion-list>
+    <ion-searchbar placeholder="Search by username"
+        (input)="fetchUsers($event.target.value)"></ion-searchbar>
+
+    <ion-list *ngIf="results.length && searching">
+            <ion-item class="associate" *ngFor="let result of results; let i = index">
+                <ion-avatar item-left>
+                    <img src="img/default_avatar.jpg" *ngIf="!result.image">
+                    <img [src]="result.image" *ngIf="result.image">
+                </ion-avatar>
+                <h2>{{result.fullname}}</h2>
+                <div class="owner-controls" item-right>
+                    <button  clear secondary (click)="invite(result.username)">
+                        <ion-icon name="add-circle-outline"></ion-icon>
+                    </button>
+                </div>
+            </ion-item>
+    </ion-list>
+
+    <ion-list *ngIf="!searching">
         <ion-item class="associate">
             <ion-avatar item-left>
-                <img src="http://blogs-images.forbes.com/erikkain/files/2016/06/Screenshot-424-1200x675.png">
+                <img src="img/default_avatar.jpg" *ngIf="!user.image">
+                <img src="{{user.image}}" *ngIf="user.image">
             </ion-avatar>
-            <h2>Jon Snow</h2>
+            <h2>{{user.fullname}}</h2>
         </ion-item>
-        <ion-item class="associate">
-            <ion-avatar item-left>
-                <img src="http://assets.viewers-guide.hbo.com/large5374fb8e3f48c.jpg">
-            </ion-avatar>
-            <h2>Ser Davos Seaworth</h2>
-            <div class="owner-controls" item-right>
-                <button clear danger>
-                    <ion-icon name="close"></ion-icon>
-                </button>
-            </div>
-        </ion-item>
-        <ion-item class="associate">
-            <ion-avatar item-left>
-                <img src="http://blogs-images.forbes.com/erikkain/files/2014/06/brienne-of-tarth-1024.jpg">
-            </ion-avatar>
-            <h2>Brienne of Tarth</h2>
-            <div class="owner-controls" item-right>
-                <button clear danger>
-                    <ion-icon name="close"></ion-icon>
-                </button>
-            </div>
-        </ion-item>
+        <div *ngIf="associates.length">
+            <ion-item class="associate" *ngFor="let staff of associates; let i = index">
+                <ion-avatar item-left>
+                    <img src="img/default_avatar.jpg" *ngIf="!staff.image">
+                    <img [src]="staff.image" *ngIf="staff.image">
+                </ion-avatar>
+                <h2>{{staff.fullname}}</h2>
+                <div class="owner-controls" item-right>
+                    <button clear danger>
+                        <ion-icon name="close"></ion-icon>
+                    </button>
+                </div>
+            </ion-item>
+        </div>
     </ion-list>
 </ion-content>
