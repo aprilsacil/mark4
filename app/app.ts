@@ -68,7 +68,6 @@ export class MyApp {
                         // set the data to be advertised
                         var advertiseData = {
                             _id : user._id,
-                            name: user.name,
                             fullname: user.fullname,
                             job_description: user.job_description,
                             company_name: user.company_name,
@@ -133,7 +132,7 @@ export class MyApp {
         // write event
         this.events.subscribe('central:write', (eventData) => {
             console.log('event: write', eventData[0]);
-            self.centralBle.write(eventData[0]);
+            self.centralBle.write(JSON.stringify(eventData[0]));
         });
     }
 

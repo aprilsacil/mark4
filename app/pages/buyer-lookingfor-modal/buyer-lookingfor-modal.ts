@@ -96,7 +96,6 @@ export class BuyerLookingforModalPage {
         // prepare the data
         var advertiseData = {
             _id : this.user._id,
-            name: this.user.name,
             fullname: this.user.fullname,
             job_description: this.user.job_description,
             company_name: this.user.company_name,

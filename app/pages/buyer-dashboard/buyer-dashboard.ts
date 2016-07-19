@@ -49,23 +49,13 @@ export class BuyerDashboardPage {
 
         // listens for buyers that sends out an emote
         this.events.subscribe('peripheral:emoteFound', (eventData) => {
-            var seller = {
-                _id: <string> null
-            };
+            // var seller = {
+            //     _id: <string> null
+            // };
 
             console.log('ev', eventData);
 
-            // convert the encoded data to object
-            // split by ampersand
-            var encodedData = eventData[0].split('&');
-
-            // loop
-            encodedData.forEach((data) => {
-                // split by equal sign
-                data = data.split('=');
-
-                seller[data[0]] = decodeURIComponent(data[1] || '');
-            });
+            var seller = JSON.parse(eventData[0]);
 
             // check if the seller already exists in the object
             if (this.sellers) {

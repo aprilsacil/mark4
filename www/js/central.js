@@ -483,7 +483,7 @@ var BLECentral = function() {
                     // clear interval
                     clearInterval(interval);
                 });
-            }, 80);
+            }, 1000);
         },
 
         // handle notify chunk and defer write callback

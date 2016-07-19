@@ -215,6 +215,9 @@ export class CentralBle {
      * Update peripheral list
      */
     updatePeripheralList(peripherals) {
+        // trigger event
+        this.events.publish('central:getPeripherals', peripherals);
+
         // do we have peripherals?
         if(JSON.stringify(peripherals) === '{}') {
             // TODO: tell that there no available peripherals
