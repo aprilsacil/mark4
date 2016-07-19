@@ -17,7 +17,15 @@ export class BuyerLookingforModalPage {
         product: <string> null
     };
 
-    user = {};
+    user = {
+        _id: <string> null,
+        name: <string> null,
+        fullname: <string> null,
+        company_name: <string> null,
+        job_description: <string> null,
+        image: <string> null,
+        level: <number> 0,
+    };
 
 	constructor(
         private events: Events,
@@ -28,7 +36,15 @@ export class BuyerLookingforModalPage {
         this.localStorage.getFromLocal('user').then((data) => {
             var user = JSON.parse(data);
 
-            this.user = user;
+            this.user = {
+                _id : user._id,
+                name: user.name,
+                fullname: user.fullname,
+                job_description: user.job_description,
+                company_name: user.company_name,
+                level: user.level,
+                image: user.image
+            }
         });
     }
 
@@ -56,8 +72,6 @@ export class BuyerLookingforModalPage {
      * Sends out the looking for to nearby sellers.
      */
     submitLookingFor(lookingForForm) {
-        var peripheralData: any;
-
         if (!lookingForForm.valid) {
             // prompt that something is wrong in the form
             let alert = Alert.create({
@@ -80,13 +94,18 @@ export class BuyerLookingforModalPage {
         this.nav.present(loading);
 
         // prepare the data
-        peripheralData = this.user;
-
-        // set new data
-        peripheralData.looking_for = this.lookingFor.product;
+        var advertiseData = {
+            _id : this.user._id,
+            name: this.user.name,
+            fullname: this.user.fullname,
+            job_description: this.user.job_description,
+            company_name: this.user.company_name,
+            level: this.user.level,
+            looking_for: this.lookingFor.product
+        }
 
         // set data to be sent via ble
-        this.events.publish('peripheral:setData', peripheralData);
+        this.events.publish('peripheral:setData', advertiseData);
 
         // TODO: add thingy here
         setTimeout(() => {

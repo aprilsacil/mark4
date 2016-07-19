@@ -38,37 +38,60 @@ export class MyApp {
      * Listens for events like logout, login, and change of role.
      */
     authEvents() {
+        var currentTimestamp = Math.round(new Date().getTime() / 1000);
+
         // check if there are logged in users
         this.localStorage.getFromLocal('user').then((data) => {
             if (data) {
-                var user = JSON.parse(data);
+                this.localStorage.getFromLocal('timestamp').then((timestamp) => {
+                    // get the difference between the current and saved timestamp
+                    var difference = currentTimestamp - timestamp;
 
-                // get the role
-                var role = user.roles[0];
+                    // check it's almost 30 minutes
+                    if (difference >= 60) {
+                        // if it's almost 30 minutes, set the root page to the relog page
+                        this.rootPage = ReloginPage;
+                        return;
+                    }
 
-                // set the page based on the given role
-                if (role == 'buyer') {
-                    delete user.image;
+                    // get the user
+                    var user = JSON.parse(data);
 
-                    // start the peripheral device events
-                    this.buyerEvents();
+                    // get the role
+                    var role = user.roles[0];
 
-                    // set data
-                    this.events.publish('peripheral:setData', user);
+                    // set the page based on the given role
+                    if (role == 'buyer') {
+                        // start the peripheral device events
+                        this.buyerEvents();
 
-                    // set the dashboard
-                    this.rootPage = BuyerDashboardPage;
-                    return;
-                }
+                        // set the data to be advertised
+                        var advertiseData = {
+                            _id : user._id,
+                            name: user.name,
+                            fullname: user.fullname,
+                            job_description: user.job_description,
+                            company_name: user.company_name,
+                            level: user.level
+                        }
 
-                if (role == 'seller') {
-                    // start the central device events
-                    this.sellerEvents();
+                        // set data
+                        this.events.publish('peripheral:setData', advertiseData);
 
-                    // set the dashboard
-                    this.rootPage = SellerDashboardPage;
-                    return;
-                }
+                        // set the dashboard
+                        this.rootPage = BuyerDashboardPage;
+                        return;
+                    }
+
+                    if (role == 'seller') {
+                        // start the central device events
+                        this.sellerEvents();
+
+                        // set the dashboard
+                        this.rootPage = SellerDashboardPage;
+                        return;
+                    }
+                });
             }
         });
 
@@ -123,10 +146,13 @@ export class MyApp {
 
         this.events.subscribe('peripheral:stop', (eventData) => {
             this.peripheralBle.stop();
-        })
+        });
+
+        // do some cleanup by removing the looking for product data
+        this.localStorage.removeFromLocal('looking_for');
     }
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.101:5984/'}),
+    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.109:5984/'}),
     provide('APIEndpoint', {useValue: 'http://127.0.0.1/api/'})])

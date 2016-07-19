@@ -20,13 +20,7 @@ export class PeripheralBle {
     constructor(private events: Events) {
         // listen for this event
         this.events.subscribe('peripheral:setData', (eventData) => {
-            // remove user image
-            delete eventData[0].image;
-            delete eventData[0].derived_key;
-            delete eventData[0]._rev;
-            delete eventData[0].iterations;
-            delete eventData[0].roles;
-            delete eventData[0].type;
+            console.log('event: periphal data', eventData);
 
             this.advertiseData = eventData[0];
         });

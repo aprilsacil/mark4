@@ -32,11 +32,10 @@ export class LoginPage {
         private localStorage: LocalStorageProvider,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
-        var self = this;
         this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
-        let local = new PouchDB('cheers');
+        var local = new PouchDB('cheers');
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
@@ -102,6 +101,7 @@ export class LoginPage {
 
         // login the user
         this.db.login(this.login.username, this.login.password, ajaxOpts, (err, response) => {
+            console.log(err);
             console.log('login response', response);
 
             var loginResponse = response;
@@ -137,7 +137,17 @@ export class LoginPage {
                         // broadcast event to start some event listeners
                         this.events.publish('peripheral:start');
 
-                        this.events.publish('peripheral:setData', user);
+                        // set the data to be advertised
+                        var advertiseData = {
+                            _id : response._id,
+                            name: response.name,
+                            fullname: response.fullname,
+                            job_description: response.job_description,
+                            company_name: response.company_name,
+                            level: response.level
+                        }
+
+                        this.events.publish('peripheral:setData', advertiseData);
 
                         // remove loader and set the root page
                         loading.dismiss().then(() => {
@@ -161,6 +171,11 @@ export class LoginPage {
                     default:
                         message = err.message;
                         break;
+                }
+
+                // check status number
+                if (err.status == 500) {
+                    message = 'Something is wrong while processing your request. Please try again later.';
                 }
 
                 // show an alert

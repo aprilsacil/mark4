@@ -40,6 +40,8 @@ export class SellerDashboardPage {
         this.events.subscribe('central:buyersNearby', (eventData) => {
             var buyer = JSON.parse(eventData[0]);
 
+            console.log(buyer);
+
             // check if the buyer already exists in the object
             if (this.shoppers) {
                 var existing = this.shoppers.some((element) => {
@@ -118,6 +120,9 @@ export class SellerDashboardPage {
             // currently scanning, so we're going to stop it
             // flag that we're stopped scanning
             this.scanning = false;
+
+            // empty out the shoppers
+            this.shoppers = [];
 
             // stop the scan
             this.events.publish('central:stopScan');

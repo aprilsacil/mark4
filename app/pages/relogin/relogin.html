@@ -19,16 +19,18 @@
         (submit)="verifyRelogin(reloginForm)">
         <ion-item class="to-login-user">
             <ion-avatar item-left class="avatar">
-                <img src="http://blogs-images.forbes.com/erikkain/files/2016/06/Screenshot-424-1200x675.png">
+                <img src="img/default_avatar.jpg" *ngIf="!user.image">
+                <img [src]="user.image" *ngIf="user.image">
             </ion-avatar>
-            <h2 class="name">User Name</h2>
-            <p class="contact-number">+639271234567</p>
+            <h2 class="name">{{user.fullname}}</h2>
+            <!-- <p class="contact-number">+639271234567</p> -->
         </ion-item>
 
         <ion-item>
             <ion-input
                 type="password"
                 placeholder="Password"
+                class="text-white"
                 required
                 [(ngModel)]="relogin.password"
                 ngControl="password"
