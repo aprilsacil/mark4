@@ -1,0 +1,16 @@
+<!--
+  Generated template for the CheersAvatar component.
+
+  See https://angular.io/docs/ts/latest/api/core/ComponentMetadata-class.html
+  for more info on Angular 2 Components.
+-->
+<div>
+    <ion-avatar class="avatar">
+        <img src="img/default_avatar.jpg" *ngIf="!user.image">
+        <p *ngIf="!errorImage">
+            <img src="http://facebook.com/asdkfj;askdfjlkadjsffk;" *ngIf="user.image"
+            (error)="updateAvatar($event)">
+        </p>
+        <p *ngIf="errorImage">{{user.fullname}}</p>
+    </ion-avatar>
+</div>

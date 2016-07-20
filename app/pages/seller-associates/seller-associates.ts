@@ -1,13 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { NavController, Toast } from 'ionic-angular';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
-import 'rxjs/add/operator/toPromise';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
-PouchDB.plugin(require('pouchdb-quick-search'));
 
 /*
   Generated class for the SellerAssociatesPage page.
@@ -21,7 +20,7 @@ PouchDB.plugin(require('pouchdb-quick-search'));
 })
 export class SellerAssociatesPage {
 	private db;
-	user = { 
+	user = {
 		name: <string> null,
 		image: <string> null };
 	associates = [];
@@ -32,8 +31,11 @@ export class SellerAssociatesPage {
 	constructor(
 		private localStorage: LocalStorageProvider,
 		private nav: NavController,
-		private http: Http) {
-		this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+		private http: Http,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
+        @Inject('APIEndpoint') private apiEndpoint: string
+    ) {
+		this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
         let local = new PouchDB('cheers');
@@ -48,7 +50,7 @@ export class SellerAssociatesPage {
 	    		'Content-Type': 'application/x-www-form-urlencoded'});
 
 	    	var param = {
-	    		type:'seller_store', 
+	    		type:'seller_store',
 	    		search:this.user.name
 	    	};
 
@@ -97,12 +99,12 @@ export class SellerAssociatesPage {
     		'Content-Type': 'application/x-www-form-urlencoded'});
 
     	var param = {
-    		type:'invite', 
+    		type:'invite',
     		search:keyword
     	};
 
 		this.http
-			.post('http://cheers.dev/users', param, {headers: headers})
+			.post(this.apiEndpoint + 'users', param, {headers: headers})
 			.map(response => response.json())
 			.subscribe((data) => {
 				data = data.rows;
@@ -116,11 +118,11 @@ export class SellerAssociatesPage {
 			}, (error) => {
 				console.log(error);
 			});
-	} 	
+	}
 
 	/**
      * Invites this person
-     * 
+     *
      */
     invite(username) {
     	console.log(username);
@@ -128,7 +130,7 @@ export class SellerAssociatesPage {
     		'Content-Type': 'application/x-www-form-urlencoded'});
 
     	var param = {
-    		username:username, 
+    		username:username,
     		store:this.user.name
     	};
 
@@ -138,7 +140,7 @@ export class SellerAssociatesPage {
 			.subscribe((data) => {
 				this.showToast('You have successfully gave the customer an award.');
 				this.searching = false;
-				
+
 			}, (error) => {
 				console.log(error);
 			});

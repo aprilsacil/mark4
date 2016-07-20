@@ -1,10 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Alert, Loading, NavController } from 'ionic-angular';
 import { LoginPage } from '../login/login';
 import { SellerSignupPage } from '../seller-signup/seller-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
-// import { PouchService } from '../../providers/pouch-service/pouch-service';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -26,9 +25,12 @@ export class BuyerSignupPage {
         name: <string> null
     };
 
-    constructor( private nav: NavController ) {
+    constructor(
+        private nav: NavController,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+    ) {
         // couch db integration
-        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
         var local = new PouchDB('cheers');

@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Alert, Loading, NavController } from 'ionic-angular';
+import { Component, Inject } from '@angular/core';
+import { Alert, Events, Loading, NavController } from 'ionic-angular';
 import { Modal, ViewController } from 'ionic-angular';
 import { BuyerUpdateProfilePage } from '../buyer-update-profile/buyer-update-profile';
 import { BuyerLookingforModalPage } from '../buyer-lookingfor-modal/buyer-lookingfor-modal';
@@ -22,14 +22,21 @@ PouchDB.plugin(require('pouchdb-authentication'));
 export class BuyerDashboardPage {
     private db;
     user = { name: <string> null };
+    sellers = [];
     associate = {
         username: <string> null,
         roles: <string> null
     }
 
-    constructor(private localStorage: LocalStorageProvider, private nav: NavController) {
+    constructor(
+        private events: Events,
+        private localStorage: LocalStorageProvider,
+        private nav: NavController,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
+        @Inject('APIEndpoint') private apiEndpoint: string
+    ) {
         // couch db integration
-        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
         var local = new PouchDB('cheers');
@@ -39,6 +46,50 @@ export class BuyerDashboardPage {
 
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = JSON.parse(data);
+        });
+
+        // listens for buyers that sends out an emote
+        this.events.subscribe('peripheral:emoteFound', (eventData) => {
+            // var seller = {
+            //     _id: <string> null
+            // };
+
+            console.log('ev', eventData);
+
+            var seller = JSON.parse(eventData[0]);
+
+            // check if the seller already exists in the object
+            if (this.sellers) {
+                var existing = this.sellers.some((element) => {
+                    return element._id === seller._id;
+                });
+
+                // if it doesn't exists, push it
+                if (!existing) {
+                    this.sellers.push(seller);
+                }
+
+                // if it exists, update the current data
+                if (existing) {
+                    var index;
+
+                    // get the index of the seller by looping all the sellers
+                    for (var s in this.sellers) {
+                        if (this.sellers[s]._id == seller._id) {
+                            index = 0;
+                            break;
+                        }
+                    }
+
+                    // update
+                    this.sellers[index] = seller;
+                }
+            }
+
+            // no sellers, just push it
+            if (!this.sellers) {
+                this.sellers.push(seller);
+            }
         });
     }
 

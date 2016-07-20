@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Alert, Loading, NavController } from 'ionic-angular';
 import { LoginPage } from '../login/login';
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
@@ -26,10 +26,13 @@ export class SellerSignupPage {
         store_name: <string> null
     };
 
-    constructor(private nav: NavController) {
+    constructor(
+        private nav: NavController,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+    ) {
         var self = this;
         // couch db integration
-        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
         let local = new PouchDB('cheers');

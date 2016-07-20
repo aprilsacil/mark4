@@ -15,18 +15,18 @@
         (input)="fetchUsers($event.target.value)"></ion-searchbar>
 
     <ion-list *ngIf="results.length && searching">
-            <ion-item class="associate" *ngFor="let result of results; let i = index">
-                <ion-avatar item-left>
-                    <img src="img/default_avatar.jpg" *ngIf="!result.image">
-                    <img [src]="result.image" *ngIf="result.image">
-                </ion-avatar>
-                <h2>{{result.fullname}}</h2>
-                <div class="owner-controls" item-right>
-                    <button  clear secondary (click)="invite(result.username)">
-                        <ion-icon name="add-circle-outline"></ion-icon>
-                    </button>
-                </div>
-            </ion-item>
+        <ion-item class="associate" *ngFor="let result of results; let i = index">
+            <ion-avatar item-left>
+                <img src="img/default_avatar.jpg" *ngIf="!result.image">
+                <img [src]="result.image" *ngIf="result.image">
+            </ion-avatar>
+            <h2>{{result.fullname}}</h2>
+            <div class="owner-controls" item-right>
+                <button clear secondary (click)="invite(result.username)">
+                    <ion-icon name="add"></ion-icon>
+                </button>
+            </div>
+        </ion-item>
     </ion-list>
 
     <ion-list *ngIf="!searching">

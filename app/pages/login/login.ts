@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Alert, Events, Loading, NavController } from 'ionic-angular';
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
@@ -29,13 +29,13 @@ export class LoginPage {
     constructor(
         private events: Events,
         private nav: NavController,
-        private localStorage: LocalStorageProvider
+        private localStorage: LocalStorageProvider,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
-        var self = this;
-        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
-        let local = new PouchDB('cheers');
+        var local = new PouchDB('cheers');
 
         // this will sync locally
         local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
@@ -82,7 +82,13 @@ export class LoginPage {
             return;
         }
 
-        // TODO: add a loader
+        // show a loader
+        var loading = Loading.create({
+            content: 'Logging in...'
+        });
+
+        // render in the template
+        this.nav.present(loading);
 
         // provide some ajax headers for authorization
         var ajaxOpts = {
@@ -95,6 +101,7 @@ export class LoginPage {
 
         // login the user
         this.db.login(this.login.username, this.login.password, ajaxOpts, (err, response) => {
+            console.log(err);
             console.log('login response', response);
 
             var loginResponse = response;
@@ -116,31 +123,75 @@ export class LoginPage {
 
                     // if seller redirect to seller dashboard
                     if(response.roles[0] === 'seller') {
-                        // broadcast event
+                        // broadcast event to start some event listeners
                         this.events.publish('central:start', user);
 
-                        return self.goToSellerDashboardPage();
+                        // remove loader and set the root page
+                        loading.dismiss().then(() => {
+                            return self.goToSellerDashboardPage();
+                        });
                     }
 
                     // if buyer redirect to buyer dashboard
                     if(response.roles[0] === 'buyer') {
-                        this.events.publish('peripheral:start', user);
+                        // broadcast event to start some event listeners
+                        this.events.publish('peripheral:start');
 
-                        return self.goToBuyerDashboardPage();
+                        // set the data to be advertised
+                        var advertiseData = {
+                            _id : response._id,
+                            fullname: response.fullname,
+                            name: response.name,
+                            job_description: response.job_description,
+                            company_name: response.company_name,
+                            level: response.level
+                        }
+
+                        this.events.publish('peripheral:setData', advertiseData);
+
+                        // remove loader and set the root page
+                        loading.dismiss().then(() => {
+                            return self.goToBuyerDashboardPage();
+                        });
                     }
                 });
 
                 return;
             }
 
-            var alert = Alert.create({
-                title: 'Error!',
-                subTitle: err.message,
-                buttons: ['OK']
+            // remove the loader
+            loading.dismiss().then(() => {
+                var message;
+
+                // check the error message
+                switch (err.message) {
+                    case 'ETIMEDOUT':
+                        message = 'Can\'t connect to the server. Please try again.';
+                        break;
+                    default:
+                        message = err.message;
+                        break;
+                }
+
+                // check status number
+                if (err.status == 500) {
+                    message = 'Something is wrong while processing your request. Please try again later.';
+                }
+
+                // show an alert
+                setTimeout(() => {
+                    var alert = Alert.create({
+                        title: 'Error!',
+                        subTitle: message,
+                        buttons: ['OK']
+                    });
+
+                    // render in the template
+                    self.nav.present(alert);
+                }, 300);
             });
 
-            // render in the template
-            self.nav.present(alert);
+
             return;
         });
     }

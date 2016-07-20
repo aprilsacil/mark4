@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Alert, Loading, NavController, Toast } from 'ionic-angular';
+import { Component, Inject } from '@angular/core';
+import { Alert, Events, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
 import { LoginPage } from '../login/login';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
@@ -27,11 +27,13 @@ export class BuyerUpdateProfilePage {
     };
 
     constructor(
+        private events: Events,
         private localStorage: LocalStorageProvider,
-        private nav: NavController
+        private nav: NavController,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
         // couch db integration
-        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
         let local = new PouchDB('cheers');
@@ -47,6 +49,7 @@ export class BuyerUpdateProfilePage {
             this.user.fullname = user.fullname;
             this.user.job_description = user.job_description;
             this.user.company_name = user.company_name;
+            this.user.image = user.image;
         });
     }
 
@@ -75,27 +78,17 @@ export class BuyerUpdateProfilePage {
             {
                 text: 'Yes',
                 handler: data => {
+                    // unsubscribe events
+                    this.unsubscribeEvents();
+
                     // remove data of the user from the storage
                     // redirect to login page
                     setTimeout(() => {
-                        self.db.logout((err, response) => {
-                            if (err) {
-                                var alert = Alert.create({
-                                    title: 'Server Error',
-                                    buttons : ['OK']
-                                });
+                        // remove from the local storage
+                        self.localStorage.removeFromLocal('user');
 
-                                // render in the template
-                                self.nav.present(alert);
-                                return;
-                            }
-
-                            // remove from the local storage
-                            self.localStorage.removeFromLocal('user');
-
-                            // set to login page
-                            self.nav.setRoot(LoginPage);
-                        });
+                        // set to login page
+                        self.nav.setRoot(LoginPage);
                     }, 1000);
                 }
             }]
@@ -161,6 +154,7 @@ export class BuyerUpdateProfilePage {
                 fullname: this.user.fullname,
                 job_description: this.user.job_description,
                 company_name: this.user.company_name,
+                image: this.user.image
             }
         }, function (err, response) {
             console.log(response);
@@ -171,8 +165,6 @@ export class BuyerUpdateProfilePage {
                 // determine the error
                 switch (err.name) {
                     case 'not_found':
-                        message = 'Something went wrong while processing your request. Please try again later.';
-                        break;
                     default:
                         message = 'Something went wrong while processing your request. Please try again later.';
                         break;
@@ -230,5 +222,16 @@ export class BuyerUpdateProfilePage {
 
         // render in the template
         this.nav.present(toast);
+    }
+
+    /**
+     * Unsubscribe to all peripheral events
+     */
+    unsubscribeEvents() {
+        // TODO: stop advertising
+        this.events.publish('peripheral:stop');
+
+        this.events.unsubscribe('peripheral:start', () => {});
+        this.events.unsubscribe('peripheral:emoteFound', () => {});
     }
 }

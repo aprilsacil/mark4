@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Alert, Loading, NavController, Toast } from 'ionic-angular';
+import { Component, Inject } from '@angular/core';
+import { Alert, Events, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
 import { LoginPage } from '../login/login';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
@@ -28,12 +28,14 @@ export class SellerUpdateSettingsPage {
     };
 
     constructor(
+        private events: Events,
         private localStorage: LocalStorageProvider,
-        private nav: NavController
+        private nav: NavController,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
         var self = this;
         // couch db integration
-        this.db = new PouchDB('http://localhost:5984/cheers', {skipSetup: true});
+        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
         this.dbLocal = new PouchDB('cheers');
@@ -71,27 +73,17 @@ export class SellerUpdateSettingsPage {
             {
                 text: 'Yes',
                 handler: data => {
+                    // unsubscribe all seller events
+                    self.unsubscribeEvents();
+
                     // remove data of the user from the storage
                     // redirect to login page
                     setTimeout(() => {
-                        self.db.logout(function (err, response) {
-                            if (err) {
-                                let alert = Alert.create({
-                                    title: 'Server Error',
-                                    buttons: ['OK']
-                                });
+                        // remove from the local storage
+                        self.localStorage.removeFromLocal('user');
 
-                                // render in the template
-                                self.nav.present(alert);
-                                return;
-                            }
-
-                            // remove from the local storage
-                            self.localStorage.removeFromLocal('user');
-
-                            // set to login page
-                            self.nav.setRoot(LoginPage);
-                        });
+                        // set to login page
+                        self.nav.setRoot(LoginPage);
                     }, 1000);
                 }
             }]
@@ -154,10 +146,12 @@ export class SellerUpdateSettingsPage {
         this.nav.present(loading);
 
         this.db.putUser(this.seller.name, {
-            metadata : { store_name: 'Store Name', fullname: this.seller.fullname }
+            metadata : {
+                store_name: this.seller.store_name,
+                fullname: this.seller.fullname,
+                image: this.seller.image
+            }
         }, function (err, response) {
-            console.log(err);
-            console.log(response);
             if (err) {
                 var message;
 
@@ -189,7 +183,6 @@ export class SellerUpdateSettingsPage {
 
             // get user details
             self.db.getUser(self.seller.name, (err, response) => {
-                console.log(response);
                 // delete the password and salt
                 delete response.password_scheme;
                 delete response.salt
@@ -225,5 +218,20 @@ export class SellerUpdateSettingsPage {
 
         // render in the template
         this.nav.present(toast);
+    }
+
+    /**
+     * Unsubscribes all central events
+     */
+    unsubscribeEvents() {
+        // first, stop the scanning
+        // this.events.publish('central:stopScan');
+
+        // unsubscribe all events
+        this.events.unsubscribe('central:start', () => {});
+        this.events.unsubscribe('central:startScan', () => {});
+        this.events.unsubscribe('central:stopScan', () => {});
+        this.events.unsubscribe('central:write', () => {});
+        this.events.unsubscribe('central:buyersNearby', () => {});
     }
 }
