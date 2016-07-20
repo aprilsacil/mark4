@@ -49,10 +49,11 @@
     <ion-list>
         <div *ngIf="sellers.length">
             <ion-item class="seller seller-nearby" *ngFor="let seller of sellers">
-                <ion-avatar item-left>
+                <cheers-avatar [user]="seller" item-left></cheers-avatar>
+                <!-- <ion-avatar item-left>
                     <img src="img/default_avatar.jpg" *ngIf="!seller.image">
                     <img [src]="seller.image" *ngIf="seller.image">
-                </ion-avatar>
+                </ion-avatar> -->
 
                 <h2>{{seller.store_name}}</h2>
                 <p>{{seller.emote}}</p>
