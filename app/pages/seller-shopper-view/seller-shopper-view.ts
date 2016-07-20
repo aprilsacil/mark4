@@ -30,8 +30,7 @@ export class SellerShopperViewPage {
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
-        //this.shopper = this.params.get('shopper');
-        this.shopper._id = 'org.couchdb.user:aprilsacil';
+        this.shopper = this.params.get('shopper');
 
         this.localStorage.getFromLocal('user').then((data) => {
             var user = JSON.parse(data);
