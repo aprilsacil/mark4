@@ -50,25 +50,12 @@
     <!-- End of Shopper Details -->
 
     <!-- History List -->
-    <ion-list class="history-list" *ngIf="shopper.history">
+    <ion-list class="history-list" *ngIf="history.length">
         <ion-list-header>History</ion-list-header>
-        <ion-item class="history">
-            <h2>Jaqen H'ghar</h2>
-            <p class="item-bought">Face</p>
-            <p class="price" secondary>P300.00</p>
-            <time class="time-ago" item-right>1d</time>
-        </ion-item>
-        <ion-item class="history">
-            <h2>Melissandre</h2>
-            <p class="item-bought">Immortality</p>
-            <p class="price" secondary>P20,000.00</p>
-            <time class="time-ago" item-right>3d</time>
-        </ion-item>
-        <ion-item class="history">
-            <h2>Bran Stark</h2>
-            <p class="item-bought">Warging Ability</p>
-            <p class="price" secondary>P100,000.00</p>
-            <time class="time-ago" item-right>10d</time>
+        <ion-item class="history" *ngFor="let item of history; let i = index">
+            <h2>{{item.item}}</h2>
+            <p class="price" secondary>P {{item.price}}</p>
+            <time class="time-ago" item-right>{{item.date}}</time>
         </ion-item>
     </ion-list>
 </ion-content>
