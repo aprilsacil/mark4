@@ -96,8 +96,8 @@ export class SellerAwardModalPage {
                 'Content-Type': 'application/x-www-form-urlencoded'});
 
             var param = this.award;
-            //TODO :: make it dynamic
             param.username = this.shopper.name;
+            param.image = this.shopper.image;
             param.store = user.name;
 
             this.http

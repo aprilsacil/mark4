@@ -5,6 +5,9 @@ import { BuyerUpdateProfilePage } from '../buyer-update-profile/buyer-update-pro
 import { BuyerLookingforModalPage } from '../buyer-lookingfor-modal/buyer-lookingfor-modal';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
+import 'rxjs/add/operator/toPromise';
+import 'rxjs/add/operator/map';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -21,6 +24,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 })
 export class BuyerDashboardPage {
     private db;
+    private history = [];
     user = { name: <string> null };
     sellers = [];
     associate = {
@@ -32,6 +36,7 @@ export class BuyerDashboardPage {
         private events: Events,
         private localStorage: LocalStorageProvider,
         private nav: NavController,
+        private http: Http,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
@@ -46,6 +51,32 @@ export class BuyerDashboardPage {
 
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = JSON.parse(data);
+
+            let headers = new Headers({
+              'Content-Type': 'application/x-www-form-urlencoded'});
+
+            var param = {
+              type:'per_user',
+              search:this.user.name
+            };
+
+            this.http
+                .get(this.apiEndpoint + 'history?type=' + param.type +
+                    '&search=' + param.search, {headers: headers})
+                .map(response => response.json())
+                .subscribe((data) => {
+                    for ( var i in data.rows ) {
+                        var item = data.rows[i].value;
+                        item.date = this.timeAgoFromEpochTime(new Date(data.rows[i].value.date));
+
+                        this.history.push(item);
+                    }
+
+                    console.log(this.history);
+
+                }, (error) => {
+                  console.log(error);
+                });
         });
 
         // listens for buyers that sends out an emote
@@ -91,6 +122,8 @@ export class BuyerDashboardPage {
                 this.sellers.push(seller);
             }
         });
+
+
     }
 
     /**
@@ -227,5 +260,42 @@ export class BuyerDashboardPage {
 
         // render
         this.nav.present(modal);
+    }
+
+    timeAgoFromEpochTime(epoch) {
+        var secs = ((new Date()).getTime() / 1000) - epoch.getTime() / 1000;
+        Math.floor(secs);
+        var minutes = secs / 60;
+        secs = Math.floor(secs % 60);
+        if (minutes < 1) {
+            return secs + (secs > 1 ? 's' : 's');
+        }
+        var hours = minutes / 60;
+        minutes = Math.floor(minutes % 60);
+        if (hours < 1) {
+            return minutes + (minutes > 1 ? 'm' : 'm');
+        }
+        var days = hours / 24;
+        hours = Math.floor(hours % 24);
+        if (days < 1) {
+            return hours + (hours > 1 ? 'h' : 'h');
+        }
+        var weeks = days / 7;
+        days = Math.floor(days % 7);
+        if (weeks < 1) {
+            return days + (days > 1 ? 'd' : 'd');
+        }
+        var months = weeks / 4.35;
+        weeks = Math.floor(weeks % 4.35);
+        if (months < 1) {
+            return weeks + (weeks > 1 ? 'w' : 'w');
+        }
+        var years = months / 12;
+        months = Math.floor(months % 12);
+        if (years < 1) {
+            return months + (months > 1 ? 'M' : 'M');
+        }
+        years = Math.floor(years);
+        return years + (years > 1 ? 'Y' : 'Y');
     }
 }

@@ -68,7 +68,8 @@
         <!-- Associate Invite -->
         <ion-item class="seller associate-invite" *ngIf="user.store_uuid">
             <ion-avatar item-left>
-                <img src="http://vignette2.wikia.nocookie.net/gameofthrones/images/3/3b/AManSeason5.jpg/revision/latest?cb=20150421020227">
+                <img src="img/default_avatar.jpg" *ngIf="!user.store_image">
+                <img [src]="user.store_image" *ngIf="user.store_image">
             </ion-avatar>
 
             <h2>{{user.store_name}}</h2>
@@ -85,13 +86,18 @@
         </ion-item>
 
         <!-- Award -->
-        <ion-item class="seller award" style="display: none;">
-            <ion-avatar item-left>
-                <img src="http://vignette2.wikia.nocookie.net/gameofthrones/images/3/3b/AManSeason5.jpg/revision/latest?cb=20150421020227">
-            </ion-avatar>
+        <div *ngIf="history.length">
+            <ion-item class="seller award" *ngFor="let item of history; let i = index">
+                <ion-avatar item-left>
+                    <img src="img/default_avatar.jpg" *ngIf="!item.store_image">
+                    <img [src]="item.store_image" *ngIf="item.store_image">
+                </ion-avatar>
 
-            <h2>Jaqen H'ghar</h2>
-            <p>The man is selling some faces.</p>
-        </ion-item>
+                <h2>{{item.message}}</h2>
+                <p>{{item.store}}</p>
+                <p class="price" secondary>P {{item.price}}</p>
+                <time class="time-ago" item-right>{{item.date}}</time>
+            </ion-item>
+        </div>
     </ion-list>
 </ion-content>
