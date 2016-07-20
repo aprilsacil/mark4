@@ -29,7 +29,7 @@
 <ion-content>
     <!-- Seller Details -->
     <ion-card class="user-details">
-        <ion-item>
+        <ion-item *ngIf="user">
             <ion-avatar class="avatar">
                 <img src="img/default_avatar.jpg" *ngIf="!user.image">
                 <img [src]="user.image" *ngIf="user.image">
@@ -49,7 +49,7 @@
         <div *ngIf="shoppers.length">
             <button ion-item class="shopper" *ngFor="let shopper of shoppers"
             (click)="goToShopperDetails(shopper)">
-                <cheers-avatar [user]="shopper" item-left></cheers-avatar>
+                <cheers-avatar [user]="user" item-left></cheers-avatar>
                 <!-- <ion-avatar item-left>
                     <img src="img/default_avatar.jpg" *ngIf="!shopper.image">
                     <img [src]="shopper.image" *ngIf="shopper.image">

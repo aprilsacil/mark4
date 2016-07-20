@@ -4,13 +4,12 @@
   See https://angular.io/docs/ts/latest/api/core/ComponentMetadata-class.html
   for more info on Angular 2 Components.
 -->
-<div>
-    <ion-avatar class="avatar">
-        <img src="img/default_avatar.jpg" *ngIf="!user.image">
-        <p *ngIf="!errorImage">
-            <img src="http://facebook.com/asdkfj;askdfjlkadjsffk;" *ngIf="user.image"
-            (error)="updateAvatar($event)">
-        </p>
-        <p *ngIf="errorImage">{{user.fullname}}</p>
-    </ion-avatar>
-</div>
+<ion-avatar class="cheers-avatar avatar" *ngIf="user">
+    <!-- <img src="img/default_avatar.jpg" *ngIf="!user.image"> -->
+    <!-- <p *ngIf="!errorImage">
+
+    </p>
+    <p class="user-fullname" *ngIf="!user.image || errorImage">{{user.fullname}}</p> -->
+    <img [src]="user.image" *ngIf="!fetching && user.image"/>
+    <p class="user-fullname" *ngIf="!fetching && !user.image">{{user.fullname}}</p>
+</ion-avatar>
