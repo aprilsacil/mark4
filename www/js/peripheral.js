@@ -329,7 +329,7 @@ var BLEPeripheral = function() {
             header.set(id, 2);
 
             // calculate total transfer iteration
-            var total   = Math.ceil(size / MAX_CHUNK_SIZE);
+            var total   = size / MAX_CHUNK_SIZE;
             // total written
             var written = 0;
 
@@ -339,7 +339,7 @@ var BLEPeripheral = function() {
             this.debug('Writting ' + size + ' byte(s) of data.');
 
             // set the write interval
-            var interval = setInterval(function() {
+            function recurse() {
                 // initialize payload
                 var payload = new Uint32Array(20);
                 // chop message
@@ -349,14 +349,14 @@ var BLEPeripheral = function() {
                     // set payload header
                     payload.set(header, 0);
                     // set the message
-                    payload.set(slice, slice.length);
+                    payload.set(slice, header.length);
 
                     // encode message
                     payload = bluetoothle.bytesToString(payload);
                 } catch(e) {
                     self.debug('Unable to write chunks.');
 
-                    clearInterval(interval);
+                    return errorCallback(self, { error : true, message : 'Unable to write chunks' });
                 }
 
                 // notify the payload
@@ -367,7 +367,7 @@ var BLEPeripheral = function() {
                     value           : payload
                 }, function(response) {
                     // EOF?
-                    if(total == ++written) {
+                    if(total <= ++written) {
                         // write eof
                         var eof = new Uint32Array(20);
 
@@ -381,32 +381,33 @@ var BLEPeripheral = function() {
                         eof = bluetoothle.bytesToString(eof);
 
                         // notify eof
-                        self.notify({
-                            address         : data.address,
-                            characteristic  : data.characteristic,
-                            service         : data.service,
-                            value           : eof
-                        }, function(response) {
-                            // call success callback
-                            successCallback.call(self, { 'eof' : true });
-                        }, function(response) {
-                            // error callback
-                            errorCallback.call(self, response);
-                        });
+                        setTimeout(function() {
+                            self.notify({
+                                address         : data.address,
+                                characteristic  : data.characteristic,
+                                service         : data.service,
+                                value           : eof
+                            }, function(response) {
+                                // call success callback
+                                return successCallback.call(self, { 'eof' : true });
+                            }, function(response) {
+                                // error callback
+                                return errorCallback.call(self, response);
+                            });
 
-                        // debug
-                        self.debug(size + ' byte(s) of data written with write id ' + bluetoothle.bytesToString(id));
-
-                        clearInterval(interval);
+                            // debug
+                            self.debug(size + ' byte(s) of data written with write id ' + bluetoothle.bytesToString(id));
+                        }, 80);
+                    } else {
+                        return setTimeout(recurse, 80);
                     }
                 }, function(response) {
                     // error callback
-                    errorCallback.call(self, response);
-
-                    // clear interval
-                    clearInterval(interval);
+                    return errorCallback.call(self, response);
                 });
-            }, 80);
+            };
+
+            setTimeout(recurse, 1000);
         },
 
         // handle write chunk and defer write callback

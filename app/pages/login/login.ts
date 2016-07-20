@@ -141,6 +141,7 @@ export class LoginPage {
                         var advertiseData = {
                             _id : response._id,
                             fullname: response.fullname,
+                            name: response.name,
                             job_description: response.job_description,
                             company_name: response.company_name,
                             level: response.level

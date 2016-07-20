@@ -50,8 +50,8 @@ export class MyApp {
                     // check it's almost 30 minutes
                     if (difference >= 60) {
                         // if it's almost 30 minutes, set the root page to the relog page
-                        this.rootPage = ReloginPage;
-                        return;
+                        // this.rootPage = ReloginPage;
+                        // return;
                     }
 
                     // get the user
@@ -69,6 +69,7 @@ export class MyApp {
                         var advertiseData = {
                             _id : user._id,
                             fullname: user.fullname,
+                            name: user.name,
                             job_description: user.job_description,
                             company_name: user.company_name,
                             level: user.level
@@ -154,4 +155,4 @@ export class MyApp {
 
 ionicBootstrap(MyApp, [
     provide('CouchDBEndpoint', {useValue: 'http://192.168.0.109:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://127.0.0.1/api/'})])
+    provide('APIEndpoint', {useValue: 'http://192.168.0.124/'})])

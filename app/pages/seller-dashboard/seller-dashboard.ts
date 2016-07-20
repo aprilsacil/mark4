@@ -5,6 +5,7 @@ import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
 import { SellerShopperViewPage } from '../seller-shopper-view/seller-shopper-view';
 import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-update-settings';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
 
 /*
   Generated class for the SellerDashboardPage page.
@@ -14,6 +15,7 @@ import { LocalStorageProvider } from '../../providers/storage/local-storage-prov
 */
 @Component({
   templateUrl: 'build/pages/seller-dashboard/seller-dashboard.html',
+  directives: [CheersAvatar],
   providers: [LocalStorageProvider]
 })
 export class SellerDashboardPage {

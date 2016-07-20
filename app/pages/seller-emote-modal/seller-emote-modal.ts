@@ -33,7 +33,7 @@ export class SellerEmoteModalPage {
 
         // trigger an event
         this.events.subscribe('central:getPeripherals', (eventData) => {
-            this.peripherals = (JSON.stringify(eventData[0]) === '{}');
+            this.peripherals = !(JSON.stringify(eventData[0]) === '{}');
         });
     }
 

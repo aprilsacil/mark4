@@ -21,7 +21,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 })
 export class BuyerDashboardPage {
     private db;
-    user: Object = {};
+    user = { name: <string> null };
     sellers = [];
     associate = {
         username: <string> null,
@@ -32,7 +32,8 @@ export class BuyerDashboardPage {
         private events: Events,
         private localStorage: LocalStorageProvider,
         private nav: NavController,
-        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
+        @Inject('APIEndpoint') private apiEndpoint: string
     ) {
         // couch db integration
         this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
@@ -118,15 +119,18 @@ export class BuyerDashboardPage {
                     // show the loader
                     this.nav.present(loading);
 
-                    this.db.getSession((errSession, responseSession) => {
-                        if (errSession) {
-                            // network error
-                        } else if (!responseSession.userCtx.name) {
-                            // nobody's logged in
+                    self.db.getUser(this.user.name, (errUser, responseUser) => {
+                        if (errUser) {
+                            if (errUser.name === 'not_found') {
+                              // typo, or you don't have the privileges to see this user
+                            } else {
+                              // some other error
+                            }
                         } else {
-                            // response.userCtx.name is the current user
-                            // get user info
-                            self.db.getUser(responseSession.userCtx.name, (errUser, responseUser) => {
+                            // response is the user object
+                            self.db.putUser(this.user.name, {
+                                metadata : { roles: ['seller'] }
+                            }, function (errUser, responseUser) {
                                 if (errUser) {
                                     if (errUser.name === 'not_found') {
                                       // typo, or you don't have the privileges to see this user
@@ -134,22 +138,21 @@ export class BuyerDashboardPage {
                                       // some other error
                                     }
                                 } else {
-                                    // response is the user object
-                                    self.db.putUser(responseSession.userCtx.name, {
-                                        metadata : { roles: ['seller'], store_name: 'Store Name' }
-                                    }, function (errUser, responseUser) {
-                                        if (errUser) {
-                                            if (errUser.name === 'not_found') {
-                                              // typo, or you don't have the privileges to see this user
-                                            } else {
-                                              // some other error
-                                            }
-                                        } else {
-                                            // if no error redirect to seller dashboard now
-                                            loading.dismiss();
+                                    self.db.getUser(self.user.name, (err, response) => {
+                                    console.log(err, response);
+                                        // delete the password and salt
+                                        delete response.password_scheme;
+                                        delete response.salt
 
-                                            return self.nav.setRoot(SellerDashboardPage);
-                                        }
+                                        var newuser = JSON.stringify(response);
+
+                                        // save user data to the local storage
+                                        self.localStorage.setToLocal('user', newuser);
+
+                                        // if no error redirect to seller dashboard now
+                                        loading.dismiss();
+
+                                        return self.nav.setRoot(SellerDashboardPage);
                                     });
                                 }
                             });
@@ -171,6 +174,8 @@ export class BuyerDashboardPage {
     }
 
     rejectInvitation() {
+        var self = this;
+
         // show a confirmation alert
         var confirm = Alert.create({
             title: 'Are you sure?',
@@ -182,7 +187,29 @@ export class BuyerDashboardPage {
             {
                 text: 'Remove',
                 handler: () => {
-                    // TODO: remove the selected invitation
+                    self.db.putUser(this.user.name, {
+                        metadata : { store_uuid: '', store_name: '' }
+                    }, function (errUser, responseUser) {
+                        if (errUser) {
+                            if (errUser.name === 'not_found') {
+                              // typo, or you don't have the privileges to see this user
+                            } else {
+                              // some other error
+                            }
+                        }
+
+                        self.db.getUser(self.user.name, (err, response) => {
+                            // delete the password and salt
+                            delete response.password_scheme;
+                            delete response.salt
+
+                            var newuser = JSON.stringify(response);
+
+                            // save user data to the local storage
+                            self.localStorage.setToLocal('user', newuser);
+                            return self.nav.setRoot(BuyerDashboardPage);
+                        });
+                    });
                 }
             }]
         });

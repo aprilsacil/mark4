@@ -290,6 +290,20 @@ export class CentralBle {
             }
         }
 
+        // var foo = {
+        //     _id: '12345678890',
+        //     name: 'Long Name',
+        //     message: 'Lorem ipsum sit dolor amit 1.',
+        //     message2: 'Lorem ipsum sit dolor amit 2.',
+        //     message3: 'Lorem ipsum sit dolor amit 3.',
+        //     message4: 'Lorem ipsum sit dolor amit 4.',
+        //     message5: 'Lorem ipsum sit dolor amit 5.',
+        //     message6: 'Lorem ipsum sit dolor amit 6.',
+        //     message7: 'Lorem ipsum sit dolor amit 7.',
+        //  };
+
+        // message = JSON.stringify(foo);
+
         // set request params
         var param = {
             'address'           : information.info.address,

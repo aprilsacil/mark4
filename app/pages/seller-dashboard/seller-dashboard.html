@@ -49,10 +49,11 @@
         <div *ngIf="shoppers.length">
             <button ion-item class="shopper" *ngFor="let shopper of shoppers"
             (click)="goToShopperDetails(shopper)">
-                <ion-avatar item-left>
+                <cheers-avatar [user]="shopper" item-left></cheers-avatar>
+                <!-- <ion-avatar item-left>
                     <img src="img/default_avatar.jpg" *ngIf="!shopper.image">
                     <img [src]="shopper.image" *ngIf="shopper.image">
-                </ion-avatar>
+                </ion-avatar> -->
 
                 <h2>{{shopper.fullname}}</h2>
                 <p class="work">

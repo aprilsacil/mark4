@@ -383,6 +383,7 @@ var BLECentral = function() {
             // max message chunk size
             var MAX_CHUNK_SIZE  = 10;
             // get the total packet size
+            // test byteLength
             var size            = this.byteLength(data.value);
             // convert the message
             var message         = bluetoothle.stringToBytes(data.value);
@@ -404,7 +405,7 @@ var BLECentral = function() {
             header.set(id, 2);
 
             // calculate total transfer iteration
-            var total   = Math.ceil(size / MAX_CHUNK_SIZE);
+            var total   = size / MAX_CHUNK_SIZE;
             // total written
             var written = 0;
 
@@ -414,7 +415,7 @@ var BLECentral = function() {
             this.debug('Writting ' + size + ' byte(s) of data.');
 
             // set the write interval
-            var interval = setInterval(function() {
+            function recurse() {
                 // initialize payload
                 var payload = new Uint32Array(20);
                 // chop message
@@ -424,14 +425,14 @@ var BLECentral = function() {
                     // set payload header
                     payload.set(header, 0);
                     // set the message
-                    payload.set(slice, slice.length);
+                    payload.set(slice, header.length);
 
                     // encode message
                     payload = bluetoothle.bytesToString(payload);
                 } catch(e) {
                     self.debug('Unable to write chunks.');
 
-                    clearInterval(interval);
+                    return errorCallback.call(self, { error : true, message : 'Unable to write chunks. '});
                 }
 
                 // write the payload
@@ -443,7 +444,10 @@ var BLECentral = function() {
                     value           : payload
                 }, function(response) {
                     // EOF?
-                    if(total == ++written) {
+                    if(total <= ++written) {
+                        console.log('Response: ');
+                        console.log(response);
+
                         // write eof
                         var eof = new Uint32Array(20);
 
@@ -457,33 +461,34 @@ var BLECentral = function() {
                         eof = bluetoothle.bytesToString(eof);
 
                         // write eof
-                        self.write({
-                            address         : data.address,
-                            characteristic  : data.characteristic,
-                            service         : data.service,
-                            type            : 'noResponse',
-                            value           : eof
-                        }, function(response) {
-                            // call success callback
-                            successCallback.call(self, { 'eof' : true });
-                        }, function(response) {
-                            // error callback
-                            errorCallback.call(self, response);
-                        });
+                        setTimeout(function() {
+                            self.write({
+                                address         : data.address,
+                                characteristic  : data.characteristic,
+                                service         : data.service,
+                                type            : 'noResponse',
+                                value           : eof
+                            }, function(response) {
+                                // call success callback
+                                return successCallback.call(self, { 'eof' : true });
+                            }, function(response) {
+                                // error callback
+                                return errorCallback.call(self, response);
+                            });
 
-                        // debug
-                        self.debug(size + ' byte(s) of data written with write id ' + bluetoothle.bytesToString(id));
-
-                        clearInterval(interval);
+                            // debug
+                            self.debug(size + ' byte(s) of data written with write id ' + bluetoothle.bytesToString(id));
+                        }, 80);
+                    } else {
+                        return setTimeout(recurse, 80);
                     }
                 }, function(response) {
                     // error callback
-                    errorCallback.call(self, response);
-
-                    // clear interval
-                    clearInterval(interval);
+                    return errorCallback.call(self, response);
                 });
-            }, 1000);
+            };
+
+            setTimeout(recurse, 1000);
         },
 
         // handle notify chunk and defer write callback
