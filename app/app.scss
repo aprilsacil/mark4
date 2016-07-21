@@ -109,3 +109,14 @@ form.padding-less-input {
         }
     }
 }
+
+// Cheers Avatar Wrapper
+.cheers-avatar {
+    ion-avatar.avatar {
+        position: relative;
+
+        .user-fullname {
+            font-size: 1.2rem;
+        }
+    }
+}
