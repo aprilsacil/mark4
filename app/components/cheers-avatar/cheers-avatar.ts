@@ -32,8 +32,6 @@ export class CheersAvatar {
     ngOnInit() {
         console.log('user', this.user);
 
-        // delete this.user.image;
-
         // get the user details
         if (!this.user.image) {
             this.getUserDetails();

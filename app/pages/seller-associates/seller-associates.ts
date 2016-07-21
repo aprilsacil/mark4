@@ -1,12 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { NavController, Toast } from 'ionic-angular';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
+
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
-
-var PouchDB = require('pouchdb');
-PouchDB.plugin(require('pouchdb-authentication'));
 
 /*
   Generated class for the SellerAssociatesPage page.
@@ -19,14 +18,13 @@ PouchDB.plugin(require('pouchdb-authentication'));
   providers: [HTTP_PROVIDERS, LocalStorageProvider]
 })
 export class SellerAssociatesPage {
-	private db;
-	user = {
-		name: <string> null,
-		image: <string> null };
-	associates = [];
-	results = [];
-	searching = false;
-
+    user = {
+        name: <string> null,
+        image: <string> null
+    };
+    associates = [];
+    results = [];
+    searching = false;
 
 	constructor(
 		private localStorage: LocalStorageProvider,
@@ -35,14 +33,7 @@ export class SellerAssociatesPage {
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
-		this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
-
-        // local integration
-        let local = new PouchDB('cheers');
-
-        // this will sync locally
-        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
-
+        // get user details from local storage
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = JSON.parse(data);
 
@@ -79,7 +70,7 @@ export class SellerAssociatesPage {
      * Render and shows a toast message
      */
     showToast(message) {
-        let toast = Toast.create({
+        var toast = Toast.create({
             message: message,
             duration: 3000
         });
@@ -95,8 +86,9 @@ export class SellerAssociatesPage {
 		}
 
 		this.searching = true;
-		let headers = new Headers({
-    		'Content-Type': 'application/x-www-form-urlencoded'});
+		var headers = new Headers({
+    		'Content-Type': 'application/x-www-form-urlencoded'
+        });
 
     	var param = {
     		type:'invite',
@@ -126,7 +118,7 @@ export class SellerAssociatesPage {
      */
     invite(username) {
     	console.log(username);
-    	let headers = new Headers({
+    	var headers = new Headers({
     		'Content-Type': 'application/x-www-form-urlencoded'});
 
     	var param = {

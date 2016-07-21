@@ -6,10 +6,6 @@
 -->
 <ion-avatar class="cheers-avatar avatar" *ngIf="user">
     <img src="img/default_avatar.jpg" *ngIf="!user.image && !fetching">
-    <!-- <p *ngIf="!errorImage">
-
-    </p>
-    <p class="user-fullname" *ngIf="!user.image || errorImage">{{user.fullname}}</p> -->
     <img [src]="user.image" *ngIf="!fetching && user.image"/>
-    <p class="user-fullname" *ngIf="!fetching && !user.image">{{user.fullname}}</p>
+    <!-- <p class="user-fullname" *ngIf="!fetching && !user.image">{{user.fullname}}</p> -->
 </ion-avatar>

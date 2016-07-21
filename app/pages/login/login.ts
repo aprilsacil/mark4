@@ -19,8 +19,8 @@ PouchDB.plugin(require('pouchdb-authentication'));
   providers: [LocalStorageProvider]
 })
 export class LoginPage {
-    private db;
-
+    localDb: any;
+    pouchDb: any;
     login = {
         username: <string> null,
         password: <string> null
@@ -32,13 +32,14 @@ export class LoginPage {
         private localStorage: LocalStorageProvider,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
-        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
+        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
-        var local = new PouchDB('cheers');
+        this.localDb = new PouchDB('cheers');
 
         // this will sync locally
-        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+        this.localDb.sync(this.pouchDb, {live: true, retry: true})
+            .on('error', console.log.bind(console));
     }
 
     /**
@@ -71,7 +72,7 @@ export class LoginPage {
         // check if the form is not valid
         if (!loginForm.valid) {
             // prompt that something is wrong in the form
-            let alert = Alert.create({
+            var alert = Alert.create({
                 title: 'Ooops...',
                 subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
                 buttons: ['OK']
@@ -100,15 +101,12 @@ export class LoginPage {
         };
 
         // login the user
-        this.db.login(this.login.username, this.login.password, ajaxOpts, (err, response) => {
-            console.log(err);
-            console.log('login response', response);
-
+        this.pouchDb.login(this.login.username, this.login.password, ajaxOpts, (err, response) => {
             var loginResponse = response;
 
             if(!err) {
                 // get user details
-                this.db.getUser(loginResponse.name, (err, response) => {
+                this.pouchDb.getUser(loginResponse.name, (err, response) => {
                     console.log('get user response', response);
 
                     // delete the password and salt

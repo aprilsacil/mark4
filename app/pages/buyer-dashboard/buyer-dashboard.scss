@@ -12,6 +12,12 @@
         }
     }
 
+    .award {
+        p.price {
+            color: color($colors, secondary);
+        }
+    }
+
     .associate-invite {
         .invite-controls {
             button {

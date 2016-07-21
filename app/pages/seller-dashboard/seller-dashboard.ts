@@ -37,6 +37,10 @@ export class SellerDashboardPage {
         });
     }
 
+    /**
+     * Listens to an event triggered by the central ble library to get nearby
+     * peripheral devices details and render it to the app.
+     */
     getNearbyShopperDevices() {
         // initialize the event to listen
         this.events.subscribe('central:buyersNearby', (eventData) => {
@@ -62,7 +66,7 @@ export class SellerDashboardPage {
                     // get the index of the shopper by looping all the shoppers
                     for (var s in this.shoppers) {
                         if (this.shoppers[s]._id == buyer._id) {
-                            index = 0;
+                            index = s;
                             break;
                         }
                     }
@@ -128,6 +132,9 @@ export class SellerDashboardPage {
 
             // stop the scan
             this.events.publish('central:stopScan');
+
+            // unsubscribe event
+            this.events.unsubscribe('central:buyersNearby', () => {});
             return;
         }
 

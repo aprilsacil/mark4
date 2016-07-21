@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Alert, Events, Loading, NavController, Toast, ViewController } from 'ionic-angular';
+
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 /*
@@ -18,13 +19,15 @@ export class BuyerLookingforModalPage {
     };
 
     user = {
-        _id: <string> null,
+         _id: <string> null,
         name: <string> null,
         fullname: <string> null,
-        company_name: <string> null,
+        store_name: <string> null,
         job_description: <string> null,
+        company_name: <string> null,
         image: <string> null,
         level: <number> 0,
+        roles: <any> []
     };
 
 	constructor(
@@ -33,18 +36,11 @@ export class BuyerLookingforModalPage {
 		private nav: NavController,
 		private view: ViewController
 	) {
+        // fetch user details from the local storage
         this.localStorage.getFromLocal('user').then((data) => {
             var user = JSON.parse(data);
 
-            this.user = {
-                _id : user._id,
-                name: user.name,
-                fullname: user.fullname,
-                job_description: user.job_description,
-                company_name: user.company_name,
-                level: user.level,
-                image: user.image
-            }
+            this.user = user;
         });
     }
 
@@ -59,7 +55,7 @@ export class BuyerLookingforModalPage {
      * Render and shows a toast message
      */
     showToast(message) {
-        let toast = Toast.create({
+        var toast = Toast.create({
             message: message,
             duration: 3000
         });
@@ -74,7 +70,7 @@ export class BuyerLookingforModalPage {
     submitLookingFor(lookingForForm) {
         if (!lookingForForm.valid) {
             // prompt that something is wrong in the form
-            let alert = Alert.create({
+            var alert = Alert.create({
                 title: 'Ooops...',
                 subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
                 buttons: ['OK']
@@ -86,7 +82,7 @@ export class BuyerLookingforModalPage {
         }
 
         // initialize the loader
-        let loading = Loading.create({
+        var loading = Loading.create({
             content: 'Sending...'
         });
 
