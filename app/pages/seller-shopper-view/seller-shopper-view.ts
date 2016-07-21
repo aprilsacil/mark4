@@ -20,7 +20,7 @@ import 'rxjs/add/operator/map';
 })
 export class SellerShopperViewPage {
     //private shopper: Object = {};
-    private shopper = { _id: <string> null };
+    private shopper = { _id: <string> null, image: <string> null };
     private history = [];
     constructor(
          private localStorage: LocalStorageProvider,
@@ -34,7 +34,7 @@ export class SellerShopperViewPage {
 
         this.localStorage.getFromLocal('user').then((data) => {
             var user = JSON.parse(data);
- 
+
             let headers = new Headers({
               'Content-Type': 'application/x-www-form-urlencoded'});
 

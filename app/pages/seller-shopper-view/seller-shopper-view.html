@@ -14,7 +14,10 @@
     <!-- Shopper Details -->
     <ion-card class="user-details">
         <ion-item>
-            <cheers-avatar [user]="shopper"></cheers-avatar>
+            <ion-avatar class="avatar">
+                <img src="img/default_avatar.jpg" *ngIf="!shopper.image">
+                <img [src]="shopper.image" *ngIf="shopper.image">
+            </ion-avatar>
             <div class="info">
                 <h2 class="name">{{shopper.fullname}}</h2>
                 <p class="work">

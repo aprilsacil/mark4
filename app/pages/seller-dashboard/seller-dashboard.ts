@@ -19,7 +19,7 @@ import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
   providers: [LocalStorageProvider]
 })
 export class SellerDashboardPage {
-    user: Object = {};
+    user: any;
     shoppers = [];
     scanning: boolean = false;
 

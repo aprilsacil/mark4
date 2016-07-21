@@ -55,7 +55,7 @@ export class SellerAssociatesPage {
 	    	};
 
 			this.http
-				.post('http://cheers.dev/users', param, {headers: headers})
+				.post(this.apiEndpoint + 'users', param, {headers: headers})
 				.map(response => response.json())
 				.subscribe((data) => {
 					data = data.rows;
