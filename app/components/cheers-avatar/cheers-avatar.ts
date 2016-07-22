@@ -29,6 +29,9 @@ export class CheersAvatar {
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {}
 
+    /**
+     * Will run once the component was initialized
+     */
     ngOnInit() {
         console.log('user', this.user);
 
@@ -41,17 +44,13 @@ export class CheersAvatar {
     }
 
     /**
-     * Get the user details
+     * Fetches the user details from the API.
      */
-    updateAvatar() {
-        // this.errorImage = true;
-    }
-
     getUserDetails() {
         var headers = new Headers({ 'Content-Type': 'application/x-www-form-urlencoded' });
 
         var param = {
-            type:'buyer_full',
+            type:'all_full',
             search: this.user.name
         };
 

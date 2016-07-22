@@ -4,6 +4,8 @@ import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
+import { Seller } from '../../models/seller';
+
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
@@ -18,10 +20,7 @@ import 'rxjs/add/operator/map';
   providers: [HTTP_PROVIDERS, LocalStorageProvider]
 })
 export class SellerAssociatesPage {
-    user = {
-        name: <string> null,
-        image: <string> null
-    };
+    user: any;
     associates = [];
     results = [];
     searching = false;
@@ -35,9 +34,9 @@ export class SellerAssociatesPage {
     ) {
         // get user details from local storage
         this.localStorage.getFromLocal('user').then((data) => {
-            this.user = JSON.parse(data);
+            this.user = new Seller(JSON.parse(data));
 
-            let headers = new Headers({
+            var headers = new Headers({
 	    		'Content-Type': 'application/x-www-form-urlencoded'});
 
 	    	var param = {
@@ -100,6 +99,8 @@ export class SellerAssociatesPage {
 			.map(response => response.json())
 			.subscribe((data) => {
 				data = data.rows;
+
+                console.log(data);
 				for ( var i in data ) {
 					this.results.push({
 						username: data[i].key,
@@ -114,7 +115,6 @@ export class SellerAssociatesPage {
 
 	/**
      * Invites this person
-     *
      */
     invite(username) {
     	console.log(username);

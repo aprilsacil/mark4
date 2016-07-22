@@ -1,9 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { Alert, Events, Loading, NavController } from 'ionic-angular';
+
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
+
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
+import { Buyer } from '../../models/buyer';
+import { Seller } from '../../models/seller';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -113,16 +118,18 @@ export class LoginPage {
                     delete response.password_scheme;
                     delete response.salt
 
-                    var user = JSON.stringify(response);
+                    var user = response;
 
-                    // save user data to the local storage
-                    self.localStorage.setToLocal('user', user);
+                    // set the timestamp
                     self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
 
                     // if seller redirect to seller dashboard
                     if(response.roles[0] === 'seller') {
+                        // save user data to the local storage
+                        self.localStorage.setToLocal('user', JSON.stringify(new Seller(user)));
+
                         // broadcast event to start some event listeners
-                        this.events.publish('central:start', user);
+                        this.events.publish('central:start', JSON.stringify(new Seller(user)));
 
                         // remove loader and set the root page
                         loading.dismiss().then(() => {
@@ -132,20 +139,14 @@ export class LoginPage {
 
                     // if buyer redirect to buyer dashboard
                     if(response.roles[0] === 'buyer') {
+                        // save user data to the local storage
+                        self.localStorage.setToLocal('user', JSON.stringify(new Buyer(user)));
+
                         // broadcast event to start some event listeners
                         this.events.publish('peripheral:start');
 
-                        // set the data to be advertised
-                        var advertiseData = {
-                            _id : response._id,
-                            fullname: response.fullname,
-                            name: response.name,
-                            job_description: response.job_description,
-                            company_name: response.company_name,
-                            level: response.level
-                        }
-
-                        this.events.publish('peripheral:setData', advertiseData);
+                        // let's advertise
+                        this.events.publish('peripheral:setData', JSON.stringify(new Buyer(user)));
 
                         // remove loader and set the root page
                         loading.dismiss().then(() => {

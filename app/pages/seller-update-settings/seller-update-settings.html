@@ -24,8 +24,8 @@
         <ion-item class="avatar-wrapper">
             <ion-avatar (click)="openTheCamera()">
                 <ion-icon name="camera"></ion-icon>
-                <img src="img/default_avatar.jpg" *ngIf="!seller.image">
-                <img [src]="seller.image" *ngIf="seller.image">
+                <img src="img/default_avatar.jpg" *ngIf="!user.image">
+                <img [src]="user.image" *ngIf="user.image">
             </ion-avatar>
         </ion-item>
 
@@ -34,7 +34,7 @@
             <ion-input
                 type="text"
                 placeholder="What's your store name?"
-                [(ngModel)]="seller.store_name"
+                [(ngModel)]="user.store_name"
                 required
                 ngControl="storeName"
                 #storeName="ngForm"></ion-input>
@@ -53,7 +53,7 @@
             <ion-input
                 type="text"
                 placeholder="What's your store name?"
-                [(ngModel)]="seller.fullname"
+                [(ngModel)]="user.fullname"
                 required
                 ngControl="sellerName"
                 #sellerName="ngForm"></ion-input>

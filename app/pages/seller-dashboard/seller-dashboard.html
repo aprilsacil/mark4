@@ -46,42 +46,43 @@
 
     <!-- List of Nearby Shoppers -->
     <ion-list>
-        <button ion-item class="shopper"
-        *ngIf="shoppers.length"
-        *ngFor="let shopper of shoppers"
-        (click)="goToShopperDetails(shopper)">
-            <!-- <cheers-avatar [user]="shopper" item-left></cheers-avatar> -->
-            <ion-avatar item-left>
-                <img src="img/default_avatar.jpg" *ngIf="!shopper.image">
-                <img [src]="shopper.image" *ngIf="shopper.image">
-            </ion-avatar>
+        <div *ngIf="shoppers.length">
+            <button ion-item class="shopper"
+            *ngFor="let shopper of shoppers"
+            (click)="goToShopperDetails(shopper)">
+                <cheers-avatar [user]="shopper" item-left></cheers-avatar>
+                <!-- <ion-avatar item-left>
+                    <img src="img/default_avatar.jpg" *ngIf="!shopper.image">
+                    <img [src]="shopper.image" *ngIf="shopper.image">
+                </ion-avatar> -->
 
-            <h2>{{shopper.fullname}}</h2>
-            <p class="work">
-                <span class="job-description" *ngIf="shopper.job_description">
-                    {{shopper.job_description}}
-                </span>
-                <span *ngIf="shopper.job_description && shopper.company_name">@</span>
-                <span class="company" *ngIf="shopper.company_name">
-                    {{shopper.company_name}}
-                </span>
-            </p>
-            <p class="stats">
-                <span class="level">
-                    <ion-icon name="star" bright></ion-icon> 0
-                </span>
-                <span class="went-by">
-                    <ion-icon name="refresh" cheers></ion-icon> 0
-                </span>
-                <span class="conversions">
-                    <ion-icon name="cash" secondary></ion-icon> 0%
-                </span>
-            </p>
-            <p class="looking-for" *ngIf="shopper.looking_for">
-                <span class="label">Looking for:</span>
-                <span class="product">{{shopper.looking_for}}</span>
-            </p>
-        </button>
+                <h2>{{shopper.fullname}}</h2>
+                <p class="work">
+                    <span class="job-description" *ngIf="shopper.job_description">
+                        {{shopper.job_description}}
+                    </span>
+                    <span *ngIf="shopper?.job_description && shopper.company_name">@</span>
+                    <span class="company" *ngIf="shopper.company_name">
+                        {{shopper.company_name}}
+                    </span>
+                </p>
+                <p class="stats">
+                    <span class="level">
+                        <ion-icon name="star" bright></ion-icon> 0
+                    </span>
+                    <span class="went-by">
+                        <ion-icon name="refresh" cheers></ion-icon> 0
+                    </span>
+                    <span class="conversions">
+                        <ion-icon name="cash" secondary></ion-icon> 0%
+                    </span>
+                </p>
+                <p class="looking-for" *ngIf="shopper.looking_for">
+                    <span class="label">Looking for:</span>
+                    <span class="product">{{shopper.looking_for}}</span>
+                </p>
+            </button>
+        </div>
 
         <!-- No Shoppers -->
         <ion-item class="empty-dashboard item-plain"

@@ -4,6 +4,9 @@ import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
+import { Buyer } from '../../models/buyer';
+import { Seller } from '../../models/seller';
+
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
@@ -31,10 +34,7 @@ export class SellerAwardModalPage {
         image: <string> null
     };
 
-    shopper = {
-        name: <string> null,
-        image: <string> null
-    };
+    shopper: any;
 
     constructor(
         private localStorage: LocalStorageProvider,
@@ -46,7 +46,7 @@ export class SellerAwardModalPage {
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
         // get the shopper details from the NavParams
-        this.shopper = this.params.get('shopper');
+        this.shopper = new Buyer(this.params.get('shopper'));
     }
 
     /**
@@ -88,7 +88,7 @@ export class SellerAwardModalPage {
         self.nav.present(loading);
 
         self.localStorage.getFromLocal('user').then((data) => {
-            var user = JSON.parse(data);
+            var user = new Seller(JSON.parse(data));
 
             // set the headers
             var headers = new Headers({
@@ -115,7 +115,7 @@ export class SellerAwardModalPage {
                             setTimeout(() => {
                                 // show a toast
                                 self.showToast('You have successfully gave the customer an award.');
-                            }, 400);
+                            }, 600);
                         });
                     }
                 }, (error) => {

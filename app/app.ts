@@ -116,7 +116,7 @@ export class MyApp {
         var self = this;
 
         // initialize this
-        // self.centralBle.init();
+        self.centralBle.init();
 
         this.events.subscribe('central:startScan', (eventData) => {
             console.log('event: start scan');
@@ -142,7 +142,7 @@ export class MyApp {
      */
     buyerEvents() {
         // initialize the peripheral ble
-        // this.peripheralBle.init();
+        this.peripheralBle.init();
 
         this.events.subscribe('peripheral:stop', (eventData) => {
             this.peripheralBle.stop();

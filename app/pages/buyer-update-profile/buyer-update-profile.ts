@@ -6,6 +6,8 @@ import { LoginPage } from '../login/login';
 
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
+import { Buyer } from '../../models/buyer';
+
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
 
@@ -21,13 +23,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 export class BuyerUpdateProfilePage {
     pouchDb: any;
     localDb: any;
-    user = {
-        image: <string> null,
-        name: <string> null,
-        fullname: <string> null,
-        job_description: <string> null,
-        company_name: <string> null
-    };
+    user = new Buyer({});
 
     constructor(
         private events: Events,
@@ -48,12 +44,8 @@ export class BuyerUpdateProfilePage {
         this.localStorage.getFromLocal('user').then((data) => {
             var user = JSON.parse(data);
 
-            // set some data
-            this.user.name = user.name;
-            this.user.fullname = user.fullname;
-            this.user.job_description = user.job_description;
-            this.user.company_name = user.company_name;
-            this.user.image = user.image;
+            // set the data
+            this.user = new Buyer(user);
         });
     }
 
@@ -196,7 +188,7 @@ export class BuyerUpdateProfilePage {
                 delete response.password_scheme;
                 delete response.salt
 
-                var user = JSON.stringify(response);
+                var user = JSON.stringify(new Buyer(response));
 
                 // update user data to the local storage
                 self.localStorage.setToLocal('user', user);

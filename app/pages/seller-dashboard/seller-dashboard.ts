@@ -1,11 +1,17 @@
 import { Component, Inject } from '@angular/core';
 import { Events, Modal, NavController, ViewController } from 'ionic-angular';
+
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
 import { SellerShopperViewPage } from '../seller-shopper-view/seller-shopper-view';
 import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-update-settings';
+
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
 import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
+
+import { Buyer } from '../../models/buyer';
+import { Seller } from '../../models/seller';
 
 /*
   Generated class for the SellerDashboardPage page.
@@ -33,7 +39,7 @@ export class SellerDashboardPage {
         this.scanning = false;
 
         this.localStorage.getFromLocal('user').then((data) => {
-            this.user = JSON.parse(data);
+            this.user = new Seller(JSON.parse(data));
         });
     }
 
@@ -45,8 +51,9 @@ export class SellerDashboardPage {
         // initialize the event to listen
         this.events.subscribe('central:buyersNearby', (eventData) => {
             var buyer = JSON.parse(eventData[0]);
+            buyer = new Buyer(buyer);
 
-            console.log(buyer);
+            console.log('buyer', buyer);
 
             // check if the buyer already exists in the object
             if (this.shoppers) {

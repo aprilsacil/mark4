@@ -3,6 +3,8 @@ import { Alert, Events, Loading, NavController, Toast, ViewController } from 'io
 
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
+import { Buyer } from '../../models/buyer';
+
 /*
   Generated class for the BuyerLookingforModalPage page.
 
@@ -17,18 +19,7 @@ export class BuyerLookingforModalPage {
     lookingFor = {
         product: <string> null
     };
-
-    user = {
-         _id: <string> null,
-        name: <string> null,
-        fullname: <string> null,
-        store_name: <string> null,
-        job_description: <string> null,
-        company_name: <string> null,
-        image: <string> null,
-        level: <number> 0,
-        roles: <any> []
-    };
+    user = new Buyer({});
 
 	constructor(
         private events: Events,
@@ -40,7 +31,7 @@ export class BuyerLookingforModalPage {
         this.localStorage.getFromLocal('user').then((data) => {
             var user = JSON.parse(data);
 
-            this.user = user;
+            this.user = new Buyer(user);
         });
     }
 
@@ -91,13 +82,13 @@ export class BuyerLookingforModalPage {
 
         // prepare the data
         var advertiseData = {
-            _id : this.user._id,
-            fullname: this.user.fullname,
-            name: this.user.name,
-            job_description: this.user.job_description,
-            company_name: this.user.company_name,
-            level: this.user.level,
-            looking_for: this.lookingFor.product
+            _id              : this.user._id,
+            fullname         : this.user.fullname,
+            name             : this.user.name,
+            job_description  : this.user.job_description,
+            company_name     : this.user.company_name,
+            level            : this.user.level,
+            looking_for      : this.lookingFor.product
         }
 
         // set data to be sent via ble
