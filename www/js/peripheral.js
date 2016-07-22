@@ -55,6 +55,8 @@ var BLEPeripheral = function() {
 
             // bluetooth enabled?
             bluetoothle.isEnabled(function(response) {
+                console.log(response);
+
                 // not enabled?
                 if(!response.isEnabled) {
                     // initialize it
@@ -189,6 +191,8 @@ var BLEPeripheral = function() {
 
         // start advertisement
         advertise : function(successCallback, errorCallback) {
+            console.log('peripheral.js advertise');
+
             // initialize bluetooth
             this.initBluetooth(function(response) {
                 // bluetooth enabled?

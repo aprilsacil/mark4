@@ -1,7 +1,12 @@
 import { Component, Inject } from '@angular/core';
 import { Alert, Loading, NavController, NavParams, Toast, ViewController } from 'ionic-angular';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
+
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
+import { Buyer } from '../../models/buyer';
+import { Seller } from '../../models/seller';
+
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
@@ -25,12 +30,11 @@ export class SellerAwardModalPage {
         price: <string> null,
         message: <string> null,
         username: <string> null,
-        store: <string> null
+        store: <string> null,
+        image: <string> null
     };
 
-    shopper = {
-        name: <string> null
-    };
+    shopper: any;
 
     constructor(
         private localStorage: LocalStorageProvider,
@@ -41,16 +45,8 @@ export class SellerAwardModalPage {
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
-        // couch db integration
-        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
-
-        // local integration
-        var local = new PouchDB('cheers');
-
-        // this will sync locally
-        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
-
-        this.shopper = this.params.get('shopper');
+        // get the shopper details from the NavParams
+        this.shopper = new Buyer(this.params.get('shopper'));
     }
 
     /**
@@ -64,7 +60,7 @@ export class SellerAwardModalPage {
      * Render and shows a toast message
      */
     showToast(message) {
-        let toast = Toast.create({
+        var toast = Toast.create({
             message: message,
             duration: 3000
         });
@@ -77,44 +73,49 @@ export class SellerAwardModalPage {
      * Validates and submit the award to be given to the customer.
      */
     submitAwardCustomer(awardCustomerForm) {
+        var self = this;
+
         if (!awardCustomerForm.valid) {
             // tell something that form is not valid
         }
 
         // initialize the loader
-        let loading = Loading.create({
+        var loading = Loading.create({
             content: 'Sending award to the customer...'
         });
 
         // render
-        this.nav.present(loading);
+        self.nav.present(loading);
 
-        this.localStorage.getFromLocal('user').then((data) => {
-            var user = JSON.parse(data);
+        self.localStorage.getFromLocal('user').then((data) => {
+            var user = new Seller(JSON.parse(data));
 
-            let headers = new Headers({
-                'Content-Type': 'application/x-www-form-urlencoded'});
+            // set the headers
+            var headers = new Headers({
+                'Content-Type': 'application/x-www-form-urlencoded'
+            });
 
-            var param = this.award;
-            param.username = this.shopper.name;
-            param.image = this.shopper.image;
+            var param = self.award;
+
+            param.username = self.shopper.name;
+            param.image = self.shopper.image;
             param.store = user.name;
 
-            this.http
-                .post(this.apiEndpoint + 'history', param, {headers: headers})
+            self.http
+                .post(self.apiEndpoint + 'history', param, {headers: headers})
                 .map(response => response.json())
                 .subscribe((data) => {
                     if(data.ok) {
                         loading.dismiss().then(() => {
                             // close the modal
-                            this.dismiss();
+                            self.dismiss();
                         })
                         .then(() => {
                             // delay it for a second
                             setTimeout(() => {
                                 // show a toast
-                                this.showToast('You have successfully gave the customer an award.');
-                            }, 400);
+                                self.showToast('You have successfully gave the customer an award.');
+                            }, 600);
                         });
                     }
                 }, (error) => {

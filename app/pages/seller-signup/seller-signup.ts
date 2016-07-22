@@ -88,7 +88,13 @@ export class SellerSignupPage {
             return;
         }
 
-        // TODO: add loader here
+        // initialize the loader
+        var loading = Loading.create({
+            content: 'Processing...'
+        });
+
+        // render loader
+        self.nav.present(loading);
 
         this.db.signup(this.seller.username, this.seller.password, {
             metadata : {
@@ -100,8 +106,10 @@ export class SellerSignupPage {
         }, (err, response) => {
             if(!err) {
                 // TODO: add a success thingy here
+                loading.dismiss().then(() => {
+                    self.goToLoginPage();
+                });
 
-                self.goToLoginPage();
                 return;
             }
 
@@ -114,6 +122,7 @@ export class SellerSignupPage {
                     message = 'Username already exists.';
                     break;
                 case 'forbidden':
+                default:
                     message = 'Something went wrong. Please try again later.';
                     break;
             }
@@ -124,8 +133,11 @@ export class SellerSignupPage {
                 buttons: ['OK']
             });
 
-            // render in the template
-            self.nav.present(alert);
+            loading.dismiss().then(() => {
+                // render alert once the loader dismisses
+                self.nav.present(alert);
+            });
+
             return;
         });
     }

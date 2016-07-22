@@ -3,7 +3,7 @@ body {
 }
 
 .cheers-bg-image {
-    background-image: url(../../img/bg-image.jpg);
+    background-image: url(../../img/cheers.jpg);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -60,6 +60,10 @@ form.padding-less-input {
 // ion-item with no border-bottom
 .item.item-plain {
     .item-inner {
+        border-bottom: 0;
+    }
+
+    &:last-child {
         border-bottom: 0;
     }
 }
