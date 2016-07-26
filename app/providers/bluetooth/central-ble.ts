@@ -45,7 +45,7 @@ export class CentralBle {
         // on subscribe notify
         self.central.onSubscribe(function(response) {
             // notification from server?
-            if(response.status === 'subscribedResult') {
+            if (response.status === 'subscribedResult') {
                 // get encoded data
                 var bytes  = bluetoothle.encodedStringToBytes(response.value);
                 // get the string
@@ -55,7 +55,7 @@ export class CentralBle {
                 console.log('Notify Bytes: ' + bytes);
 
                 // create an event
-                self.events.publish('central:buyersNearby', string);
+                self.events.publish('central:buyers_nearby', string);
 
                 // once the central subscribe to the peripheral, send the
                 // details of the central
@@ -326,6 +326,7 @@ export class CentralBle {
     sendEmoteMessageToBuyers() {
         // get the emote message from the local storage
         this.localStorageProvider.getFromLocal('emote_message').then((message) => {
+            console.log('emote', message);
             // check if there's a message
             if (!message) {
                 return;
@@ -345,7 +346,7 @@ export class CentralBle {
                 }
 
                 // send
-                this.write(dataToSend);
+                this.write(JSON.stringify(dataToSend));
             });
         });
     }

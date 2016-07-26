@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var ionic_angular_1 = require('ionic-angular');
 var local_storage_provider_1 = require('../../providers/storage/local-storage-provider');
+var seller_1 = require('../../models/seller');
 /*
   Generated class for the SellerEmoteModalPage page.
 
@@ -30,7 +31,7 @@ var SellerEmoteModalPage = (function () {
             message: null
         };
         this.peripherals = false;
-        this.user = {};
+        this.user = new seller_1.Seller({});
         this.localStorage.getFromLocal('user').then(function (data) {
             _this.user = JSON.parse(data);
         });
@@ -82,18 +83,6 @@ var SellerEmoteModalPage = (function () {
             this.nav.present(alert);
             return;
         }
-        // check if there are peripherals
-        if (!this.peripherals) {
-            // prompt that something is wrong in the form
-            var alert = ionic_angular_1.Alert.create({
-                title: 'Ooops...',
-                subTitle: 'There are no buyers nearby. You cannot send this.',
-                buttons: ['OK']
-            });
-            // render in the template
-            this.nav.present(alert);
-            return;
-        }
         // initialize the loader
         var loading = ionic_angular_1.Loading.create({
             content: 'Sending out your emote...'
@@ -110,8 +99,9 @@ var SellerEmoteModalPage = (function () {
                 store_name: user.store_name,
                 emote: _this.emote.message
             };
-            // publish event
-            _this.events.publish('central:write', data);
+            // save emote message in the local storage and let central-ble to
+            // send the emote message to all
+            _this.localStorage.setToLocal('emote_message', _this.emote.message);
             // dismiss the loader
             loading.dismiss().then(function () {
                 // close the modal

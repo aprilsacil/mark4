@@ -17,6 +17,8 @@ var buyer_dashboard_1 = require('../buyer-dashboard/buyer-dashboard');
 var login_1 = require('../login/login');
 var seller_dashboard_1 = require('../seller-dashboard/seller-dashboard');
 var local_storage_provider_1 = require('../../providers/storage/local-storage-provider');
+var buyer_1 = require('../../models/buyer');
+var seller_1 = require('../../models/seller');
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
 /*
@@ -33,7 +35,8 @@ var ReloginPage = (function () {
         this.nav = nav;
         this.couchDbEndpoint = couchDbEndpoint;
         this.user = {
-            name: null
+            name: null,
+            image: null
         };
         this.relogin = {
             password: null
@@ -101,18 +104,19 @@ var ReloginPage = (function () {
             if (!err) {
                 // get user details
                 _this.pouchDb.getUser(loginResponse.name, function (err, response) {
-                    console.log('get user response', response);
                     // delete the password and salt
                     delete response.password_scheme;
                     delete response.salt;
-                    var user = JSON.stringify(response);
-                    // save user data to the local storage
-                    self.localStorage.setToLocal('user', user);
-                    self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime() / 1000));
+                    var user = response;
+                    // set the timestamp
+                    self.localStorage
+                        .setToLocal('timestamp', Math.round(new Date().getTime() / 1000));
                     // if seller redirect to seller dashboard
                     if (response.roles[0] === 'seller') {
+                        // save user data to the local storage
+                        self.localStorage.setToLocal('user', JSON.stringify(new seller_1.Seller(user)));
                         // broadcast event to start some event listeners
-                        _this.events.publish('central:start', user);
+                        _this.events.publish('central:start', JSON.stringify(new seller_1.Seller(user)));
                         // remove loader and set the root page
                         loading.dismiss().then(function () {
                             _this.nav.setRoot(seller_dashboard_1.SellerDashboardPage);
@@ -120,18 +124,22 @@ var ReloginPage = (function () {
                     }
                     // if buyer redirect to buyer dashboard
                     if (response.roles[0] === 'buyer') {
+                        var buyer = new buyer_1.Buyer(user);
+                        // save user data to the local storage
+                        self.localStorage.setToLocal('user', JSON.stringify(buyer));
                         // broadcast event to start some event listeners
                         _this.events.publish('peripheral:start');
                         // set the data to be advertised
                         var advertiseData = {
-                            _id: response._id,
-                            fullname: response.fullname,
-                            name: response.name,
-                            job_description: response.job_description,
-                            company_name: response.company_name,
-                            level: response.level
+                            _id: buyer._id,
+                            fullname: buyer.fullname,
+                            name: buyer.name,
+                            job_description: buyer.job_description,
+                            company_name: buyer.company_name,
+                            level: buyer.level
                         };
-                        _this.events.publish('peripheral:setData', advertiseData);
+                        // let's advertise
+                        _this.events.publish('peripheral:set_buyer_data', advertiseData);
                         // remove loader and set the root page
                         loading.dismiss().then(function () {
                             _this.nav.setRoot(buyer_dashboard_1.BuyerDashboardPage);

@@ -84,6 +84,8 @@ export class SellerAwardModalPage {
             // tell something that form is not valid
         }
 
+        // TODO: check if the user has an internet connection
+
         // initialize the loader
         var loading = Loading.create({
             content: 'Sending award to the customer...'
@@ -123,7 +125,13 @@ export class SellerAwardModalPage {
                     }, 600);
                 });
             }, (error) => {
-                console.log(error);
+                // there's an error, just show a message
+                loading.dismiss().then(() => {
+                    setTimeout(() => {
+                        // show the message
+                        self.showToast('Something went wrong. Please try again later.');
+                    });
+                });
             });
     }
 }

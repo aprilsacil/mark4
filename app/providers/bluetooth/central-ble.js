@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 var core_1 = require('@angular/core');
 var ionic_angular_1 = require('ionic-angular');
+var local_storage_provider_1 = require('../storage/local-storage-provider');
 /*
   Generated class for the Central Bluetooth Low Energy provider.
 
@@ -17,8 +18,9 @@ var ionic_angular_1 = require('ionic-angular');
   for more info on providers and Angular 2 DI.
 */
 var CentralBle = (function () {
-    function CentralBle(events) {
+    function CentralBle(events, localStorageProvider) {
         this.events = events;
+        this.localStorageProvider = localStorageProvider;
     }
     CentralBle.prototype.init = function () {
         console.log('Central is ready...');
@@ -44,20 +46,18 @@ var CentralBle = (function () {
                 console.log('Notify: ' + string);
                 console.log('Notify Bytes: ' + bytes);
                 // create an event
-                self.events.publish('central:buyersNearby', string);
+                self.events.publish('central:buyers_nearby', string);
+                // once the central subscribe to the peripheral, send the
+                // details of the central
+                self.sendEmoteMessageToBuyers();
             }
         });
-        // start scanning for peripherals
-        // setTimeout(() => {
-        //     self.scan();
-        // }, 2000);
     };
     /**
      * Start scanning for devices
      */
     CentralBle.prototype.scan = function () {
         var self = this;
-        console.log('scanning');
         // start scanning
         self.central.scan(function (response) {
             // peripheral result?
@@ -191,7 +191,7 @@ var CentralBle = (function () {
         // var combined = '';
         // iterate on each peripherals
         for (var i in peripherals) {
-            console.log(peripherals[i]);
+            console.log('peripheral ' + i, peripherals[i]);
         }
         // update peripheral container
         // peripheralContainer.innerHTML = combined;
@@ -225,18 +225,6 @@ var CentralBle = (function () {
                 service = services[i];
             }
         }
-        // var foo = {
-        //     _id: '12345678890',
-        //     name: 'Long Name',
-        //     message: 'Lorem ipsum sit dolor amit 1.',
-        //     message2: 'Lorem ipsum sit dolor amit 2.',
-        //     message3: 'Lorem ipsum sit dolor amit 3.',
-        //     message4: 'Lorem ipsum sit dolor amit 4.',
-        //     message5: 'Lorem ipsum sit dolor amit 5.',
-        //     message6: 'Lorem ipsum sit dolor amit 6.',
-        //     message7: 'Lorem ipsum sit dolor amit 7.',
-        //  };
-        // message = JSON.stringify(foo);
         // set request params
         var param = {
             'address': information.info.address,
@@ -261,19 +249,60 @@ var CentralBle = (function () {
         return len;
     };
     /**
+     * Sends out the emote message if given to nearby buyers.
+     */
+    CentralBle.prototype.sendEmoteMessageToBuyers = function () {
+        var _this = this;
+        // get the emote message from the local storage
+        this.localStorageProvider.getFromLocal('emote_message').then(function (message) {
+            console.log('emote', message);
+            // check if there's a message
+            if (!message) {
+                return;
+            }
+            // get user data
+            _this.localStorageProvider.getFromLocal('user').then(function (user) {
+                var user = JSON.parse(user);
+                // prepare data
+                var dataToSend = {
+                    _id: user._id,
+                    name: user.name,
+                    fullname: user.fullname,
+                    store_name: user.store_name,
+                    emote_message: message
+                };
+                // send
+                _this.write(JSON.stringify(dataToSend));
+            });
+        });
+    };
+    /**
      * Stops the ongoing scan
      */
     CentralBle.prototype.stop = function () {
         var self = this;
         clearTimeout(self.scanTimeout);
         clearTimeout(self.stopScanTimeout);
+        self.peripherals = [];
         self.central.stopScan(function (response) {
-            console.log(response);
+            // turn off bluetooth
+            bluetoothle.disable();
+        });
+    };
+    /**
+     * Checks the status of the bluetooth
+     */
+    CentralBle.prototype.status = function () {
+        var self = this;
+        return new Promise(function (resolve) {
+            bluetoothle.isEnabled(function (response) {
+                resolve(response.isEnabled);
+            });
         });
     };
     CentralBle = __decorate([
         core_1.Injectable(), 
-        __metadata('design:paramtypes', [ionic_angular_1.Events])
+        __metadata('design:paramtypes', [ionic_angular_1.Events, local_storage_provider_1.LocalStorageProvider])
     ], CentralBle);
     return CentralBle;
 }());

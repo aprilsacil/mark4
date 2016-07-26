@@ -378,6 +378,8 @@ var BLECentral = function() {
 
         // write by chunks
         writeByChunk : function(data, successCallback, errorCallback) {
+            console.log('write by chunk', data);
+
             // maximum packet size
             var MAX_PACKET_SIZE = 20;
             // max message chunk size

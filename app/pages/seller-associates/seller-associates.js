@@ -15,6 +15,7 @@ var core_1 = require('@angular/core');
 var ionic_angular_1 = require('ionic-angular');
 var http_1 = require('@angular/http');
 var local_storage_provider_1 = require('../../providers/storage/local-storage-provider');
+var seller_1 = require('../../models/seller');
 require('rxjs/add/operator/toPromise');
 require('rxjs/add/operator/map');
 /*
@@ -31,40 +32,13 @@ var SellerAssociatesPage = (function () {
         this.http = http;
         this.couchDbEndpoint = couchDbEndpoint;
         this.apiEndpoint = apiEndpoint;
-        this.user = {
-            name: null,
-            image: null
-        };
+        this.user = new seller_1.Seller({});
         this.associates = [];
         this.results = [];
         this.searching = false;
         // get user details from local storage
-        this.localStorage.getFromLocal('user').then(function (data) {
-            _this.user = JSON.parse(data);
-            var headers = new http_1.Headers({
-                'Content-Type': 'application/x-www-form-urlencoded' });
-            var param = {
-                type: 'seller_store',
-                search: _this.user.name
-            };
-            _this.http
-                .post(_this.apiEndpoint + 'users', param, { headers: headers })
-                .map(function (response) { return response.json(); })
-                .subscribe(function (data) {
-                data = data.rows;
-                for (var i in data) {
-                    if (_this.user.name == data[i].value[0]) {
-                        continue;
-                    }
-                    _this.associates.push({
-                        fullname: data[i].value[0],
-                        image: data[i].value[1]
-                    });
-                }
-            }, function (error) {
-                console.log(error);
-            });
-        });
+        this.localStorage.getFromLocal('user')
+            .then(function (result) { return _this.getUserAssociates(result); });
     }
     /**
      * Render and shows a toast message
@@ -77,6 +51,9 @@ var SellerAssociatesPage = (function () {
         // render in the template
         this.nav.present(toast);
     };
+    /**
+     * Fetch users from the API.
+     */
     SellerAssociatesPage.prototype.fetchUsers = function (keyword) {
         var _this = this;
         if (!keyword) {
@@ -109,8 +86,40 @@ var SellerAssociatesPage = (function () {
         });
     };
     /**
+     * Fetches the list of associates of the user.
+     */
+    SellerAssociatesPage.prototype.getUserAssociates = function (user) {
+        var _this = this;
+        this.user = new seller_1.Seller(JSON.parse(user));
+        // set the headers
+        var headers = new http_1.Headers({
+            'Content-Type': 'application/x-www-form-urlencoded' });
+        // set the parameters
+        var param = {
+            type: 'seller_store',
+            search: this.user.name
+        };
+        // perform request
+        this.http
+            .post(this.apiEndpoint + 'users', param, { headers: headers })
+            .map(function (response) { return response.json(); })
+            .subscribe(function (data) {
+            data = data.rows;
+            for (var i in data) {
+                if (_this.user.name == data[i].value[0]) {
+                    continue;
+                }
+                _this.associates.push({
+                    fullname: data[i].value[0],
+                    image: data[i].value[1]
+                });
+            }
+        }, function (error) {
+            console.log(error);
+        });
+    };
+    /**
      * Invites this person
-     *
      */
     SellerAssociatesPage.prototype.invite = function (username) {
         var _this = this;

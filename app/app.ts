@@ -1,10 +1,12 @@
 import { Component, provide } from '@angular/core';
 import { Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { StatusBar } from 'ionic-native';
+import { StatusBar, LocalNotifications } from 'ionic-native';
+
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from './pages/seller-dashboard/seller-dashboard';
 import { ReloginPage } from './pages/relogin/relogin';
+
 import { CentralBle } from './providers/bluetooth/central-ble';
 import { PeripheralBle } from './providers/bluetooth/peripheral-ble';
 import { LocalStorageProvider } from './providers/storage/local-storage-provider';
@@ -29,6 +31,11 @@ export class MyApp {
             StatusBar.styleDefault();
 
             this.authenticationEvents();
+        });
+
+        // when the app is on background
+        platform.pause.subscribe(() => {
+
         });
     }
 
@@ -74,7 +81,7 @@ export class MyApp {
                         }
 
                         // set data
-                        this.events.publish('peripheral:setData', advertiseData);
+                        this.events.publish('peripheral:set_buyer_data', advertiseData);
 
                         // set the dashboard
                         this.rootPage = BuyerDashboardPage;
@@ -143,10 +150,10 @@ export class MyApp {
         });
 
         // write event
-        this.events.subscribe('central:write', (eventData) => {
-            console.log('event: write', eventData[0]);
-            self.centralBle.write(JSON.stringify(eventData[0]));
-        });
+        // this.events.subscribe('central:write', (eventData) => {
+        //     console.log('event: write', eventData[0]);
+        //     self.centralBle.write(JSON.stringify(eventData[0]));
+        // });
     }
 
     /**

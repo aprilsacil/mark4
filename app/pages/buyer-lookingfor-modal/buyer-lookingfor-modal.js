@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var ionic_angular_1 = require('ionic-angular');
 var local_storage_provider_1 = require('../../providers/storage/local-storage-provider');
+var buyer_1 = require('../../models/buyer');
 /*
   Generated class for the BuyerLookingforModalPage page.
 
@@ -27,21 +28,11 @@ var BuyerLookingforModalPage = (function () {
         this.lookingFor = {
             product: null
         };
-        this.user = {
-            _id: null,
-            name: null,
-            fullname: null,
-            store_name: null,
-            job_description: null,
-            company_name: null,
-            image: null,
-            level: 0,
-            roles: []
-        };
+        this.user = new buyer_1.Buyer({});
         // fetch user details from the local storage
         this.localStorage.getFromLocal('user').then(function (data) {
             var user = JSON.parse(data);
-            _this.user = user;
+            _this.user = new buyer_1.Buyer(user);
         });
     }
     /**
@@ -94,7 +85,7 @@ var BuyerLookingforModalPage = (function () {
             looking_for: this.lookingFor.product
         };
         // set data to be sent via ble
-        this.events.publish('peripheral:setData', advertiseData);
+        this.events.publish('peripheral:set_buyer_data', advertiseData);
         // TODO: add thingy here
         setTimeout(function () {
             // dismiss the loader

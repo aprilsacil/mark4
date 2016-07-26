@@ -252,6 +252,8 @@ var BLEPeripheral = function() {
             var initAdvertise = function() {
                 // initialize advertise
                 this.initAdvertise(function(response) {
+                    console.log('advertising', response);
+
                     // advertising started?
                     if(response.status === 'advertisingStarted') {
                         this.debug('Advertising initialized.');

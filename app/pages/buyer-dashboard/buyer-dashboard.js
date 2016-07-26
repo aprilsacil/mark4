@@ -20,6 +20,7 @@ var buyer_lookingfor_modal_1 = require('../buyer-lookingfor-modal/buyer-lookingf
 var seller_dashboard_1 = require('../seller-dashboard/seller-dashboard');
 var local_storage_provider_1 = require('../../providers/storage/local-storage-provider');
 var cheers_avatar_1 = require('../../components/cheers-avatar/cheers-avatar');
+var buyer_1 = require('../../models/buyer');
 require('rxjs/add/operator/toPromise');
 require('rxjs/add/operator/map');
 var PouchDB = require('pouchdb');
@@ -31,25 +32,16 @@ PouchDB.plugin(require('pouchdb-authentication'));
   Ionic pages and navigation.
 */
 var BuyerDashboardPage = (function () {
-    function BuyerDashboardPage(events, localStorage, nav, http, couchDbEndpoint, apiEndpoint) {
+    function BuyerDashboardPage(events, localStorage, nav, http, zone, couchDbEndpoint, apiEndpoint) {
         var _this = this;
         this.events = events;
         this.localStorage = localStorage;
         this.nav = nav;
         this.http = http;
+        this.zone = zone;
         this.couchDbEndpoint = couchDbEndpoint;
         this.apiEndpoint = apiEndpoint;
-        this.user = {
-            _id: null,
-            name: null,
-            fullname: null,
-            store_name: null,
-            job_description: null,
-            company_name: null,
-            image: null,
-            level: 0,
-            roles: []
-        };
+        this.user = new buyer_1.Buyer({});
         this.history = [];
         this.sellers = [];
         this.associate = {
@@ -65,19 +57,14 @@ var BuyerDashboardPage = (function () {
             .on('error', console.log.bind(console));
         // get user details that is saved in the local storage then get the
         // user history
-        this.localStorage.getFromLocal('user')
-            .then(function (response) {
-            // assign response to the class variable
-            _this.user = JSON.parse(response);
-            // check if there's an image property in the user object
-            if (!_this.user.image) {
-                _this.user.image = null;
-            }
-            // get history
-            _this.getUserHistory();
-        });
+        this.getUser();
         // listens for buyers that sends out an emote
         this.events.subscribe('peripheral:emoteFound', function (eventData) { return _this.handleEmotes(eventData[0]); });
+        // listens for changes in the user details
+        this.events.subscribe('user:update_details', function () {
+            // get user details again from the local storage
+            _this.getUser();
+        });
     }
     /**
      * Prompts to accept the invitation and will process the whole thing by
@@ -113,7 +100,9 @@ var BuyerDashboardPage = (function () {
                             else {
                                 // response is the user object
                                 self.pouchDb.putUser(_this.user.name, {
-                                    metadata: { roles: ['seller'] }
+                                    metadata: {
+                                        roles: ['seller']
+                                    }
                                 }, function (errUser, responseUser) {
                                     if (errUser) {
                                         if (errUser.name === 'not_found') {
@@ -143,6 +132,23 @@ var BuyerDashboardPage = (function () {
         });
         // render it
         this.nav.present(alert);
+    };
+    /**
+     * Get user data from the local storage
+     */
+    BuyerDashboardPage.prototype.getUser = function () {
+        var _this = this;
+        this.localStorage.getFromLocal('user')
+            .then(function (response) {
+            // assign response to the class variable
+            _this.user = JSON.parse(response);
+            // check if there's an image property in the user object
+            if (!_this.user.image) {
+                _this.user.image = null;
+            }
+            // get history
+            _this.getUserHistory();
+        });
     };
     /**
      * Fetches the history of the user
@@ -202,12 +208,16 @@ var BuyerDashboardPage = (function () {
                     }
                 }
                 // update
-                self.sellers[index] = seller;
+                self.zone.run(function () {
+                    self.sellers[index] = seller;
+                });
             }
         }
         // no sellers, just push it
         if (!self.sellers) {
-            self.sellers.push(seller);
+            self.zone.run(function () {
+                self.sellers.push(seller);
+            });
         }
     };
     /**
@@ -309,9 +319,9 @@ var BuyerDashboardPage = (function () {
             directives: [cheers_avatar_1.CheersAvatar],
             providers: [local_storage_provider_1.LocalStorageProvider]
         }),
-        __param(4, core_1.Inject('CouchDBEndpoint')),
-        __param(5, core_1.Inject('APIEndpoint')), 
-        __metadata('design:paramtypes', [ionic_angular_1.Events, local_storage_provider_1.LocalStorageProvider, ionic_angular_1.NavController, http_1.Http, String, String])
+        __param(5, core_1.Inject('CouchDBEndpoint')),
+        __param(6, core_1.Inject('APIEndpoint')), 
+        __metadata('design:paramtypes', [ionic_angular_1.Events, local_storage_provider_1.LocalStorageProvider, ionic_angular_1.NavController, http_1.Http, core_1.NgZone, String, String])
     ], BuyerDashboardPage);
     return BuyerDashboardPage;
 }());

@@ -19,7 +19,8 @@ var seller_shopper_view_1 = require('../seller-shopper-view/seller-shopper-view'
 var seller_update_settings_1 = require('../seller-update-settings/seller-update-settings');
 var local_storage_provider_1 = require('../../providers/storage/local-storage-provider');
 var cheers_avatar_1 = require('../../components/cheers-avatar/cheers-avatar');
-var user_1 = require('../../models/user');
+var buyer_1 = require('../../models/buyer');
+var seller_1 = require('../../models/seller');
 /*
   Generated class for the SellerDashboardPage page.
 
@@ -27,18 +28,23 @@ var user_1 = require('../../models/user');
   Ionic pages and navigation.
 */
 var SellerDashboardPage = (function () {
-    function SellerDashboardPage(events, localStorage, nav, view, couchDbEndpoint) {
+    function SellerDashboardPage(events, localStorage, nav, view, zone, couchDbEndpoint) {
         var _this = this;
         this.events = events;
         this.localStorage = localStorage;
         this.nav = nav;
         this.view = view;
+        this.zone = zone;
         this.couchDbEndpoint = couchDbEndpoint;
         this.shoppers = [];
         this.scanning = false;
         this.scanning = false;
-        this.localStorage.getFromLocal('user').then(function (data) {
-            _this.user = new user_1.User(JSON.parse(data));
+        // get user details
+        this.getUser();
+        // listens for changes in the user details
+        this.events.subscribe('user:update_details', function () {
+            // get user details again from the local storage
+            _this.getUser();
         });
     }
     /**
@@ -48,35 +54,47 @@ var SellerDashboardPage = (function () {
     SellerDashboardPage.prototype.getNearbyShopperDevices = function () {
         var _this = this;
         // initialize the event to listen
-        this.events.subscribe('central:buyersNearby', function (eventData) {
-            var buyer = new user_1.User(JSON.parse(eventData[0]));
+        this.events.subscribe('central:buyers_nearby', function (eventData) {
+            var buyer = JSON.parse(eventData[0]);
+            console.log('event data', buyer);
+            // check if there's really a data
+            if (!buyer) {
+                return;
+            }
+            buyer = new buyer_1.Buyer(buyer);
+            var exists = false;
             // check if the buyer already exists in the object
-            if (_this.shoppers) {
-                var existing = _this.shoppers.some(function (element) {
-                    return (element._id === buyer._id) ? element : false;
-                });
-                // if it doesn't exists, push it
-                if (!existing) {
-                    _this.shoppers.push(buyer);
-                }
-                // if it exists, update the current data
-                if (existing) {
-                    var index;
-                    // get the index of the shopper by looping all the shoppers
-                    for (var s in _this.shoppers) {
-                        if (_this.shoppers[s]._id == buyer._id) {
-                            index = s;
-                            break;
-                        }
+            if (_this.shoppers || _this.shoppers.length !== 0) {
+                // check if the shopper already exists
+                for (var s in _this.shoppers) {
+                    // check if the ids are the same
+                    if (_this.shoppers[s]._id == buyer._id) {
+                        // update the object
+                        _this.zone.run(function () {
+                            _this.shoppers[s] = buyer;
+                        });
+                        exists = true;
+                        break;
                     }
-                    // update
-                    _this.shoppers[index] = buyer;
                 }
             }
+            console.log('npa', buyer);
             // no shoppers, just push it
-            if (!_this.shoppers) {
-                _this.shoppers.push(buyer);
+            if (!_this.shoppers.length || !exists) {
+                _this.zone.run(function () {
+                    _this.shoppers.push(buyer);
+                });
             }
+            console.log(_this.shoppers);
+        });
+    };
+    /**
+     * Get user data from the local storage
+     */
+    SellerDashboardPage.prototype.getUser = function () {
+        var _this = this;
+        this.localStorage.getFromLocal('user').then(function (data) {
+            _this.user = new seller_1.Seller(JSON.parse(data));
         });
     };
     /**
@@ -119,19 +137,17 @@ var SellerDashboardPage = (function () {
             // empty out the shoppers
             this.shoppers = [];
             // stop the scan
-            // this.events.publish('central:stopScan');
+            this.events.publish('central:stopScan');
             // unsubscribe event
-            this.events.unsubscribe('central:buyersNearby', function () { });
+            this.events.unsubscribe('central:buyers_nearby', function () { });
             return;
         }
         // flag that we're scanning
         this.scanning = true;
         // scan
-        // this.events.publish('central:startScan');
+        this.events.publish('central:startScan');
         // get the list of shoppers detected
-        // this.getNearbyShopperDevices();
-        var shopper = '{"_id":"org.couchdb.user:paul","fullname":"Paul","name":"paul","level":0}';
-        this.shoppers.push(new user_1.User(JSON.parse(shopper)));
+        this.getNearbyShopperDevices();
         return;
     };
     SellerDashboardPage = __decorate([
@@ -140,8 +156,8 @@ var SellerDashboardPage = (function () {
             directives: [cheers_avatar_1.CheersAvatar],
             providers: [local_storage_provider_1.LocalStorageProvider]
         }),
-        __param(4, core_1.Inject('CouchDBEndpoint')), 
-        __metadata('design:paramtypes', [ionic_angular_1.Events, local_storage_provider_1.LocalStorageProvider, ionic_angular_1.NavController, ionic_angular_1.ViewController, String])
+        __param(5, core_1.Inject('CouchDBEndpoint')), 
+        __metadata('design:paramtypes', [ionic_angular_1.Events, local_storage_provider_1.LocalStorageProvider, ionic_angular_1.NavController, ionic_angular_1.ViewController, core_1.NgZone, String])
     ], SellerDashboardPage);
     return SellerDashboardPage;
 }());

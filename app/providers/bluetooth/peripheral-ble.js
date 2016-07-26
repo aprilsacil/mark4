@@ -21,8 +21,8 @@ var PeripheralBle = (function () {
         var _this = this;
         this.events = events;
         // listen for this event
-        this.events.subscribe('peripheral:setData', function (eventData) {
-            console.log('event: periphal data', eventData);
+        this.events.subscribe('peripheral:set_buyer_data', function (eventData) {
+            console.log('event: peripheral data', eventData);
             _this.advertiseData = eventData[0];
         });
     }
@@ -35,6 +35,7 @@ var PeripheralBle = (function () {
         this.peripheral.setDebug(true);
         // init advertise
         this.advertising = setInterval(function () {
+            console.log('advertising...');
             _this.advertise();
         }, 5000);
         // on debug
@@ -44,6 +45,7 @@ var PeripheralBle = (function () {
         });
         // on peripheral callback
         this.peripheral.onInitPeripheral(function (response) {
+            console.log('initialize peripheral response', response);
             // if we are connected
             if (response.status === 'connected') {
                 _this.central = response;
@@ -103,7 +105,7 @@ var PeripheralBle = (function () {
         var _this = this;
         // start advertising
         this.peripheral.advertise(function (response) {
-            console.log(response);
+            console.log('advertise', response);
             // advertising started?
             if (response.status === 'advertisingStarted') {
                 // update peripheral information
@@ -125,10 +127,11 @@ var PeripheralBle = (function () {
             'characteristic': self.central.subscribe.characteristic,
             'value': message
         };
+        console.log('param', param);
         self.peripheral.notifyByChunk(param, function (response) {
-            console.log(response);
+            console.log('notify by chunk:', response);
         }, function (response) {
-            console.log(response);
+            console.log('notify by chunk error:', response);
         });
     };
     /**
@@ -142,7 +145,7 @@ var PeripheralBle = (function () {
             return this;
         }
         // details of the central thingy
-        console.log(central);
+        console.log('device: ', central);
         return this;
     };
     /**
@@ -156,7 +159,7 @@ var PeripheralBle = (function () {
             return;
         }
         // peripheral status
-        console.log(data);
+        console.log('peripheral status', data);
     };
     PeripheralBle.prototype.stop = function () {
         clearInterval(this.advertising);

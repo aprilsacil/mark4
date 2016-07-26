@@ -119,8 +119,6 @@ export class ReloginPage {
             if(!err) {
                 // get user details
                 this.pouchDb.getUser(loginResponse.name, (err, response) => {
-                    console.log('get user response', response);
-
                     // delete the password and salt
                     delete response.password_scheme;
                     delete response.salt
@@ -147,14 +145,26 @@ export class ReloginPage {
 
                     // if buyer redirect to buyer dashboard
                     if (response.roles[0] === 'buyer') {
+                        var buyer = new Buyer(user);
+
                         // save user data to the local storage
-                        self.localStorage.setToLocal('user', JSON.stringify(new Buyer(user)));
+                        self.localStorage.setToLocal('user', JSON.stringify(buyer));
 
                         // broadcast event to start some event listeners
                         this.events.publish('peripheral:start');
 
+                        // set the data to be advertised
+                        var advertiseData = {
+                            _id : buyer._id,
+                            fullname: buyer.fullname,
+                            name: buyer.name,
+                            job_description: buyer.job_description,
+                            company_name: buyer.company_name,
+                            level: buyer.level
+                        }
+
                         // let's advertise
-                        this.events.publish('peripheral:setData', JSON.stringify(new Buyer(user)));
+                        this.events.publish('peripheral:set_buyer_data', advertiseData);
 
                         // remove loader and set the root page
                         loading.dismiss().then(() => {
