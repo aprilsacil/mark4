@@ -152,9 +152,7 @@ export class BuyerUpdateProfilePage {
                 company_name: this.user.company_name,
                 image: this.user.image
             }
-        }, function (err, response) {
-            console.log(response);
-
+        }, (err, response) => {
             if (err) {
                 var message;
 
@@ -193,8 +191,8 @@ export class BuyerUpdateProfilePage {
                 // update user data to the local storage
                 self.localStorage.setToLocal('user', user);
 
-                // TODO: broadcast that we have update the user details
-
+                // broadcast that we have update the user details
+                self.events.publish('user:update_details');
 
                 // if no error remove the preloader now
                 loading.dismiss()

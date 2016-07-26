@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { Alert, Loading, NavController } from 'ionic-angular';
+
 import { LoginPage } from '../login/login';
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
@@ -18,7 +19,8 @@ PouchDB.plugin(require('pouchdb-authentication'));
   templateUrl: 'build/pages/seller-signup/seller-signup.html'
 })
 export class SellerSignupPage {
-    private db;
+    localDb: any;
+    pouchDb: any;
     seller = {
         username: <string> null,
         password: <string> null,
@@ -31,14 +33,15 @@ export class SellerSignupPage {
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
         var self = this;
+
         // couch db integration
-        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
+        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
-        let local = new PouchDB('cheers');
+        this.localDb = new PouchDB('cheers');
 
         // this will sync locally
-        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+        this.localDb.sync(this.pouchDb, {live: true, retry: true}).on('error', console.log.bind(console));
     }
 
     /**
@@ -74,6 +77,7 @@ export class SellerSignupPage {
      */
     submitSellerForm(sellerForm) {
         var self = this;
+
         // check if the form is not valid
         if (!sellerForm.valid) {
             // prompt that something is wrong in the form
@@ -96,7 +100,7 @@ export class SellerSignupPage {
         // render loader
         self.nav.present(loading);
 
-        this.db.signup(this.seller.username, this.seller.password, {
+        this.pouchDb.signup(this.seller.username, this.seller.password, {
             metadata : {
                 store_name: this.seller.store_name,
                 fullname : this.seller.name,

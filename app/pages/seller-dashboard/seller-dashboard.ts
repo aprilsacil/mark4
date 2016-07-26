@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, NgZone } from '@angular/core';
 import { Events, Modal, NavController, ViewController } from 'ionic-angular';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
@@ -34,12 +34,18 @@ export class SellerDashboardPage {
         private localStorage: LocalStorageProvider,
         private nav: NavController,
         private view: ViewController,
+        private zone: NgZone,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
         this.scanning = false;
 
-        this.localStorage.getFromLocal('user').then((data) => {
-            this.user = new Seller(JSON.parse(data));
+        // get user details
+        this.getUser();
+
+        // listens for changes in the user details
+        this.events.subscribe('user:update_details', () => {
+            // get user details again from the local storage
+            this.getUser();
         });
     }
 
@@ -52,8 +58,6 @@ export class SellerDashboardPage {
         this.events.subscribe('central:buyersNearby', (eventData) => {
             var buyer = JSON.parse(eventData[0]);
             buyer = new Buyer(buyer);
-
-            console.log('buyer', buyer);
 
             // check if the buyer already exists in the object
             if (this.shoppers) {
@@ -79,14 +83,29 @@ export class SellerDashboardPage {
                     }
 
                     // update
-                    this.shoppers[index] = buyer;
+                    this.zone.run(() => {
+                        this.shoppers[index] = buyer;
+                    });
                 }
             }
 
             // no shoppers, just push it
             if (!this.shoppers) {
-                this.shoppers.push(buyer);
+                this.zone.run(() => {
+                    this.shoppers.push(buyer);
+                });
             }
+
+            console.log(this.shoppers);
+        });
+    }
+
+    /**
+     * Get user data from the local storage
+     */
+    getUser() {
+        this.localStorage.getFromLocal('user').then((data) => {
+            this.user = new Seller(JSON.parse(data));
         });
     }
 
@@ -116,7 +135,7 @@ export class SellerDashboardPage {
      */
     showEmoteModal() {
         // initialize the modal
-        let modal = Modal.create(SellerEmoteModalPage);
+        var modal = Modal.create(SellerEmoteModalPage);
 
         // render
         this.nav.present(modal);

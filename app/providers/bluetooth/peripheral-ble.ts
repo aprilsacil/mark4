@@ -92,6 +92,8 @@ export class PeripheralBle {
 
                 // once the central is now subscribed, let's send a notify
                 if (this.advertiseData) {
+                    console.log('subscribe data:', this.advertiseData);
+                    console.log('self', this);
                     this.notify(JSON.stringify(this.advertiseData));
                 }
 
@@ -153,6 +155,8 @@ export class PeripheralBle {
             'characteristic'    : self.central.subscribe.characteristic,
             'value'             : message
         };
+
+        console.log('param', param);
 
         self.peripheral.notifyByChunk(param, function(response) {
             console.log('notify by chunk:' , response);

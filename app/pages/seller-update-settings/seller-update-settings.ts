@@ -21,8 +21,8 @@ PouchDB.plugin(require('pouchdb-authentication'));
     providers: [LocalStorageProvider]
 })
 export class SellerUpdateSettingsPage {
-    pouchdb;
-    dbLocal;
+    pouchDb: any;
+    localDb: any;
     user = new Seller({});
 
     constructor(
@@ -33,13 +33,13 @@ export class SellerUpdateSettingsPage {
     ) {
         var self = this;
         // couch db integration
-        this.pouchdb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
+        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
-        this.dbLocal = new PouchDB('cheers');
+        this.localDb = new PouchDB('cheers');
 
         // this will sync locally
-        this.pouchdb.sync(this.dbLocal, {live: true, retry: true}).on('error', console.log.bind(console));
+        this.pouchDb.sync(this.localDb, {live: true, retry: true}).on('error', console.log.bind(console));
 
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = new Seller(JSON.parse(data));
@@ -58,8 +58,9 @@ export class SellerUpdateSettingsPage {
      */
     logout() {
         var self = this;
+
         // initialize the Alert component
-        let alert = Alert.create({
+        var alert = Alert.create({
             title: 'Log out',
             message : 'Are you sure you want to log out of Cheers?',
             buttons: [{
@@ -96,7 +97,7 @@ export class SellerUpdateSettingsPage {
      * Opens up the camera and waits for the image to be fetched.
      */
     openTheCamera() {
-        let options = {
+        var options = {
             destinationType: 0,
             sourceType: 1,
             encodingType: 0,
@@ -136,20 +137,20 @@ export class SellerUpdateSettingsPage {
         }
 
         // initialize the loader
-        let loading = Loading.create({
+        var loading = Loading.create({
             content: 'Saving...'
         });
 
         // render in the template
         this.nav.present(loading);
 
-        this.pouchdb.putUser(this.user.name, {
+        this.pouchDb.putUser(this.user.name, {
             metadata : {
                 store_name: this.user.store_name,
                 fullname: this.user.fullname,
                 image: this.user.image
             }
-        }, function (err, response) {
+        }, (err, response) => {
             if (err) {
                 var message;
 
@@ -180,7 +181,7 @@ export class SellerUpdateSettingsPage {
             }
 
             // get user details
-            self.pouchdb.getUser(self.user.name, (err, response) => {
+            self.pouchDb.getUser(self.user.name, (err, response) => {
                 // delete the password and salt
                 delete response.password_scheme;
                 delete response.salt
@@ -190,8 +191,8 @@ export class SellerUpdateSettingsPage {
                 // update user data to the local storage
                 self.localStorage.setToLocal('user', user);
 
-                // TODO: broadcast that we have update the user details
-
+                // broadcast that we have update the user details
+                self.events.publish('user:update_details');
 
                 // if no error remove the preloader now
                 loading.dismiss()

@@ -20,7 +20,7 @@ import 'rxjs/add/operator/map';
   providers: [HTTP_PROVIDERS, LocalStorageProvider]
 })
 export class SellerAssociatesPage {
-    user: any;
+    user = new Seller({});
     associates = [];
     results = [];
     searching = false;
@@ -33,36 +33,8 @@ export class SellerAssociatesPage {
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
         // get user details from local storage
-        this.localStorage.getFromLocal('user').then((data) => {
-            this.user = new Seller(JSON.parse(data));
-
-            var headers = new Headers({
-	    		'Content-Type': 'application/x-www-form-urlencoded'});
-
-	    	var param = {
-	    		type:'seller_store',
-	    		search:this.user.name
-	    	};
-
-			this.http
-				.post(this.apiEndpoint + 'users', param, {headers: headers})
-				.map(response => response.json())
-				.subscribe((data) => {
-					data = data.rows;
-					for ( var i in data ) {
-						if (this.user.name == data[i].value[0]) {
-							continue;
-						}
-
-						this.associates.push({
-							fullname: data[i].value[0],
-							image: data[i].value[1]
-						});
-					}
-				}, (error) => {
-					console.log(error);
-				});
-        });
+        this.localStorage.getFromLocal('user')
+            .then(result => this.getUserAssociates(result));
 	}
 
 	/**
@@ -78,6 +50,9 @@ export class SellerAssociatesPage {
         this.nav.present(toast);
     }
 
+    /**
+     * Fetch users from the API.
+     */
 	fetchUsers(keyword) {
 		if (!keyword) {
 			this.searching = false;
@@ -112,6 +87,43 @@ export class SellerAssociatesPage {
 				console.log(error);
 			});
 	}
+
+    /**
+     * Fetches the list of associates of the user.
+     */
+    getUserAssociates(user) {
+        this.user = new Seller(JSON.parse(user));
+
+        // set the headers
+        var headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'});
+
+        // set the parameters
+        var param = {
+            type: 'seller_store',
+            search: this.user.name
+        };
+
+        // perform request
+        this.http
+            .post(this.apiEndpoint + 'users', param, {headers: headers})
+            .map(response => response.json())
+            .subscribe((data) => {
+                data = data.rows;
+                for ( var i in data ) {
+                    if (this.user.name == data[i].value[0]) {
+                        continue;
+                    }
+
+                    this.associates.push({
+                        fullname: data[i].value[0],
+                        image: data[i].value[1]
+                    });
+                }
+            }, (error) => {
+                console.log(error);
+            });
+    }
 
 	/**
      * Invites this person

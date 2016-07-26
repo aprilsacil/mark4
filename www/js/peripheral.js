@@ -55,8 +55,6 @@ var BLEPeripheral = function() {
 
             // bluetooth enabled?
             bluetoothle.isEnabled(function(response) {
-                console.log(response);
-
                 // not enabled?
                 if(!response.isEnabled) {
                     // initialize it
@@ -191,8 +189,6 @@ var BLEPeripheral = function() {
 
         // start advertisement
         advertise : function(successCallback, errorCallback) {
-            console.log('peripheral.js advertise');
-
             // initialize bluetooth
             this.initBluetooth(function(response) {
                 // bluetooth enabled?
@@ -347,7 +343,7 @@ var BLEPeripheral = function() {
                 // initialize payload
                 var payload = new Uint32Array(20);
                 // chop message
-                var slice   = message.slice(written * MAX_CHUNK_SIZE, (written + 1) * MAX_CHUNK_SIZE);
+                var slice   = message.subarray(written * MAX_CHUNK_SIZE, (written + 1) * MAX_CHUNK_SIZE);
 
                 try {
                     // set payload header

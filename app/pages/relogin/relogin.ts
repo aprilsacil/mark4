@@ -27,7 +27,8 @@ export class ReloginPage {
     localDb: any;
     pouchDb: any;
     user = {
-        name: <string> null
+        name: <string> null,
+        image: <string> null
     };
 
     relogin = {
@@ -127,10 +128,11 @@ export class ReloginPage {
                     var user = response;
 
                      // set the timestamp
-                    self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
+                    self.localStorage
+                        .setToLocal('timestamp', Math.round(new Date().getTime()/1000));
 
                     // if seller redirect to seller dashboard
-                    if(response.roles[0] === 'seller') {
+                    if (response.roles[0] === 'seller') {
                         // save user data to the local storage
                         self.localStorage.setToLocal('user', JSON.stringify(new Seller(user)));
 
@@ -144,7 +146,7 @@ export class ReloginPage {
                     }
 
                     // if buyer redirect to buyer dashboard
-                    if(response.roles[0] === 'buyer') {
+                    if (response.roles[0] === 'buyer') {
                         // save user data to the local storage
                         self.localStorage.setToLocal('user', JSON.stringify(new Buyer(user)));
 

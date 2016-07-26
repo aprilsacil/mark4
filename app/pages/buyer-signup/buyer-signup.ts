@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { Alert, Loading, NavController } from 'ionic-angular';
+
 import { LoginPage } from '../login/login';
 import { SellerSignupPage } from '../seller-signup/seller-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
@@ -18,7 +19,8 @@ PouchDB.plugin(require('pouchdb-authentication'));
     templateUrl: 'build/pages/buyer-signup/buyer-signup.html'
 })
 export class BuyerSignupPage {
-    private db;
+    localDb: any;
+    pouchDb: any;
     buyer = {
         username: <string> null,
         password: <string> null,
@@ -30,20 +32,21 @@ export class BuyerSignupPage {
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
         // couch db integration
-        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
+        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
-        var local = new PouchDB('cheers');
+        this.localDb = new PouchDB('cheers');
 
         // this will sync locally
-        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+        this.localDb.sync(this.pouchDb, {live: true, retry: true})
+            .on('error', console.log.bind(console));
     }
 
     /**
      * Redirects to the login page
      */
     goToLoginPage() {
-        this.nav.push(LoginPage);
+        this.nav.push(LoginPage, { go_back: true });
     }
 
     /**
@@ -95,7 +98,7 @@ export class BuyerSignupPage {
         // render loader
         self.nav.present(loading);
 
-        this.db.signup(this.buyer.username, this.buyer.password, {
+        this.pouchDb.signup(this.buyer.username, this.buyer.password, {
             metadata : {
                 fullname : this.buyer.name,
                 level: 0,

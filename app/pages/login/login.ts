@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { Alert, Events, Loading, NavController } from 'ionic-angular';
+import { Alert, Events, Loading, NavController, NavParams } from 'ionic-angular';
 
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
@@ -30,10 +30,12 @@ export class LoginPage {
         username: <string> null,
         password: <string> null
     };
+    goBack = false;
 
     constructor(
         private events: Events,
         private nav: NavController,
+        private params: NavParams,
         private localStorage: LocalStorageProvider,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
@@ -45,6 +47,8 @@ export class LoginPage {
         // this will sync locally
         this.localDb.sync(this.pouchDb, {live: true, retry: true})
             .on('error', console.log.bind(console));
+
+        this.goBack = this.params.get('go_back') || false;
     }
 
     /**
@@ -58,7 +62,13 @@ export class LoginPage {
      * Redirects to the buyer signup page
      */
     goToBuyerSignupPage() {
-        this.nav.push(BuyerSignupPage);
+        console.log(this.goBack);
+
+        if (this.goBack) {
+            return this.nav.pop();
+        }
+
+        return this.nav.push(BuyerSignupPage);
     }
 
     /**
@@ -189,7 +199,6 @@ export class LoginPage {
                     self.nav.present(alert);
                 }, 300);
             });
-
 
             return;
         });
