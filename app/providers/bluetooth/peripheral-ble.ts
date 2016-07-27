@@ -19,8 +19,8 @@ export class PeripheralBle {
 
     constructor(private events: Events) {
         // listen for this event
-        this.events.subscribe('peripheral:setData', (eventData) => {
-            console.log('event: periphal data', eventData);
+        this.events.subscribe('peripheral:set_buyer_data', (eventData) => {
+            console.log('event: peripheral data', eventData);
 
             this.advertiseData = eventData[0];
         });
@@ -70,7 +70,7 @@ export class PeripheralBle {
             }
 
             // write request?
-            if(response.status === 'writeRequested') {
+            if (response.status === 'writeRequested') {
                 console.log('write requested', response);
 
                 // get encoded data
@@ -86,7 +86,7 @@ export class PeripheralBle {
             }
 
             // subscription?
-            if(response.status === 'subscribed') {
+            if (response.status === 'subscribed') {
                 // set subscription data
                 this.central.subscribe = response;
 
@@ -153,6 +153,8 @@ export class PeripheralBle {
             'characteristic'    : self.central.subscribe.characteristic,
             'value'             : message
         };
+
+        console.log('param', param);
 
         self.peripheral.notifyByChunk(param, function(response) {
             console.log('notify by chunk:' , response);

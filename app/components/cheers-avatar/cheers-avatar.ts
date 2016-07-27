@@ -10,11 +10,11 @@ import 'rxjs/add/operator/map';
   for more info on Angular 2 Components.
 */
 @Directive({
-  selector: 'img[default]',
-  host: {
-    '(error)':'updateAvatar()',
-    '[src]':'src'
-   }
+    selector: 'img[default]',
+    host: {
+        '(error)':'updateAvatar()',
+        '[src]':'src'
+    }
 })
 @Component({
     selector: 'cheers-avatar',
@@ -33,8 +33,6 @@ export class CheersAvatar {
      * Will run once the component was initialized
      */
     ngOnInit() {
-        console.log('user', this.user);
-
         // get the user details
         if (!this.user.image) {
             this.getUserDetails();
@@ -47,13 +45,18 @@ export class CheersAvatar {
      * Fetches the user details from the API.
      */
     getUserDetails() {
-        var headers = new Headers({ 'Content-Type': 'application/x-www-form-urlencoded' });
+        // set the header
+        var headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
 
+        // set the parameters
         var param = {
             type:'all_full',
             search: this.user.name
         };
 
+        // send request
         this.http
             .post(this.apiEndpoint + 'users', param, {headers: headers})
             .map(response => response.json())

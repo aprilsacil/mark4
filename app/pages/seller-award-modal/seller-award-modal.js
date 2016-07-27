@@ -15,6 +15,8 @@ var core_1 = require('@angular/core');
 var ionic_angular_1 = require('ionic-angular');
 var http_1 = require('@angular/http');
 var local_storage_provider_1 = require('../../providers/storage/local-storage-provider');
+var buyer_1 = require('../../models/buyer');
+var seller_1 = require('../../models/seller');
 require('rxjs/add/operator/toPromise');
 require('rxjs/add/operator/map');
 var PouchDB = require('pouchdb');
@@ -27,6 +29,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 */
 var SellerAwardModalPage = (function () {
     function SellerAwardModalPage(localStorage, nav, params, http, view, couchDbEndpoint, apiEndpoint) {
+        var _this = this;
         this.localStorage = localStorage;
         this.nav = nav;
         this.params = params;
@@ -42,12 +45,13 @@ var SellerAwardModalPage = (function () {
             store: null,
             image: null
         };
-        this.shopper = {
-            name: null,
-            image: null
-        };
+        this.user = new seller_1.Seller({});
         // get the shopper details from the NavParams
-        this.shopper = this.params.get('shopper');
+        this.shopper = new buyer_1.Buyer(this.params.get('shopper'));
+        // get logged in user details
+        this.localStorage.getFromLocal('user').then(function (data) {
+            _this.user = new seller_1.Seller(JSON.parse(data));
+        });
     }
     /**
      * Closes the modal
@@ -79,36 +83,34 @@ var SellerAwardModalPage = (function () {
         });
         // render
         self.nav.present(loading);
-        self.localStorage.getFromLocal('user').then(function (data) {
-            var user = JSON.parse(data);
-            // set the headers
-            var headers = new http_1.Headers({
-                'Content-Type': 'application/x-www-form-urlencoded'
+        // set the headers
+        var headers = new http_1.Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
+        var param = self.award;
+        param.username = self.shopper.name;
+        param.image = self.shopper.image;
+        param.store = self.user.name;
+        self.http
+            .post(self.apiEndpoint + 'history', param, { headers: headers })
+            .map(function (response) { return response.json(); })
+            .subscribe(function (data) {
+            if (!data.ok) {
+                return;
+            }
+            loading.dismiss().then(function () {
+                // close the modal
+                self.dismiss();
+            })
+                .then(function () {
+                // delay it for a second
+                setTimeout(function () {
+                    // show a toast
+                    self.showToast('You have successfully gave the customer an award.');
+                }, 600);
             });
-            var param = self.award;
-            param.username = self.shopper.name;
-            param.image = self.shopper.image;
-            param.store = user.name;
-            self.http
-                .post(self.apiEndpoint + 'history', param, { headers: headers })
-                .map(function (response) { return response.json(); })
-                .subscribe(function (data) {
-                if (data.ok) {
-                    loading.dismiss().then(function () {
-                        // close the modal
-                        self.dismiss();
-                    })
-                        .then(function () {
-                        // delay it for a second
-                        setTimeout(function () {
-                            // show a toast
-                            self.showToast('You have successfully gave the customer an award.');
-                        }, 400);
-                    });
-                }
-            }, function (error) {
-                console.log(error);
-            });
+        }, function (error) {
+            console.log(error);
         });
     };
     SellerAwardModalPage = __decorate([

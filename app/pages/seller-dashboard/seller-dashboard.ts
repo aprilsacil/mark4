@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, NgZone } from '@angular/core';
 import { Events, Modal, NavController, ViewController } from 'ionic-angular';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
@@ -34,12 +34,18 @@ export class SellerDashboardPage {
         private localStorage: LocalStorageProvider,
         private nav: NavController,
         private view: ViewController,
+        private zone: NgZone,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
         this.scanning = false;
 
-        this.localStorage.getFromLocal('user').then((data) => {
-            this.user = new Seller(JSON.parse(data));
+        // get user details
+        this.getUser();
+
+        // listens for changes in the user details
+        this.events.subscribe('user:update_details', () => {
+            // get user details again from the local storage
+            this.getUser();
         });
     }
 
@@ -49,44 +55,56 @@ export class SellerDashboardPage {
      */
     getNearbyShopperDevices() {
         // initialize the event to listen
-        this.events.subscribe('central:buyersNearby', (eventData) => {
+        this.events.subscribe('central:buyers_nearby', (eventData) => {
             var buyer = JSON.parse(eventData[0]);
+
+            console.log('event data', buyer);
+
+            // check if there's really a data
+            if (!buyer) {
+                return;
+            }
+
             buyer = new Buyer(buyer);
 
-            console.log('buyer', buyer);
+            var exists = false;
 
             // check if the buyer already exists in the object
-            if (this.shoppers) {
-                var existing = this.shoppers.some((element) => {
-                    return (element._id === buyer._id) ? element : false;
-                });
+            if (this.shoppers || this.shoppers.length !== 0) {
+                // check if the shopper already exists
+                for (var s in this.shoppers) {
+                    // check if the ids are the same
+                    if (this.shoppers[s]._id == buyer._id) {
+                        // update the object
+                        this.zone.run(() => {
+                            this.shoppers[s] = buyer;
+                        });
 
-                // if it doesn't exists, push it
-                if (!existing) {
-                    this.shoppers.push(buyer);
-                }
-
-                // if it exists, update the current data
-                if (existing) {
-                    var index;
-
-                    // get the index of the shopper by looping all the shoppers
-                    for (var s in this.shoppers) {
-                        if (this.shoppers[s]._id == buyer._id) {
-                            index = s;
-                            break;
-                        }
+                        exists = true;
+                        break;
                     }
-
-                    // update
-                    this.shoppers[index] = buyer;
                 }
             }
+
+            console.log('npa', buyer);
 
             // no shoppers, just push it
-            if (!this.shoppers) {
-                this.shoppers.push(buyer);
+            if (!this.shoppers.length || !exists) {
+                this.zone.run(() => {
+                    this.shoppers.push(buyer);
+                });
             }
+
+            console.log(this.shoppers);
+        });
+    }
+
+    /**
+     * Get user data from the local storage
+     */
+    getUser() {
+        this.localStorage.getFromLocal('user').then((data) => {
+            this.user = new Seller(JSON.parse(data));
         });
     }
 
@@ -116,7 +134,7 @@ export class SellerDashboardPage {
      */
     showEmoteModal() {
         // initialize the modal
-        let modal = Modal.create(SellerEmoteModalPage);
+        var modal = Modal.create(SellerEmoteModalPage);
 
         // render
         this.nav.present(modal);
@@ -141,7 +159,7 @@ export class SellerDashboardPage {
             this.events.publish('central:stopScan');
 
             // unsubscribe event
-            this.events.unsubscribe('central:buyersNearby', () => {});
+            this.events.unsubscribe('central:buyers_nearby', () => {});
             return;
         }
 

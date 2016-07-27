@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Events } from 'ionic-angular';
+import { LocalStorageProvider } from '../storage/local-storage-provider';
 
 declare var bluetoothle: any;
 declare var BLECentral: any;
@@ -12,12 +13,15 @@ declare var BLECentral: any;
 */
 @Injectable()
 export class CentralBle {
-    private central: any;
     peripherals: any;
+    private central: any;
     private scanTimeout: any;
     private stopScanTimeout: any;
 
-    constructor(private events: Events) {}
+    constructor(
+        private events: Events,
+        private localStorageProvider: LocalStorageProvider
+    ) {}
 
     init() {
         console.log('Central is ready...');
@@ -41,7 +45,7 @@ export class CentralBle {
         // on subscribe notify
         self.central.onSubscribe(function(response) {
             // notification from server?
-            if(response.status === 'subscribedResult') {
+            if (response.status === 'subscribedResult') {
                 // get encoded data
                 var bytes  = bluetoothle.encodedStringToBytes(response.value);
                 // get the string
@@ -51,14 +55,13 @@ export class CentralBle {
                 console.log('Notify Bytes: ' + bytes);
 
                 // create an event
-                self.events.publish('central:buyersNearby', string);
+                self.events.publish('central:buyers_nearby', string);
+
+                // once the central subscribe to the peripheral, send the
+                // details of the central
+                self.sendEmoteMessageToBuyers();
             }
         });
-
-        // start scanning for peripherals
-        // setTimeout(() => {
-        //     self.scan();
-        // }, 2000);
     }
 
     /**
@@ -66,8 +69,6 @@ export class CentralBle {
      */
     scan() {
         var self = this;
-
-        console.log('scanning');
 
         // start scanning
         self.central.scan((response) => {
@@ -290,20 +291,6 @@ export class CentralBle {
             }
         }
 
-        // var foo = {
-        //     _id: '12345678890',
-        //     name: 'Long Name',
-        //     message: 'Lorem ipsum sit dolor amit 1.',
-        //     message2: 'Lorem ipsum sit dolor amit 2.',
-        //     message3: 'Lorem ipsum sit dolor amit 3.',
-        //     message4: 'Lorem ipsum sit dolor amit 4.',
-        //     message5: 'Lorem ipsum sit dolor amit 5.',
-        //     message6: 'Lorem ipsum sit dolor amit 6.',
-        //     message7: 'Lorem ipsum sit dolor amit 7.',
-        //  };
-
-        // message = JSON.stringify(foo);
-
         // set request params
         var param = {
             'address'           : information.info.address,
@@ -334,6 +321,37 @@ export class CentralBle {
     }
 
     /**
+     * Sends out the emote message if given to nearby buyers.
+     */
+    sendEmoteMessageToBuyers() {
+        // get the emote message from the local storage
+        this.localStorageProvider.getFromLocal('emote_message').then((message) => {
+            console.log('emote', message);
+            // check if there's a message
+            if (!message) {
+                return;
+            }
+
+            // get user data
+            this.localStorageProvider.getFromLocal('user').then((user) => {
+                var user = JSON.parse(user);
+
+                // prepare data
+                var dataToSend = {
+                    _id: user._id,
+                    name: user.name,
+                    fullname: user.fullname,
+                    store_name: user.store_name,
+                    emote_message: message
+                }
+
+                // send
+                this.write(JSON.stringify(dataToSend));
+            });
+        });
+    }
+
+    /**
      * Stops the ongoing scan
      */
     stop() {
@@ -345,7 +363,21 @@ export class CentralBle {
         self.peripherals = [];
 
         self.central.stopScan((response) => {
-            console.log('stop scan', response);
+            // turn off bluetooth
+            bluetoothle.disable();
         });
+    }
+
+    /**
+     * Checks the status of the bluetooth
+     */
+    status() {
+        var self = this;
+
+        return new Promise(resolve => {
+            bluetoothle.isEnabled(response => {
+                resolve(response.isEnabled);
+            });
+        })
     }
 }

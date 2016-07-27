@@ -378,6 +378,8 @@ var BLECentral = function() {
 
         // write by chunks
         writeByChunk : function(data, successCallback, errorCallback) {
+            console.log('write by chunk', data);
+
             // maximum packet size
             var MAX_PACKET_SIZE = 20;
             // max message chunk size
@@ -420,7 +422,7 @@ var BLECentral = function() {
                 // initialize payload
                 var payload = new Uint32Array(20);
                 // chop message
-                var slice   = message.slice(written * MAX_CHUNK_SIZE, (written + 1) * MAX_CHUNK_SIZE);
+                var slice   = message.subarray(written * MAX_CHUNK_SIZE, (written + 1) * MAX_CHUNK_SIZE);
 
                 try {
                     // set payload header
@@ -446,9 +448,6 @@ var BLECentral = function() {
                 }, function(response) {
                     // EOF?
                     if(total <= ++written) {
-                        console.log('Response: ');
-                        console.log(response);
-
                         // write eof
                         var eof = new Uint32Array(20);
 

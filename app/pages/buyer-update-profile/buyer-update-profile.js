@@ -16,6 +16,7 @@ var ionic_angular_1 = require('ionic-angular');
 var ionic_native_1 = require('ionic-native');
 var login_1 = require('../login/login');
 var local_storage_provider_1 = require('../../providers/storage/local-storage-provider');
+var buyer_1 = require('../../models/buyer');
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
 /*
@@ -31,13 +32,7 @@ var BuyerUpdateProfilePage = (function () {
         this.localStorage = localStorage;
         this.nav = nav;
         this.couchDbEndpoint = couchDbEndpoint;
-        this.user = {
-            image: null,
-            name: null,
-            fullname: null,
-            job_description: null,
-            company_name: null
-        };
+        this.user = new buyer_1.Buyer({});
         // couch db integration
         this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', { skipSetup: true });
         // local integration
@@ -47,12 +42,8 @@ var BuyerUpdateProfilePage = (function () {
             .on('error', console.log.bind(console));
         this.localStorage.getFromLocal('user').then(function (data) {
             var user = JSON.parse(data);
-            // set some data
-            _this.user.name = user.name;
-            _this.user.fullname = user.fullname;
-            _this.user.job_description = user.job_description;
-            _this.user.company_name = user.company_name;
-            _this.user.image = user.image;
+            // set the data
+            _this.user = new buyer_1.Buyer(user);
         });
     }
     /**
@@ -148,7 +139,6 @@ var BuyerUpdateProfilePage = (function () {
                 image: this.user.image
             }
         }, function (err, response) {
-            console.log(response);
             if (err) {
                 var message;
                 // determine the error
@@ -176,10 +166,11 @@ var BuyerUpdateProfilePage = (function () {
                 // delete the password and salt
                 delete response.password_scheme;
                 delete response.salt;
-                var user = JSON.stringify(response);
+                var user = JSON.stringify(new buyer_1.Buyer(response));
                 // update user data to the local storage
                 self.localStorage.setToLocal('user', user);
-                // TODO: broadcast that we have update the user details
+                // broadcast that we have update the user details
+                self.events.publish('user:update_details');
                 // if no error remove the preloader now
                 loading.dismiss()
                     .then(function () {

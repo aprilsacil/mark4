@@ -31,9 +31,8 @@ var CheersAvatar = (function () {
      * Will run once the component was initialized
      */
     CheersAvatar.prototype.ngOnInit = function () {
-        console.log('user', this.user);
         // get the user details
-        if (!this.user.hasOwnProperty('image') || !this.user.image) {
+        if (!this.user.image) {
             this.getUserDetails();
         }
         this.fetching = false;
@@ -43,11 +42,16 @@ var CheersAvatar = (function () {
      */
     CheersAvatar.prototype.getUserDetails = function () {
         var _this = this;
-        var headers = new http_1.Headers({ 'Content-Type': 'application/x-www-form-urlencoded' });
+        // set the header
+        var headers = new http_1.Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
+        // set the parameters
         var param = {
             type: 'all_full',
             search: this.user.name
         };
+        // send request
         this.http
             .post(this.apiEndpoint + 'users', param, { headers: headers })
             .map(function (response) { return response.json(); })

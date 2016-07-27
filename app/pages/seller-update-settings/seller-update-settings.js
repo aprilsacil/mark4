@@ -16,6 +16,7 @@ var ionic_angular_1 = require('ionic-angular');
 var ionic_native_1 = require('ionic-native');
 var login_1 = require('../login/login');
 var local_storage_provider_1 = require('../../providers/storage/local-storage-provider');
+var seller_1 = require('../../models/seller');
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
 /*
@@ -31,21 +32,16 @@ var SellerUpdateSettingsPage = (function () {
         this.localStorage = localStorage;
         this.nav = nav;
         this.couchDbEndpoint = couchDbEndpoint;
-        this.seller = {
-            image: null,
-            fullname: null,
-            store_name: null,
-            name: null
-        };
+        this.user = new seller_1.Seller({});
         var self = this;
         // couch db integration
-        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', { skipSetup: true });
+        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', { skipSetup: true });
         // local integration
-        this.dbLocal = new PouchDB('cheers');
+        this.localDb = new PouchDB('cheers');
         // this will sync locally
-        this.db.sync(this.dbLocal, { live: true, retry: true }).on('error', console.log.bind(console));
+        this.pouchDb.sync(this.localDb, { live: true, retry: true }).on('error', console.log.bind(console));
         this.localStorage.getFromLocal('user').then(function (data) {
-            _this.seller = JSON.parse(data);
+            _this.user = new seller_1.Seller(JSON.parse(data));
         });
     }
     /**
@@ -105,7 +101,7 @@ var SellerUpdateSettingsPage = (function () {
         ionic_native_1.Camera.getPicture(options).then(function (data) {
             var imgdata = "data:image/jpeg;base64," + data;
             // assign the image to the user object
-            _this.seller.image = imgdata;
+            _this.user.image = imgdata;
         }, function (error) {
             // bring out a toast error message
         });
@@ -132,11 +128,11 @@ var SellerUpdateSettingsPage = (function () {
         });
         // render in the template
         this.nav.present(loading);
-        this.db.putUser(this.seller.name, {
+        this.pouchDb.putUser(this.user.name, {
             metadata: {
-                store_name: this.seller.store_name,
-                fullname: this.seller.fullname,
-                image: this.seller.image
+                store_name: this.user.store_name,
+                fullname: this.user.fullname,
+                image: this.user.image
             }
         }, function (err, response) {
             if (err) {
@@ -164,14 +160,15 @@ var SellerUpdateSettingsPage = (function () {
                 return;
             }
             // get user details
-            self.db.getUser(self.seller.name, function (err, response) {
+            self.pouchDb.getUser(self.user.name, function (err, response) {
                 // delete the password and salt
                 delete response.password_scheme;
                 delete response.salt;
-                var user = JSON.stringify(response);
+                var user = JSON.stringify(new seller_1.Seller(response));
                 // update user data to the local storage
                 self.localStorage.setToLocal('user', user);
-                // TODO: broadcast that we have update the user details
+                // broadcast that we have update the user details
+                self.events.publish('user:update_details');
                 // if no error remove the preloader now
                 loading.dismiss()
                     .then(function () {

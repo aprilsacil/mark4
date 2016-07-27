@@ -35,17 +35,18 @@ var BuyerSignupPage = (function () {
             name: null
         };
         // couch db integration
-        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', { skipSetup: true });
+        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', { skipSetup: true });
         // local integration
-        var local = new PouchDB('cheers');
+        this.localDb = new PouchDB('cheers');
         // this will sync locally
-        local.sync(this.db, { live: true, retry: true }).on('error', console.log.bind(console));
+        this.localDb.sync(this.pouchDb, { live: true, retry: true })
+            .on('error', console.log.bind(console));
     }
     /**
      * Redirects to the login page
      */
     BuyerSignupPage.prototype.goToLoginPage = function () {
-        this.nav.push(login_1.LoginPage);
+        this.nav.push(login_1.LoginPage, { go_back: true });
     };
     /**
      * Redirects to the seller signup page
@@ -88,7 +89,7 @@ var BuyerSignupPage = (function () {
         });
         // render loader
         self.nav.present(loading);
-        this.db.signup(this.buyer.username, this.buyer.password, {
+        this.pouchDb.signup(this.buyer.username, this.buyer.password, {
             metadata: {
                 fullname: this.buyer.name,
                 level: 0,

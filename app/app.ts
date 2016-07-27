@@ -1,10 +1,12 @@
 import { Component, provide } from '@angular/core';
 import { Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { StatusBar } from 'ionic-native';
+import { StatusBar, LocalNotifications } from 'ionic-native';
+
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from './pages/seller-dashboard/seller-dashboard';
 import { ReloginPage } from './pages/relogin/relogin';
+
 import { CentralBle } from './providers/bluetooth/central-ble';
 import { PeripheralBle } from './providers/bluetooth/peripheral-ble';
 import { LocalStorageProvider } from './providers/storage/local-storage-provider';
@@ -23,21 +25,24 @@ export class MyApp {
         private peripheralBle: PeripheralBle,
         private platform:Platform
     ) {
-        this.rootPage = BuyerSignupPage;
-
         platform.ready().then(() => {
             // Okay, so the platform is ready and our plugins are available.
             // Here you can do any higher level native things you might need.
             StatusBar.styleDefault();
 
-            this.authEvents();
+            this.authenticationEvents();
+        });
+
+        // when the app is on background
+        platform.pause.subscribe(() => {
+
         });
     }
 
     /**
      * Listens for events like logout, login, and change of role.
      */
-    authEvents() {
+    authenticationEvents() {
         var currentTimestamp = Math.round(new Date().getTime() / 1000);
 
         // check if there are logged in users
@@ -48,10 +53,10 @@ export class MyApp {
                     var difference = currentTimestamp - timestamp;
 
                     // check it's almost 30 minutes
-                    if (difference >= 60) {
+                    if (difference >= 1800) {
                         // if it's almost 30 minutes, set the root page to the relog page
-                        // this.rootPage = ReloginPage;
-                        // return;
+                        this.rootPage = ReloginPage;
+                        return;
                     }
 
                     // get the user
@@ -76,7 +81,7 @@ export class MyApp {
                         }
 
                         // set data
-                        this.events.publish('peripheral:setData', advertiseData);
+                        this.events.publish('peripheral:set_buyer_data', advertiseData);
 
                         // set the dashboard
                         this.rootPage = BuyerDashboardPage;
@@ -94,6 +99,9 @@ export class MyApp {
                 });
             }
         });
+
+        // set the default root page
+        this.rootPage = BuyerSignupPage;
 
         // register some event listeners here
         // central
@@ -120,6 +128,17 @@ export class MyApp {
 
         this.events.subscribe('central:startScan', (eventData) => {
             console.log('event: start scan');
+
+            // check if the bluetooth is enabled or not
+            self.centralBle.status().then(result => {
+                if (!result) {
+                    // prompt that the bluetooth is not enabled
+                    return;
+                }
+
+                // check if location services is enabled
+            });
+
             // start scanning
             self.centralBle.scan();
         });
@@ -131,28 +150,32 @@ export class MyApp {
         });
 
         // write event
-        this.events.subscribe('central:write', (eventData) => {
-            console.log('event: write', eventData[0]);
-            self.centralBle.write(JSON.stringify(eventData[0]));
-        });
+        // this.events.subscribe('central:write', (eventData) => {
+        //     console.log('event: write', eventData[0]);
+        //     self.centralBle.write(JSON.stringify(eventData[0]));
+        // });
     }
 
     /**
      * Buyer event listeners
      */
     buyerEvents() {
-        // initialize the peripheral ble
-        //this.peripheralBle.init();
+        var self = this;
 
-        this.events.subscribe('peripheral:stop', (eventData) => {
-            this.peripheralBle.stop();
+        // initialize the peripheral ble
+
+        self.peripheralBle.init();
+
+        self.events.subscribe('peripheral:stop', () => {
+            self.peripheralBle.stop();
         });
 
         // do some cleanup by removing the looking for product data
-        this.localStorage.removeFromLocal('looking_for');
+        self.localStorage.removeFromLocal('looking_for');
     }
 }
 
 ionicBootstrap(MyApp, [
     provide('CouchDBEndpoint', {useValue: 'http://208.113.130.196:5984/'}),
     provide('APIEndpoint', {useValue: 'http://208.113.130.196/'})])
+

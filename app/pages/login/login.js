@@ -17,6 +17,8 @@ var buyer_signup_1 = require('../buyer-signup/buyer-signup');
 var buyer_dashboard_1 = require('../buyer-dashboard/buyer-dashboard');
 var seller_dashboard_1 = require('../seller-dashboard/seller-dashboard');
 var local_storage_provider_1 = require('../../providers/storage/local-storage-provider');
+var buyer_1 = require('../../models/buyer');
+var seller_1 = require('../../models/seller');
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
 /*
@@ -26,21 +28,24 @@ PouchDB.plugin(require('pouchdb-authentication'));
   Ionic pages and navigation.
 */
 var LoginPage = (function () {
-    function LoginPage(events, nav, localStorage, couchDbEndpoint) {
+    function LoginPage(events, nav, params, localStorage, couchDbEndpoint) {
         this.events = events;
         this.nav = nav;
+        this.params = params;
         this.localStorage = localStorage;
         this.couchDbEndpoint = couchDbEndpoint;
         this.login = {
             username: null,
             password: null
         };
+        this.goBack = false;
         this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', { skipSetup: true });
         // local integration
         this.localDb = new PouchDB('cheers');
         // this will sync locally
         this.localDb.sync(this.pouchDb, { live: true, retry: true })
             .on('error', console.log.bind(console));
+        this.goBack = this.params.get('go_back') || false;
     }
     /**
      * Redirects to the buyer dashboard
@@ -52,7 +57,11 @@ var LoginPage = (function () {
      * Redirects to the buyer signup page
      */
     LoginPage.prototype.goToBuyerSignupPage = function () {
-        this.nav.push(buyer_signup_1.BuyerSignupPage);
+        console.log(this.goBack);
+        if (this.goBack) {
+            return this.nav.pop();
+        }
+        return this.nav.push(buyer_signup_1.BuyerSignupPage);
     };
     /**
      * Redirects to the seller dashboard
@@ -102,14 +111,15 @@ var LoginPage = (function () {
                     // delete the password and salt
                     delete response.password_scheme;
                     delete response.salt;
-                    var user = JSON.stringify(response);
-                    // save user data to the local storage
-                    self.localStorage.setToLocal('user', user);
+                    var user = response;
+                    // set the timestamp
                     self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime() / 1000));
                     // if seller redirect to seller dashboard
                     if (response.roles[0] === 'seller') {
+                        // save user data to the local storage
+                        self.localStorage.setToLocal('user', JSON.stringify(new seller_1.Seller(user)));
                         // broadcast event to start some event listeners
-                        _this.events.publish('central:start', user);
+                        _this.events.publish('central:start', JSON.stringify(new seller_1.Seller(user)));
                         // remove loader and set the root page
                         loading.dismiss().then(function () {
                             return self.goToSellerDashboardPage();
@@ -117,18 +127,15 @@ var LoginPage = (function () {
                     }
                     // if buyer redirect to buyer dashboard
                     if (response.roles[0] === 'buyer') {
+                        var buyer = new buyer_1.Buyer(user);
+                        // save user data to the local storage
+                        self.localStorage.setToLocal('user', JSON.stringify(buyer));
                         // broadcast event to start some event listeners
                         _this.events.publish('peripheral:start');
-                        // set the data to be advertised
-                        var advertiseData = {
-                            _id: response._id,
-                            fullname: response.fullname,
-                            name: response.name,
-                            job_description: response.job_description,
-                            company_name: response.company_name,
-                            level: response.level
-                        };
-                        _this.events.publish('peripheral:setData', advertiseData);
+                        // remove image data
+                        delete buyer.image;
+                        // let's advertise
+                        _this.events.publish('peripheral:set_buyer_data', buyer);
                         // remove loader and set the root page
                         loading.dismiss().then(function () {
                             return self.goToBuyerDashboardPage();
@@ -172,8 +179,8 @@ var LoginPage = (function () {
             templateUrl: 'build/pages/login/login.html',
             providers: [local_storage_provider_1.LocalStorageProvider]
         }),
-        __param(3, core_1.Inject('CouchDBEndpoint')), 
-        __metadata('design:paramtypes', [ionic_angular_1.Events, ionic_angular_1.NavController, local_storage_provider_1.LocalStorageProvider, String])
+        __param(4, core_1.Inject('CouchDBEndpoint')), 
+        __metadata('design:paramtypes', [ionic_angular_1.Events, ionic_angular_1.NavController, ionic_angular_1.NavParams, local_storage_provider_1.LocalStorageProvider, String])
     ], LoginPage);
     return LoginPage;
 }());

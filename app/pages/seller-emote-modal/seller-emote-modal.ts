@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { Alert, Events, Loading, NavController, Toast, ViewController } from 'ionic-angular';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
+import { Seller } from '../../models/seller';
+
 /*
   Generated class for the SellerEmoteModalPage page.
 
@@ -19,7 +21,7 @@ export class SellerEmoteModalPage {
         message: <string> null
     };
     peripherals: boolean = false;
-    user: Object = {};
+    user: Object = new Seller({});
 
     constructor(
         private events: Events,
@@ -86,20 +88,6 @@ export class SellerEmoteModalPage {
             return;
         }
 
-        // check if there are peripherals
-        if (!this.peripherals) {
-             // prompt that something is wrong in the form
-            var alert = Alert.create({
-                title: 'Ooops...',
-                subTitle: 'There are no buyers nearby. You cannot send this.',
-                buttons: ['OK']
-            });
-
-            // render in the template
-            this.nav.present(alert);
-            return;
-        }
-
         // initialize the loader
         var loading = Loading.create({
             content: 'Sending out your emote...'
@@ -120,8 +108,9 @@ export class SellerEmoteModalPage {
                 emote: this.emote.message
             }
 
-            // publish event
-            this.events.publish('central:write', data);
+            // save emote message in the local storage and let central-ble to
+            // send the emote message to all
+            this.localStorage.setToLocal('emote_message', this.emote.message);
 
             // dismiss the loader
             loading.dismiss().then(() => {

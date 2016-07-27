@@ -11,21 +11,27 @@
 </ion-header>
 
 <ion-content>
-    <ion-searchbar placeholder="Search by username"
+    <ion-searchbar
+        placeholder="Search by username"
         (input)="fetchUsers($event.target.value)"></ion-searchbar>
 
-    <ion-list *ngIf="results.length && searching">
-        <ion-item class="associate" *ngFor="let result of results; let i = index">
-            <ion-avatar item-left>
-                <img src="img/default_avatar.jpg" *ngIf="!result.image">
-                <img [src]="result.image" *ngIf="result.image">
-            </ion-avatar>
-            <h2>{{result.fullname}}</h2>
-            <div class="owner-controls" item-right>
-                <button clear secondary (click)="invite(result.username)">
-                    <ion-icon name="add"></ion-icon>
-                </button>
-            </div>
+    <ion-list *ngIf="searching">
+        <div *ngIf="results.length">
+            <ion-item class="associate" *ngFor="let result of results; let i = index">
+                <ion-avatar item-left>
+                    <img src="img/default_avatar.jpg" *ngIf="!result.image">
+                    <img [src]="result.image" *ngIf="result.image">
+                </ion-avatar>
+                <h2>{{result.fullname}}</h2>
+                <div class="owner-controls" item-right>
+                    <button clear secondary (click)="invite(result.username)">
+                        <ion-icon name="add"></ion-icon>
+                    </button>
+                </div>
+            </ion-item>
+        </div>
+        <ion-item *ngIf="!results.length">
+            No results...
         </ion-item>
     </ion-list>
 

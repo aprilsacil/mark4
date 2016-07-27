@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, NgZone } from '@angular/core';
 import { Alert, Events, Loading, NavController } from 'ionic-angular';
 import { Modal, ViewController } from 'ionic-angular';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
@@ -10,6 +10,9 @@ import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
+
+import { Buyer } from '../../models/buyer';
+import { Seller } from '../../models/seller';
 
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
@@ -31,17 +34,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 export class BuyerDashboardPage {
     localDb: any;
     pouchDb: any;
-    user = {
-        _id: <string> null,
-        name: <string> null,
-        fullname: <string> null,
-        store_name: <string> null,
-        job_description: <string> null,
-        company_name: <string> null,
-        image: <string> null,
-        level: <number> 0,
-        roles: <any> []
-    };
+    user = new Buyer({});
 
     history: any[] = [];
     sellers: any[] = [];
@@ -55,6 +48,7 @@ export class BuyerDashboardPage {
         private localStorage: LocalStorageProvider,
         private nav: NavController,
         private http: Http,
+        private zone: NgZone,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
@@ -70,23 +64,17 @@ export class BuyerDashboardPage {
 
         // get user details that is saved in the local storage then get the
         // user history
-        this.localStorage.getFromLocal('user')
-            .then((response) => {
-                // assign response to the class variable
-                this.user = JSON.parse(response);
-
-                // check if there's an image property in the user object
-                if (!this.user.image) {
-                    this.user.image = null;
-                }
-
-                // get history
-                this.getUserHistory();
-            });
+        this.getUser()
 
         // listens for buyers that sends out an emote
         this.events.subscribe('peripheral:emoteFound',
             (eventData) => this.handleEmotes(eventData[0]));
+
+        // listens for changes in the user details
+        this.events.subscribe('user:update_details', () => {
+            // get user details again from the local storage
+            this.getUser();
+        });
     }
 
     /**
@@ -125,7 +113,9 @@ export class BuyerDashboardPage {
                         } else {
                             // response is the user object
                             self.pouchDb.putUser(this.user.name, {
-                                metadata : { roles: ['seller'] }
+                                metadata : {
+                                    roles: ['seller']
+                                }
                             }, (errUser, responseUser) => {
                                 if (errUser) {
                                     if (errUser.name === 'not_found') {
@@ -135,7 +125,7 @@ export class BuyerDashboardPage {
                                     }
                                 } else {
                                     self.pouchDb.getUser(self.user.name, (err, response) => {
-                                    console.log(err, response);
+                                        console.log(err, response);
                                         // delete the password and salt
                                         delete response.password_scheme;
                                         delete response.salt
@@ -160,6 +150,25 @@ export class BuyerDashboardPage {
 
         // render it
         this.nav.present(alert);
+    }
+
+    /**
+     * Get user data from the local storage
+     */
+    getUser() {
+        this.localStorage.getFromLocal('user')
+            .then((response) => {
+                // assign response to the class variable
+                this.user = JSON.parse(response);
+
+                // check if there's an image property in the user object
+                if (!this.user.image) {
+                    this.user.image = null;
+                }
+
+                // get history
+                this.getUserHistory();
+            });
     }
 
     /**
@@ -190,10 +199,7 @@ export class BuyerDashboardPage {
             .subscribe((data) => {
                 // loop the response
                 for ( var i in data.rows ) {
-                    var item = data.rows[i].value;
-                    item.date = self.timeAgoFromEpochTime(new Date(data.rows[i].value.date));
-
-                    self.history.push(item);
+                    self.history.push(data.rows[i].value);
                 }
             }, (error) => {
                 console.log(error);
@@ -231,13 +237,17 @@ export class BuyerDashboardPage {
                 }
 
                 // update
-                self.sellers[index] = seller;
+                self.zone.run(() => {
+                    self.sellers[index] = seller;
+                });
             }
         }
 
         // no sellers, just push it
         if (!self.sellers) {
-            self.sellers.push(seller);
+            self.zone.run(() => {
+                self.sellers.push(seller);
+            });
         }
     }
 
@@ -305,42 +315,5 @@ export class BuyerDashboardPage {
 
         // render
         this.nav.present(modal);
-    }
-
-    timeAgoFromEpochTime(epoch) {
-        var secs = ((new Date()).getTime() / 1000) - epoch.getTime() / 1000;
-        Math.floor(secs);
-        var minutes = secs / 60;
-        secs = Math.floor(secs % 60);
-        if (minutes < 1) {
-            return secs + (secs > 1 ? 's' : 's');
-        }
-        var hours = minutes / 60;
-        minutes = Math.floor(minutes % 60);
-        if (hours < 1) {
-            return minutes + (minutes > 1 ? 'm' : 'm');
-        }
-        var days = hours / 24;
-        hours = Math.floor(hours % 24);
-        if (days < 1) {
-            return hours + (hours > 1 ? 'h' : 'h');
-        }
-        var weeks = days / 7;
-        days = Math.floor(days % 7);
-        if (weeks < 1) {
-            return days + (days > 1 ? 'd' : 'd');
-        }
-        var months = weeks / 4.35;
-        weeks = Math.floor(weeks % 4.35);
-        if (months < 1) {
-            return weeks + (weeks > 1 ? 'w' : 'w');
-        }
-        var years = months / 12;
-        months = Math.floor(months % 12);
-        if (years < 1) {
-            return months + (months > 1 ? 'M' : 'M');
-        }
-        years = Math.floor(years);
-        return years + (years > 1 ? 'Y' : 'Y');
     }
 }

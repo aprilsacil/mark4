@@ -33,8 +33,8 @@ export class SellerAwardModalPage {
         store: <string> null,
         image: <string> null
     };
-
     shopper: any;
+    user = new Seller({});
 
     constructor(
         private localStorage: LocalStorageProvider,
@@ -47,6 +47,11 @@ export class SellerAwardModalPage {
     ) {
         // get the shopper details from the NavParams
         this.shopper = new Buyer(this.params.get('shopper'));
+
+        // get logged in user details
+        this.localStorage.getFromLocal('user').then((data) => {
+            this.user = new Seller(JSON.parse(data));
+        });
     }
 
     /**
@@ -79,6 +84,8 @@ export class SellerAwardModalPage {
             // tell something that form is not valid
         }
 
+        // TODO: check if the user has an internet connection
+
         // initialize the loader
         var loading = Loading.create({
             content: 'Sending award to the customer...'
@@ -87,40 +94,44 @@ export class SellerAwardModalPage {
         // render
         self.nav.present(loading);
 
-        self.localStorage.getFromLocal('user').then((data) => {
-            var user = new Seller(JSON.parse(data));
-
-            // set the headers
-            var headers = new Headers({
-                'Content-Type': 'application/x-www-form-urlencoded'
-            });
-
-            var param = self.award;
-
-            param.username = self.shopper.name;
-            param.image = self.shopper.image;
-            param.store = user.name;
-
-            self.http
-                .post(self.apiEndpoint + 'history', param, {headers: headers})
-                .map(response => response.json())
-                .subscribe((data) => {
-                    if(data.ok) {
-                        loading.dismiss().then(() => {
-                            // close the modal
-                            self.dismiss();
-                        })
-                        .then(() => {
-                            // delay it for a second
-                            setTimeout(() => {
-                                // show a toast
-                                self.showToast('You have successfully gave the customer an award.');
-                            }, 600);
-                        });
-                    }
-                }, (error) => {
-                    console.log(error);
-                });
+        // set the headers
+        var headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
         });
+
+        var param = self.award;
+
+        param.username  = self.shopper.name;
+        param.image     = self.shopper.image;
+        param.store     = self.user.name;
+
+        self.http
+            .post(self.apiEndpoint + 'history', param, {headers: headers})
+            .map(response => response.json())
+            .subscribe((data) => {
+                if (!data.ok) {
+                    return;
+                }
+
+                loading.dismiss().then(() => {
+                    // close the modal
+                    self.dismiss();
+                })
+                .then(() => {
+                    // delay it for a second
+                    setTimeout(() => {
+                        // show a toast
+                        self.showToast('You have successfully gave the customer an award.');
+                    }, 600);
+                });
+            }, (error) => {
+                // there's an error, just show a message
+                loading.dismiss().then(() => {
+                    setTimeout(() => {
+                        // show the message
+                        self.showToast('Something went wrong. Please try again later.');
+                    });
+                });
+            });
     }
 }

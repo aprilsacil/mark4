@@ -92,7 +92,7 @@ export class BuyerLookingforModalPage {
         }
 
         // set data to be sent via ble
-        this.events.publish('peripheral:setData', advertiseData);
+        this.events.publish('peripheral:set_buyer_data', advertiseData);
 
         // TODO: add thingy here
         setTimeout(() => {
