@@ -121,10 +121,18 @@ export class SellerSignupPage {
             var message;
 
             // check what type of error has occurred
+                console.log(err);
             switch (err.name) {
                 case 'conflict':
                     message = 'Username already exists.';
                     break;
+                case 'not_found':
+                    self.pouchDb.logout(function (err, response) {
+                      if (err) {
+                        // network error
+                      }
+                    });
+
                 case 'forbidden':
                 default:
                     message = 'Something went wrong. Please try again later.';
