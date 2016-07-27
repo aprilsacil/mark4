@@ -112,19 +112,9 @@ export class LoginPage {
         // render in the template
         this.nav.present(loading);
 
-        // provide some ajax headers for authorization
-        var ajaxOpts = {
-            ajax: {
-                headers: {
-                    Authorization: 'Basic ' + window.btoa(this.login.username + ':' + this.login.password)
-                }
-            }
-        };
-
         var headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded'
         });
-
 
         this.http
             .post(this.apiEndpoint + 'authenticate', this.login, {headers: headers})

@@ -1,10 +1,14 @@
 import { Component, Inject } from '@angular/core';
+import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 import { Alert, Loading, NavController } from 'ionic-angular';
 
 import { LoginPage } from '../login/login';
 import { BuyerSignupPage } from '../buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
+
+import 'rxjs/add/operator/toPromise';
+import 'rxjs/add/operator/map';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -25,12 +29,16 @@ export class SellerSignupPage {
         username: <string> null,
         password: <string> null,
         name: <string> null,
-        store_name: <string> null
+        store_name: <string> null,
+        roles: null,
+        level: null
     };
 
     constructor(
         private nav: NavController,
-        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+        private http: Http,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
+        @Inject('APIEndpoint') private apiEndpoint: string
     ) {
         var self = this;
 
@@ -100,57 +108,39 @@ export class SellerSignupPage {
         // render loader
         self.nav.present(loading);
 
-        this.pouchDb.signup(this.seller.username, this.seller.password, {
-            metadata : {
-                store_name: this.seller.store_name,
-                fullname : this.seller.name,
-                level: 0,
-                roles : ['seller'],
-            }
-        }, (err, response) => {
-            if(!err) {
-                // TODO: add a success thingy here
+        var headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
+
+        this.seller.roles = 'seller';
+        this.seller.level = 0;
+
+        this.http
+            .post(this.apiEndpoint + 'register', this.seller, {headers: headers})
+            .map(response => response.json())
+            .subscribe((data) => {
+                if(data.error) {
+                    // remove the loader
+                    loading.dismiss().then(() => {
+                        // show an alert
+                        setTimeout(() => {
+                            var alert = Alert.create({
+                                title: 'Error!',
+                                subTitle: data.errors[0],
+                                buttons: ['OK']
+                            });
+
+                            // render in the template
+                            self.nav.present(alert);
+                        }, 300);
+                    });
+
+                    return;
+                }
+
                 loading.dismiss().then(() => {
                     self.goToLoginPage();
                 });
-
-                return;
-            }
-
-            // there's an error
-            var message;
-
-            // check what type of error has occurred
-                console.log(err);
-            switch (err.name) {
-                case 'conflict':
-                    message = 'Username already exists.';
-                    break;
-                case 'not_found':
-                    self.pouchDb.logout(function (err, response) {
-                      if (err) {
-                        // network error
-                      }
-                    });
-
-                case 'forbidden':
-                default:
-                    message = 'Something went wrong. Please try again later.';
-                    break;
-            }
-
-            var alert = Alert.create({
-                title: 'Error!',
-                subTitle: message,
-                buttons: ['OK']
             });
-
-            loading.dismiss().then(() => {
-                // render alert once the loader dismisses
-                self.nav.present(alert);
-            });
-
-            return;
-        });
     }
 }

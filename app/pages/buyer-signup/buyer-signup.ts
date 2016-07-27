@@ -1,10 +1,14 @@
 import { Component, Inject } from '@angular/core';
+import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 import { Alert, Loading, NavController } from 'ionic-angular';
 
 import { LoginPage } from '../login/login';
 import { SellerSignupPage } from '../seller-signup/seller-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
+
+import 'rxjs/add/operator/toPromise';
+import 'rxjs/add/operator/map';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -24,12 +28,16 @@ export class BuyerSignupPage {
     buyer = {
         username: <string> null,
         password: <string> null,
-        name: <string> null
+        name: <string> null,
+        roles: null,
+        level: null
     };
 
     constructor(
         private nav: NavController,
-        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+        private http: Http,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
+        @Inject('APIEndpoint') private apiEndpoint: string
     ) {
         // couch db integration
         this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
@@ -98,52 +106,39 @@ export class BuyerSignupPage {
         // render loader
         self.nav.present(loading);
 
-        this.pouchDb.signup(this.buyer.username, this.buyer.password, {
-            metadata : {
-                fullname : this.buyer.name,
-                level: 0,
-                roles : ['buyer']
-            }
-        }, (err, response) => {
-            console.log('err', err);
-            console.log('signup response: ', response);
+        var headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
 
-            if(!err) {
-                // no error, go to login page
-                // TODO: put a toast or something to tell the user that he/she is
-                // logged in.
+        this.buyer.roles = 'buyer';
+        this.buyer.level = 0;
+
+        this.http
+            .post(this.apiEndpoint + 'register', this.buyer, {headers: headers})
+            .map(response => response.json())
+            .subscribe((data) => {
+                if(data.error) {
+                    // remove the loader
+                    loading.dismiss().then(() => {
+                        // show an alert
+                        setTimeout(() => {
+                            var alert = Alert.create({
+                                title: 'Error!',
+                                subTitle: data.errors[0],
+                                buttons: ['OK']
+                            });
+
+                            // render in the template
+                            self.nav.present(alert);
+                        }, 300);
+                    });
+
+                    return;
+                }
+
                 loading.dismiss().then(() => {
                     self.goToLoginPage();
                 });
-
-                return;
-            }
-
-            // there's an error, handle it
-
-            var message;
-
-            switch (err.name) {
-                case 'conflict':
-                    message = 'Username already exists.';
-                    break;
-                case 'forbidden':
-                    message = 'Something went wrong. Please try again later.';
-                    break;
-            }
-
-            var alert = Alert.create({
-                title: 'Error!',
-                subTitle: message,
-                buttons: ['OK']
             });
-
-            loading.dismiss().then(() => {
-                // render alert once the loader dismisses
-                self.nav.present(alert);
-            });
-
-            return;
-        });
     }
 }
