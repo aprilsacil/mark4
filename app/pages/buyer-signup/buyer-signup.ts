@@ -87,6 +87,14 @@ export class BuyerSignupPage {
             return;
         }
 
+        // initialize the loader
+        var loading = Loading.create({
+            content: 'Processing...'
+        });
+
+        // render loader
+        self.nav.present(loading);
+
         this.db.signup(this.buyer.username, this.buyer.password, {
             metadata : {
                 fullname : this.buyer.name,
@@ -94,13 +102,17 @@ export class BuyerSignupPage {
                 roles : ['buyer']
             }
         }, (err, response) => {
+            console.log('err', err);
             console.log('signup response: ', response);
 
             if(!err) {
                 // no error, go to login page
                 // TODO: put a toast or something to tell the user that he/she is
                 // logged in.
-                self.goToLoginPage();
+                loading.dismiss().then(() => {
+                    self.goToLoginPage();
+                });
+
                 return;
             }
 
@@ -123,8 +135,11 @@ export class BuyerSignupPage {
                 buttons: ['OK']
             });
 
-            // render in the template
-            self.nav.present(alert);
+            loading.dismiss().then(() => {
+                // render alert once the loader dismisses
+                self.nav.present(alert);
+            });
+
             return;
         });
     }

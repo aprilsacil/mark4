@@ -1,9 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { Alert, Events, Loading, NavController } from 'ionic-angular';
-import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
 import { LoginPage } from '../login/login';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
+
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
+import { Buyer } from '../../models/buyer';
+import { Seller } from '../../models/seller';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -19,7 +24,8 @@ PouchDB.plugin(require('pouchdb-authentication'));
     providers: [LocalStorageProvider]
 })
 export class ReloginPage {
-    private db;
+    localDb: any;
+    pouchDb: any;
     user = {
         name: <string> null
     };
@@ -34,13 +40,14 @@ export class ReloginPage {
         private nav: NavController,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
-        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
+        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
-        var local = new PouchDB('cheers');
+        this.localDb = new PouchDB('cheers');
 
         // this will sync locally
-        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+        this.localDb.sync(this.pouchDb, {live: true, retry: true})
+            .on('error', console.log.bind(console));
 
         // get user
         this.localStorage.getFromLocal('user').then((data) => {
@@ -73,7 +80,7 @@ export class ReloginPage {
         // check if the form is not valid
         if (!reloginForm.valid) {
             // prompt that something is wrong in the form
-            let alert = Alert.create({
+            var alert = Alert.create({
                 title: 'Ooops...',
                 subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
                 buttons: ['OK']
@@ -102,7 +109,7 @@ export class ReloginPage {
         };
 
         // login the user
-        this.db.login(this.user.name, this.relogin.password, ajaxOpts, (err, response) => {
+        this.pouchDb.login(this.user.name, this.relogin.password, ajaxOpts, (err, response) => {
             console.log(err);
             console.log('login response', response);
 
@@ -110,23 +117,25 @@ export class ReloginPage {
 
             if(!err) {
                 // get user details
-                this.db.getUser(loginResponse.name, (err, response) => {
+                this.pouchDb.getUser(loginResponse.name, (err, response) => {
                     console.log('get user response', response);
 
                     // delete the password and salt
                     delete response.password_scheme;
                     delete response.salt
 
-                    var user = JSON.stringify(response);
+                    var user = response;
 
-                    // save user data to the local storage
-                    self.localStorage.setToLocal('user', user);
+                     // set the timestamp
                     self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
 
                     // if seller redirect to seller dashboard
                     if(response.roles[0] === 'seller') {
+                        // save user data to the local storage
+                        self.localStorage.setToLocal('user', JSON.stringify(new Seller(user)));
+
                         // broadcast event to start some event listeners
-                        this.events.publish('central:start', user);
+                        this.events.publish('central:start', JSON.stringify(new Seller(user)));
 
                         // remove loader and set the root page
                         loading.dismiss().then(() => {
@@ -136,20 +145,14 @@ export class ReloginPage {
 
                     // if buyer redirect to buyer dashboard
                     if(response.roles[0] === 'buyer') {
+                        // save user data to the local storage
+                        self.localStorage.setToLocal('user', JSON.stringify(new Buyer(user)));
+
                         // broadcast event to start some event listeners
                         this.events.publish('peripheral:start');
 
-                        // set the data to be advertised
-                        var advertiseData = {
-                            _id : response._id,
-                            fullname: response.fullname,
-                            name: response.name,
-                            job_description: response.job_description,
-                            company_name: response.company_name,
-                            level: response.level
-                        }
-
-                        this.events.publish('peripheral:setData', advertiseData);
+                        // let's advertise
+                        this.events.publish('peripheral:setData', JSON.stringify(new Buyer(user)));
 
                         // remove loader and set the root page
                         loading.dismiss().then(() => {

@@ -1,8 +1,12 @@
 import { Component, Inject } from '@angular/core';
 import { Alert, Events, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
+
 import { LoginPage } from '../login/login';
+
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
+import { Buyer } from '../../models/buyer';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -17,14 +21,9 @@ PouchDB.plugin(require('pouchdb-authentication'));
   templateUrl: 'build/pages/buyer-update-profile/buyer-update-profile.html',
 })
 export class BuyerUpdateProfilePage {
-    private db;
-    user = {
-        image: <string> null,
-        name: <string> null,
-        fullname: <string> null,
-        job_description: <string> null,
-        company_name: <string> null
-    };
+    pouchDb: any;
+    localDb: any;
+    user = new Buyer({});
 
     constructor(
         private events: Events,
@@ -33,23 +32,20 @@ export class BuyerUpdateProfilePage {
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
         // couch db integration
-        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
+        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
-        let local = new PouchDB('cheers');
+        this.localDb = new PouchDB('cheers');
 
         // this will sync locally
-        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+        this.localDb.sync(this.pouchDb, {live: true, retry: true})
+            .on('error', console.log.bind(console));
 
         this.localStorage.getFromLocal('user').then((data) => {
             var user = JSON.parse(data);
 
-            // set some data
-            this.user.name = user.name;
-            this.user.fullname = user.fullname;
-            this.user.job_description = user.job_description;
-            this.user.company_name = user.company_name;
-            this.user.image = user.image;
+            // set the data
+            this.user = new Buyer(user);
         });
     }
 
@@ -102,7 +98,7 @@ export class BuyerUpdateProfilePage {
      * Opens up the camera and waits for the image to be fetched.
      */
     openTheCamera() {
-        let options = {
+        var options = {
             destinationType: 0,
             sourceType: 1,
             encodingType: 0,
@@ -113,7 +109,7 @@ export class BuyerUpdateProfilePage {
 
         // once the user accepted the taken photo to be used
         Camera.getPicture(options).then((data) => {
-            let imgdata = "data:image/jpeg;base64," + data;
+            var imgdata = "data:image/jpeg;base64," + data;
 
             // assign the image to the user object
             this.user.image = imgdata;
@@ -130,7 +126,7 @@ export class BuyerUpdateProfilePage {
 
         if (!updateProfileForm.valid) {
             // prompt that something is wrong in the form
-            let alert = Alert.create({
+            var alert = Alert.create({
                 title: 'Ooops...',
                 subTitle: 'Something is wrong. Make sure the form fields are properly filled in.',
                 buttons: ['OK']
@@ -142,14 +138,14 @@ export class BuyerUpdateProfilePage {
         }
 
         // initialize the loader
-        let loading = Loading.create({
+        var loading = Loading.create({
             content: 'Saving...'
         });
 
         // render in the template
         this.nav.present(loading);
 
-        this.db.putUser(this.user.name, {
+        this.pouchDb.putUser(this.user.name, {
             metadata : {
                 fullname: this.user.fullname,
                 job_description: this.user.job_description,
@@ -187,13 +183,12 @@ export class BuyerUpdateProfilePage {
             }
 
             // get user details
-            self.db.getUser(self.user.name, (err, response) => {
-                console.log(response);
+            self.pouchDb.getUser(self.user.name, (err, response) => {
                 // delete the password and salt
                 delete response.password_scheme;
                 delete response.salt
 
-                var user = JSON.stringify(response);
+                var user = JSON.stringify(new Buyer(response));
 
                 // update user data to the local storage
                 self.localStorage.setToLocal('user', user);
@@ -203,10 +198,10 @@ export class BuyerUpdateProfilePage {
 
                 // if no error remove the preloader now
                 loading.dismiss()
-                .then(() => {
-                    // show a toast
-                    self.showToast('You have successfully updated your profile.');
-                });
+                    .then(() => {
+                        // show a toast
+                        self.showToast('You have successfully updated your profile.');
+                    });
             });
         });
     }
@@ -215,7 +210,7 @@ export class BuyerUpdateProfilePage {
      * Render and shows a toast message
      */
     showToast(message) {
-        let toast = Toast.create({
+        var toast = Toast.create({
             message: message,
             duration: 3000
         });

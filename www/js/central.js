@@ -413,6 +413,7 @@ var BLECentral = function() {
             var self = this;
 
             this.debug('Writting ' + size + ' byte(s) of data.');
+            this.debug('message: ', message);
 
             // set the write interval
             function recurse() {

@@ -37,6 +37,9 @@ export class SellerEmoteModalPage {
         });
     }
 
+    /**
+     * Computes the remaining characters allowed to be sent.
+     */
     characterCounter(value) {
         if (!value || value.length === 0 ) {
             this.remainingCharacters = this.maxCharacterLimit;
@@ -57,7 +60,7 @@ export class SellerEmoteModalPage {
      * Render and shows a toast message
      */
     showToast(message) {
-        let toast = Toast.create({
+        var toast = Toast.create({
             message: message,
             duration: 3000
         });
@@ -116,18 +119,6 @@ export class SellerEmoteModalPage {
                 store_name: user.store_name,
                 emote: this.emote.message
             }
-
-            // var serialize = (data) => {
-            //     var str = [];
-
-            //     for(var p in data) {
-            //         if (data.hasOwnProperty(p)) {
-            //             str.push(encodeURIComponent(p) + "=" + encodeURIComponent(data[p]));
-            //         }
-            //     }
-
-            //     return str.join("&");
-            // }
 
             // publish event
             this.events.publish('central:write', data);

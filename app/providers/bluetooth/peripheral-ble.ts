@@ -37,6 +37,7 @@ export class PeripheralBle {
 
         // init advertise
         this.advertising = setInterval(() => {
+            console.log('advertising...');
             this.advertise();
         }, 5000);
 
@@ -48,6 +49,7 @@ export class PeripheralBle {
 
         // on peripheral callback
         this.peripheral.onInitPeripheral((response) => {
+            console.log('initialize peripheral response', response);
             // if we are connected
             if(response.status === 'connected') {
                 this.central = response;
@@ -126,7 +128,7 @@ export class PeripheralBle {
     advertise() {
         // start advertising
         this.peripheral.advertise((response) => {
-            console.log(response);
+            console.log('advertise', response);
 
             // advertising started?
             if(response.status === 'advertisingStarted') {
@@ -153,9 +155,9 @@ export class PeripheralBle {
         };
 
         self.peripheral.notifyByChunk(param, function(response) {
-            console.log(response);
+            console.log('notify by chunk:' , response);
         }, function(response) {
-            console.log(response);
+            console.log('notify by chunk error:', response);
         });
     }
 
@@ -171,7 +173,7 @@ export class PeripheralBle {
         }
 
         // details of the central thingy
-        console.log(central);
+        console.log('device: ', central);
         return this;
     }
 
@@ -187,7 +189,7 @@ export class PeripheralBle {
         }
 
         // peripheral status
-        console.log(data);
+        console.log('peripheral status', data);
     }
 
     stop() {

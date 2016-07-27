@@ -47,20 +47,21 @@
     <!-- List of Nearby Shoppers -->
     <ion-list>
         <div *ngIf="shoppers.length">
-            <button ion-item class="shopper" *ngFor="let shopper of shoppers"
+            <button ion-item class="shopper"
+            *ngFor="let shopper of shoppers"
             (click)="goToShopperDetails(shopper)">
-                <!-- <cheers-avatar [user]="shopper" item-left></cheers-avatar> -->
-                <ion-avatar item-left>
+                <cheers-avatar [user]="shopper" item-left></cheers-avatar>
+                <!-- <ion-avatar item-left>
                     <img src="img/default_avatar.jpg" *ngIf="!shopper.image">
                     <img [src]="shopper.image" *ngIf="shopper.image">
-                </ion-avatar>
+                </ion-avatar> -->
 
                 <h2>{{shopper.fullname}}</h2>
                 <p class="work">
                     <span class="job-description" *ngIf="shopper.job_description">
                         {{shopper.job_description}}
                     </span>
-                    <span *ngIf="shopper.job_description && shopper.company_name">@</span>
+                    <span *ngIf="shopper?.job_description && shopper.company_name">@</span>
                     <span class="company" *ngIf="shopper.company_name">
                         {{shopper.company_name}}
                     </span>
@@ -82,97 +83,19 @@
                 </p>
             </button>
         </div>
-        <div *ngIf="!shoppers.length">
-            <ion-item class="item-plain empty-dashboard">
-                <ion-icon name="sad" bright></ion-icon>
-                No shoppers nearby...
-            </ion-item>
-        </div>
-        <!-- <button ion-item class="shopper" (click)="goToShopperDetails()">
-            <ion-avatar item-left>
-                <img src="http://blog.siobhanwalsh.ca/assignment01/wp-content/uploads/2015/01/eddardstark.jpg">
-            </ion-avatar>
 
-            <h2>Ned Stark</h2>
-            <p class="work">
-                <span class="job-description">Former Warden of the North</span> @
-                <span class="company">Westeros</span>
-            </p>
-            <p class="stats">
-                <span class="level">
-                    <ion-icon name="star" bright></ion-icon> 300
-                </span>
-                <span class="went-by">
-                    <ion-icon name="refresh" cheers></ion-icon> 2
-                </span>
-                <span class="conversions">
-                    <ion-icon name="cash" secondary></ion-icon> 10%
-                </span>
-            </p>
-            <p class="looking-for">
-                <span class="label">Looking for:</span>
-                <span class="product">His Head</span>
-            </p>
-        </button>
+        <!-- No Shoppers -->
+        <ion-item class="empty-dashboard item-plain"
+        *ngIf="!scanning && !shoppers.length">
+            <ion-icon name="sad" bright></ion-icon>
+            No shoppers nearby...
+        </ion-item>
 
-        <button ion-item class="shopper" (click)="goToShopperDetails()">
-            <ion-avatar item-left>
-                <img src="https://pbs.twimg.com/profile_images/455800816138342400/NGQ6u_ZZ.jpeg">
-            </ion-avatar>
-
-            <h2>Arya Stark</h2>
-            <p class="work">
-                <span class="job-description">Unknown</span> @
-                <span class="company">House of Black and White</span>
-            </p>
-            <p class="stats">
-                <span class="level">
-                    <ion-icon name="star" bright></ion-icon> 300
-                </span>
-                <span class="went-by">
-                    <ion-icon name="refresh" cheers></ion-icon> 2
-                </span>
-                <span class="conversions">
-                    <ion-icon name="cash" secondary></ion-icon> 10%
-                </span>
-            </p>
-            <p class="looking-for">
-                <span class="label">Looking for:</span>
-                <span class="product">Cersei Lannister</span>,
-                <span class="product">Walder Frey</span>,
-                <span class="product">The Red Woman</span>
-            </p>
-        </button>
-
-        <button ion-item class="shopper" (click)="goToShopperDetails()">
-            <ion-avatar item-left>
-                <img src="https://pbs.twimg.com/profile_images/668279339838935040/8sUE9d4C.jpg">
-            </ion-avatar>
-
-            <h2>Tyrion Lannister</h2>
-            <p class="work">
-                <span class="job-description">Hand of the Queen</span> @
-                <span class="company">
-                    Daenarys Stormborn Kingdom
-                </span>
-            </p>
-            <p class="stats">
-                <span class="level">
-                    <ion-icon name="star" bright></ion-icon> 300
-                </span>
-                <span class="went-by">
-                    <ion-icon name="refresh" cheers></ion-icon> 2
-                </span>
-                <span class="conversions">
-                    <ion-icon name="cash" secondary></ion-icon> 10%
-                </span>
-            </p>
-            <p class="looking-for">
-                <span class="label">Looking for:</span>
-                <span class="product">Wine</span>,
-                <span class="product">Alcohol</span>
-            </p>
-        </button> -->
+        <!-- Loader -->
+        <ion-item class="loader item-plain"
+        *ngIf="scanning && !shoppers.length">
+            <ion-spinner name="crescent"></ion-spinner>
+        </ion-item>
     </ion-list>
 </ion-content>
 

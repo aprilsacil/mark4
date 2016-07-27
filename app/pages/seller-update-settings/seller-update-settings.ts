@@ -2,7 +2,10 @@ import { Component, Inject } from '@angular/core';
 import { Alert, Events, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
 import { LoginPage } from '../login/login';
+
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
+import { Seller } from '../../models/seller';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -18,14 +21,9 @@ PouchDB.plugin(require('pouchdb-authentication'));
     providers: [LocalStorageProvider]
 })
 export class SellerUpdateSettingsPage {
-    private db;
-    private dbLocal;
-    seller = {
-        image: <string> null,
-        fullname: <string> null,
-        store_name: <string> null,
-        name: <string> null
-    };
+    pouchdb;
+    dbLocal;
+    user = new Seller({});
 
     constructor(
         private events: Events,
@@ -35,16 +33,16 @@ export class SellerUpdateSettingsPage {
     ) {
         var self = this;
         // couch db integration
-        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
+        this.pouchdb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
         // local integration
         this.dbLocal = new PouchDB('cheers');
 
         // this will sync locally
-        this.db.sync(this.dbLocal, {live: true, retry: true}).on('error', console.log.bind(console));
+        this.pouchdb.sync(this.dbLocal, {live: true, retry: true}).on('error', console.log.bind(console));
 
         this.localStorage.getFromLocal('user').then((data) => {
-            this.seller = JSON.parse(data);
+            this.user = new Seller(JSON.parse(data));
         });
     }
 
@@ -112,7 +110,7 @@ export class SellerUpdateSettingsPage {
             let imgdata = "data:image/jpeg;base64," + data;
 
             // assign the image to the user object
-            this.seller.image = imgdata;
+            this.user.image = imgdata;
         }, (error) => {
             // bring out a toast error message
         });
@@ -145,11 +143,11 @@ export class SellerUpdateSettingsPage {
         // render in the template
         this.nav.present(loading);
 
-        this.db.putUser(this.seller.name, {
+        this.pouchdb.putUser(this.user.name, {
             metadata : {
-                store_name: this.seller.store_name,
-                fullname: this.seller.fullname,
-                image: this.seller.image
+                store_name: this.user.store_name,
+                fullname: this.user.fullname,
+                image: this.user.image
             }
         }, function (err, response) {
             if (err) {
@@ -182,12 +180,12 @@ export class SellerUpdateSettingsPage {
             }
 
             // get user details
-            self.db.getUser(self.seller.name, (err, response) => {
+            self.pouchdb.getUser(self.user.name, (err, response) => {
                 // delete the password and salt
                 delete response.password_scheme;
                 delete response.salt
 
-                var user = JSON.stringify(response);
+                var user = JSON.stringify(new Seller(response));
 
                 // update user data to the local storage
                 self.localStorage.setToLocal('user', user);
@@ -211,7 +209,7 @@ export class SellerUpdateSettingsPage {
      * Render and shows a toast message
      */
     showToast(message) {
-        let toast = Toast.create({
+        var toast = Toast.create({
             message: message,
             duration: 3000
         });

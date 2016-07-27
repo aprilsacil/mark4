@@ -1,11 +1,16 @@
 import { Component, Inject } from '@angular/core';
 import { Alert, Events, Loading, NavController } from 'ionic-angular';
 import { Modal, ViewController } from 'ionic-angular';
+import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
+
 import { BuyerUpdateProfilePage } from '../buyer-update-profile/buyer-update-profile';
 import { BuyerLookingforModalPage } from '../buyer-lookingfor-modal/buyer-lookingfor-modal';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
+
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
-import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
+
+import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
+
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
@@ -20,13 +25,26 @@ PouchDB.plugin(require('pouchdb-authentication'));
 */
 @Component({
     templateUrl: 'build/pages/buyer-dashboard/buyer-dashboard.html',
+    directives: [CheersAvatar],
     providers: [LocalStorageProvider]
 })
 export class BuyerDashboardPage {
-    private db;
-    private history = [];
-    user = { name: <string> null };
-    sellers = [];
+    localDb: any;
+    pouchDb: any;
+    user = {
+        _id: <string> null,
+        name: <string> null,
+        fullname: <string> null,
+        store_name: <string> null,
+        job_description: <string> null,
+        company_name: <string> null,
+        image: <string> null,
+        level: <number> 0,
+        roles: <any> []
+    };
+
+    history: any[] = [];
+    sellers: any[] = [];
     associate = {
         username: <string> null,
         roles: <string> null
@@ -41,89 +59,34 @@ export class BuyerDashboardPage {
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
         // couch db integration
-        this.db = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
+        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', { skipSetup: true });
 
         // local integration
-        var local = new PouchDB('cheers');
+        this.localDb = new PouchDB('cheers');
 
         // this will sync locally
-        local.sync(this.db, {live: true, retry: true}).on('error', console.log.bind(console));
+        this.localDb.sync(this.pouchDb, {live: true, retry: true})
+            .on('error', console.log.bind(console));
 
-        this.localStorage.getFromLocal('user').then((data) => {
-            this.user = JSON.parse(data);
+        // get user details that is saved in the local storage then get the
+        // user history
+        this.localStorage.getFromLocal('user')
+            .then((response) => {
+                // assign response to the class variable
+                this.user = JSON.parse(response);
 
-            let headers = new Headers({
-              'Content-Type': 'application/x-www-form-urlencoded'});
+                // check if there's an image property in the user object
+                if (!this.user.image) {
+                    this.user.image = null;
+                }
 
-            var param = {
-              type:'per_user',
-              search:this.user.name
-            };
-
-            this.http
-                .get(this.apiEndpoint + 'history?type=' + param.type +
-                    '&search=' + param.search, {headers: headers})
-                .map(response => response.json())
-                .subscribe((data) => {
-                    for ( var i in data.rows ) {
-                        var item = data.rows[i].value;
-                        item.date = this.timeAgoFromEpochTime(new Date(data.rows[i].value.date));
-
-                        this.history.push(item);
-                    }
-
-                    console.log(this.history);
-
-                }, (error) => {
-                  console.log(error);
-                });
-        });
+                // get history
+                this.getUserHistory();
+            });
 
         // listens for buyers that sends out an emote
-        this.events.subscribe('peripheral:emoteFound', (eventData) => {
-            // var seller = {
-            //     _id: <string> null
-            // };
-
-            console.log('ev', eventData);
-
-            var seller = JSON.parse(eventData[0]);
-
-            // check if the seller already exists in the object
-            if (this.sellers) {
-                var existing = this.sellers.some((element) => {
-                    return element._id === seller._id;
-                });
-
-                // if it doesn't exists, push it
-                if (!existing) {
-                    this.sellers.push(seller);
-                }
-
-                // if it exists, update the current data
-                if (existing) {
-                    var index;
-
-                    // get the index of the seller by looping all the sellers
-                    for (var s in this.sellers) {
-                        if (this.sellers[s]._id == seller._id) {
-                            index = 0;
-                            break;
-                        }
-                    }
-
-                    // update
-                    this.sellers[index] = seller;
-                }
-            }
-
-            // no sellers, just push it
-            if (!this.sellers) {
-                this.sellers.push(seller);
-            }
-        });
-
-
+        this.events.subscribe('peripheral:emoteFound',
+            (eventData) => this.handleEmotes(eventData[0]));
     }
 
     /**
@@ -152,7 +115,7 @@ export class BuyerDashboardPage {
                     // show the loader
                     this.nav.present(loading);
 
-                    self.db.getUser(this.user.name, (errUser, responseUser) => {
+                    self.pouchDb.getUser(this.user.name, (errUser, responseUser) => {
                         if (errUser) {
                             if (errUser.name === 'not_found') {
                               // typo, or you don't have the privileges to see this user
@@ -161,9 +124,9 @@ export class BuyerDashboardPage {
                             }
                         } else {
                             // response is the user object
-                            self.db.putUser(this.user.name, {
+                            self.pouchDb.putUser(this.user.name, {
                                 metadata : { roles: ['seller'] }
-                            }, function (errUser, responseUser) {
+                            }, (errUser, responseUser) => {
                                 if (errUser) {
                                     if (errUser.name === 'not_found') {
                                       // typo, or you don't have the privileges to see this user
@@ -171,7 +134,7 @@ export class BuyerDashboardPage {
                                       // some other error
                                     }
                                 } else {
-                                    self.db.getUser(self.user.name, (err, response) => {
+                                    self.pouchDb.getUser(self.user.name, (err, response) => {
                                     console.log(err, response);
                                         // delete the password and salt
                                         delete response.password_scheme;
@@ -200,12 +163,94 @@ export class BuyerDashboardPage {
     }
 
     /**
+     * Fetches the history of the user
+     */
+    getUserHistory() {
+        var self = this;
+        var user = self.user;
+
+        // set the headers
+        var headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
+
+        // set the data needed by the api
+        var param = {
+            type: 'per_user',
+            search: self.user.name
+        };
+
+        // perform request to the api
+        self.http
+            .get(
+                self.apiEndpoint + 'history?type=' + param.type + '&search=' + param.search, {
+                    headers: headers
+                })
+            .map(response => response.json())
+            .subscribe((data) => {
+                // loop the response
+                for ( var i in data.rows ) {
+                    var item = data.rows[i].value;
+                    item.date = self.timeAgoFromEpochTime(new Date(data.rows[i].value.date));
+
+                    self.history.push(item);
+                }
+            }, (error) => {
+                console.log(error);
+            });
+    }
+
+    /**
+     * Handles the emote being sent by the central device.
+     */
+    handleEmotes(emotes) {
+        var self     = this;
+        var seller   = JSON.parse(emotes);
+
+        // check if the seller already exists in the object
+        if (self.sellers) {
+            var existing = self.sellers.some((element) => {
+                return element._id === seller._id;
+            });
+
+            // if it doesn't exists, push it
+            if (!existing) {
+                self.sellers.push(seller);
+            }
+
+            // if it exists, update the current data
+            if (existing) {
+                var index;
+
+                // get the index of the seller by looping all the sellers
+                for (var s in self.sellers) {
+                    if (self.sellers[s]._id == seller._id) {
+                        index = s;
+                        break;
+                    }
+                }
+
+                // update
+                self.sellers[index] = seller;
+            }
+        }
+
+        // no sellers, just push it
+        if (!self.sellers) {
+            self.sellers.push(seller);
+        }
+    }
+
+    /**
      * Redirects to the update profile page
      */
     goToUpdateProfilePage() {
         this.nav.push(BuyerUpdateProfilePage);
     }
 
+    /**
+     * Rejects the associate invitation
+     */
     rejectInvitation() {
         var self = this;
 
@@ -220,9 +265,9 @@ export class BuyerDashboardPage {
             {
                 text: 'Remove',
                 handler: () => {
-                    self.db.putUser(this.user.name, {
+                    self.pouchDb.putUser(this.user.name, {
                         metadata : { store_uuid: '', store_name: '' }
-                    }, function (errUser, responseUser) {
+                    }, (errUser, responseUser) => {
                         if (errUser) {
                             if (errUser.name === 'not_found') {
                               // typo, or you don't have the privileges to see this user
@@ -231,15 +276,15 @@ export class BuyerDashboardPage {
                             }
                         }
 
-                        self.db.getUser(self.user.name, (err, response) => {
+                        self.pouchDb.getUser(self.user.name, (err, response) => {
                             // delete the password and salt
                             delete response.password_scheme;
                             delete response.salt
 
-                            var newuser = JSON.stringify(response);
+                            var newUser = JSON.stringify(response);
 
                             // save user data to the local storage
-                            self.localStorage.setToLocal('user', newuser);
+                            self.localStorage.setToLocal('user', newUser);
                             return self.nav.setRoot(BuyerDashboardPage);
                         });
                     });
