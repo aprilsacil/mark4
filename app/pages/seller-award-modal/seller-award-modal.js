@@ -77,6 +77,7 @@ var SellerAwardModalPage = (function () {
         var self = this;
         if (!awardCustomerForm.valid) {
         }
+        // TODO: check if the user has an internet connection
         // initialize the loader
         var loading = ionic_angular_1.Loading.create({
             content: 'Sending award to the customer...'
@@ -110,7 +111,13 @@ var SellerAwardModalPage = (function () {
                 }, 600);
             });
         }, function (error) {
-            console.log(error);
+            // there's an error, just show a message
+            loading.dismiss().then(function () {
+                setTimeout(function () {
+                    // show the message
+                    self.showToast('Something went wrong. Please try again later.');
+                });
+            });
         });
     };
     SellerAwardModalPage = __decorate([

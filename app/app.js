@@ -32,6 +32,8 @@ var MyApp = (function () {
             ionic_native_1.StatusBar.styleDefault();
             _this.authenticationEvents();
         });
+        // run events when the application is in background mode
+        this.backgroundEvents();
     }
     /**
      * Listens for events like logout, login, and change of role.
@@ -99,13 +101,22 @@ var MyApp = (function () {
         });
     };
     /**
+     * Background events
+     */
+    MyApp.prototype.backgroundEvents = function () {
+        var self = this;
+        self.platform.pause.subscribe(function () {
+            // listen to some existing events
+        });
+    };
+    /**
      * Seller event listeners
      */
     MyApp.prototype.sellerEvents = function () {
         var self = this;
         // initialize this
         self.centralBle.init();
-        this.events.subscribe('central:startScan', function (eventData) {
+        this.events.subscribe('central:start_scan', function (eventData) {
             console.log('event: start scan');
             // check if the bluetooth is enabled or not
             self.centralBle.status().then(function (result) {
@@ -118,7 +129,7 @@ var MyApp = (function () {
             // start scanning
             self.centralBle.scan();
         });
-        this.events.subscribe('central:stopScan', function (eventData) {
+        this.events.subscribe('central:stop_scan', function (eventData) {
             console.log('event: stop scan');
             // stop scanning
             self.centralBle.stop();

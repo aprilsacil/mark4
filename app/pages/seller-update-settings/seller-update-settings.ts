@@ -80,6 +80,8 @@ export class SellerUpdateSettingsPage {
                     setTimeout(() => {
                         // remove from the local storage
                         self.localStorage.removeFromLocal('user');
+                        self.localStorage.removeFromLocal('timestamp');
+                        self.localStorage.removeFromLocal('emote_message');
 
                         // set to login page
                         self.nav.setRoot(LoginPage);
@@ -224,13 +226,16 @@ export class SellerUpdateSettingsPage {
      */
     unsubscribeEvents() {
         // first, stop the scanning
-        // this.events.publish('central:stopScan');
+        this.events.publish('central:stop_scan');
 
         // unsubscribe all events
         this.events.unsubscribe('central:start', () => {});
-        this.events.unsubscribe('central:startScan', () => {});
-        this.events.unsubscribe('central:stopScan', () => {});
+        this.events.unsubscribe('central:start_scan', () => {});
+        this.events.unsubscribe('central:stop_scan', () => {});
         this.events.unsubscribe('central:write', () => {});
-        this.events.unsubscribe('central:buyersNearby', () => {});
+        this.events.unsubscribe('central:buyers_nearby', () => {});
+
+        // user events
+        this.events.unsubscribe('user:update_details', () => {});
     }
 }

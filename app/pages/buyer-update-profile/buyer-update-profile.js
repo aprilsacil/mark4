@@ -199,6 +199,8 @@ var BuyerUpdateProfilePage = (function () {
         this.events.publish('peripheral:stop');
         this.events.unsubscribe('peripheral:start', function () { });
         this.events.unsubscribe('peripheral:emoteFound', function () { });
+        // user events
+        this.events.unsubscribe('user:update_details', function () { });
     };
     BuyerUpdateProfilePage = __decorate([
         core_1.Component({

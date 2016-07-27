@@ -82,6 +82,7 @@ export class BuyerUpdateProfilePage {
                     setTimeout(() => {
                         // remove from the local storage
                         self.localStorage.removeFromLocal('user');
+                        self.localStorage.removeFromLocal('timestamp');
 
                         // set to login page
                         self.nav.setRoot(LoginPage);
@@ -226,5 +227,8 @@ export class BuyerUpdateProfilePage {
 
         this.events.unsubscribe('peripheral:start', () => {});
         this.events.unsubscribe('peripheral:emoteFound', () => {});
+
+        // user events
+        this.events.unsubscribe('user:update_details', () => {});
     }
 }

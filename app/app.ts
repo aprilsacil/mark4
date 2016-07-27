@@ -1,5 +1,5 @@
-import { Component, provide } from '@angular/core';
-import { Events, Platform, ionicBootstrap } from 'ionic-angular';
+import { Component, provide, ViewChild } from '@angular/core';
+import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
 import { StatusBar, LocalNotifications } from 'ionic-native';
 
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
@@ -33,10 +33,8 @@ export class MyApp {
             this.authenticationEvents();
         });
 
-        // when the app is on background
-        platform.pause.subscribe(() => {
-
-        });
+        // run events when the application is in background mode
+        this.backgroundEvents();
     }
 
     /**
@@ -52,9 +50,9 @@ export class MyApp {
                     // get the difference between the current and saved timestamp
                     var difference = currentTimestamp - timestamp;
 
-                    // check it's almost 30 minutes
-                    if (difference >= 1800) {
-                        // if it's almost 30 minutes, set the root page to the relog page
+                    // check it's almost 10 minutes
+                    if (difference >= 600) {
+                        // if it's almost 10 minutes, set the root page to the relog page
                         this.rootPage = ReloginPage;
                         return;
                     }
@@ -64,6 +62,9 @@ export class MyApp {
 
                     // get the role
                     var role = user.roles[0];
+
+                    // update timestamp
+                    this.localStorage.setToLocal('timestamp', currentTimestamp);
 
                     // set the page based on the given role
                     if (role == 'buyer') {
@@ -118,6 +119,43 @@ export class MyApp {
     }
 
     /**
+     * Background events
+     */
+    backgroundEvents() {
+        var self = this;
+        console.log('background events running...');
+
+        self.platform.pause.subscribe(() => {
+            console.log('background mode...');
+
+            // listen to some existing events
+            self.events.subscribe('app:local_notifications', (eventData) => {
+                var notification = eventData[0];
+
+                if (!notification) {
+                    return;
+                }
+
+                // notify
+                LocalNotifications.schedule({
+                    title: notification.title,
+                    text: notification.text,
+                    // at: new Date(new Date().getTime() + 5 * 1000),
+                    sound: null
+                });
+            });
+        });
+
+        // if the app is focused or opened from background
+        self.platform.resume.subscribe(() => {
+            // unsubscribe
+            self.events.unsubscribe('app:local_notifications', () => {
+                console.log('cancelled');
+            });
+        });
+    }
+
+    /**
      * Seller event listeners
      */
     sellerEvents() {
@@ -126,13 +164,13 @@ export class MyApp {
         // initialize this
         //self.centralBle.init();
 
-        this.events.subscribe('central:startScan', (eventData) => {
+        this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
 
             // check if the bluetooth is enabled or not
             self.centralBle.status().then(result => {
                 if (!result) {
-                    // prompt that the bluetooth is not enabled
+                    console.log('Bluetooth not enabled');
                     return;
                 }
 
@@ -143,17 +181,11 @@ export class MyApp {
             self.centralBle.scan();
         });
 
-        this.events.subscribe('central:stopScan', (eventData) => {
+        this.events.subscribe('central:stop_scan', (eventData) => {
             console.log('event: stop scan');
             // stop scanning
             self.centralBle.stop();
         });
-
-        // write event
-        // this.events.subscribe('central:write', (eventData) => {
-        //     console.log('event: write', eventData[0]);
-        //     self.centralBle.write(JSON.stringify(eventData[0]));
-        // });
     }
 
     /**
@@ -176,6 +208,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://208.113.130.196:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://208.113.130.196/'})])
-
+    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.124:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://192.168.0.124/'})])

@@ -219,13 +219,16 @@ export class ReloginPage {
     unsubscribeEvents() {
         // central
         this.events.unsubscribe('central:start', () => {});
-        this.events.unsubscribe('central:startScan', () => {});
-        this.events.unsubscribe('central:stopScan', () => {});
+        this.events.unsubscribe('central:start_scan', () => {});
+        this.events.unsubscribe('central:stop_scan', () => {});
         this.events.unsubscribe('central:write', () => {});
-        this.events.unsubscribe('central:buyersNearby', () => {});
+        this.events.unsubscribe('central:buyers_nearby', () => {});
 
         // peripheral
         this.events.unsubscribe('peripheral:start', () => {});
-        this.events.unsubscribe('peripheral:emoteFound', () => {});
+        this.events.unsubscribe('peripheral:buyers_nearby', () => {});
+
+        // user events
+        this.events.unsubscribe('user:update_details', () => {});
     }
 }

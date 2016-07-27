@@ -52,10 +52,10 @@
     <!-- History List -->
     <ion-list class="history-list" *ngIf="history.length">
         <ion-list-header>History</ion-list-header>
-        <ion-item class="history" *ngFor="let item of history; let i = index">
+        <ion-item class="history" *ngFor="let item of history | sortBy : ['-date']">
             <h2>{{item.item}}</h2>
             <p class="price" secondary>P {{item.price}}</p>
-            <time class="time-ago" item-right>{{item.date || time-ago}}</time>
+            <time class="time-ago" item-right>{{item.date | timeAgo}}</time>
         </ion-item>
     </ion-list>
 </ion-content>

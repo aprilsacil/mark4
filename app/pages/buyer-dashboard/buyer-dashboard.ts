@@ -11,6 +11,9 @@ import { LocalStorageProvider } from '../../providers/storage/local-storage-prov
 
 import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
 
+import { SortBy } from '../../pipes/sort-by';
+import { TimeAgo } from '../../pipes/time-ago';
+
 import { Buyer } from '../../models/buyer';
 import { Seller } from '../../models/seller';
 
@@ -29,6 +32,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 @Component({
     templateUrl: 'build/pages/buyer-dashboard/buyer-dashboard.html',
     directives: [CheersAvatar],
+    pipes: [SortBy, TimeAgo],
     providers: [LocalStorageProvider]
 })
 export class BuyerDashboardPage {
@@ -67,14 +71,11 @@ export class BuyerDashboardPage {
         this.getUser()
 
         // listens for buyers that sends out an emote
-        this.events.subscribe('peripheral:emoteFound',
+        this.events.subscribe('peripheral:buyers_nearby',
             (eventData) => this.handleEmotes(eventData[0]));
 
         // listens for changes in the user details
-        this.events.subscribe('user:update_details', () => {
-            // get user details again from the local storage
-            this.getUser();
-        });
+        this.events.subscribe('user:update_details', () => this.getUser());
     }
 
     /**
@@ -168,6 +169,9 @@ export class BuyerDashboardPage {
 
                 // get history
                 this.getUserHistory();
+
+                // start long polling
+                this.historyPolling();
             });
     }
 
@@ -197,9 +201,17 @@ export class BuyerDashboardPage {
                 })
             .map(response => response.json())
             .subscribe((data) => {
-                // loop the response
-                for ( var i in data.rows ) {
-                    self.history.push(data.rows[i].value);
+                // check if there's a response or something
+                if (!data || !data.total_rows) {
+                    return;
+                }
+
+                // clear history
+                self.history = [];
+
+                // loop
+                for (var r in data.rows) {
+                    self.history.push(data.rows[r].value);
                 }
             }, (error) => {
                 console.log(error);
@@ -210,45 +222,59 @@ export class BuyerDashboardPage {
      * Handles the emote being sent by the central device.
      */
     handleEmotes(emotes) {
-        var self     = this;
-        var seller   = JSON.parse(emotes);
+        var self     = this,
+            exists   = false,
+            seller   = JSON.parse(emotes);
 
-        // check if the seller already exists in the object
-        if (self.sellers) {
-            var existing = self.sellers.some((element) => {
-                return element._id === seller._id;
-            });
+        if (!seller) {
+            return;
+        }
 
-            // if it doesn't exists, push it
-            if (!existing) {
-                self.sellers.push(seller);
-            }
+        seller = new Seller(seller);
 
-            // if it exists, update the current data
-            if (existing) {
-                var index;
+        // check if there are lists of sellers
+        if (self.sellers || self.sellers.length !== 0) {
+            // check if the incoming seller data already exists in the seller lists
+            for (var s in self.sellers) {
+                // check if the ids are the same
+                if (self.sellers[s]._id == seller._id) {
+                    // update the object
+                    self.zone.run(() => {
+                        self.sellers[s] = seller;
+                    });
 
-                // get the index of the seller by looping all the sellers
-                for (var s in self.sellers) {
-                    if (self.sellers[s]._id == seller._id) {
-                        index = s;
-                        break;
-                    }
+                    // flag that the seller already exists
+                    exists = true;
+                    break;
                 }
-
-                // update
-                self.zone.run(() => {
-                    self.sellers[index] = seller;
-                });
             }
         }
 
-        // no sellers, just push it
-        if (!self.sellers) {
+        // no shoppers or the incoming seller data is new, just push it
+        if (!self.sellers.length || !exists) {
             self.zone.run(() => {
                 self.sellers.push(seller);
+
+                // notify
+                self.events.publish('app:local_notifications', {
+                    title: 'There is a seller nearby!',
+                    text: seller.store_name + ' says: ' + seller.emote_message
+                });
             });
         }
+    }
+
+    /**
+     * User History Long Polling
+     */
+    historyPolling() {
+        console.log('long polling...')
+        // TODO: check if the user is connected
+
+        setInterval(() => {
+            console.log('fetching...');
+            this.getUserHistory();
+        }, 30000);
     }
 
     /**

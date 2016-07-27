@@ -187,6 +187,15 @@ var BLEPeripheral = function() {
             }, { service : this.serviceParam.service });
         },
 
+        // remove all services
+        removeAllServices : function (callback) {
+            bluetoothle.removeAllServices(function (response) {
+                callback.call(self, response);
+            }, function (response) {
+                callback.call(self, response);
+            });
+        },
+
         // start advertisement
         advertise : function(successCallback, errorCallback) {
             // initialize bluetooth

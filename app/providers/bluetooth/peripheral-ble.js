@@ -45,7 +45,6 @@ var PeripheralBle = (function () {
         });
         // on peripheral callback
         this.peripheral.onInitPeripheral(function (response) {
-            console.log('initialize peripheral response', response);
             // if we are connected
             if (response.status === 'connected') {
                 _this.central = response;
@@ -69,7 +68,7 @@ var PeripheralBle = (function () {
                 console.log('Write: ' + string);
                 console.log('Write Bytes: ' + bytes);
                 // trigger an event
-                _this.events.publish('peripheral:emoteFound', string);
+                _this.events.publish('peripheral:buyers_nearby', string);
             }
             // subscription?
             if (response.status === 'subscribed') {
@@ -127,7 +126,6 @@ var PeripheralBle = (function () {
             'characteristic': self.central.subscribe.characteristic,
             'value': message
         };
-        console.log('param', param);
         self.peripheral.notifyByChunk(param, function (response) {
             console.log('notify by chunk:', response);
         }, function (response) {
