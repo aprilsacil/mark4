@@ -54,11 +54,12 @@ export class SellerDashboardPage {
      * peripheral devices details and render it to the app.
      */
     getNearbyShopperDevices() {
-        // initialize the event to listen
-        this.events.subscribe('central:buyers_nearby', (eventData) => {
-            var buyer = JSON.parse(eventData[0]);
+        var self = this;
 
-            console.log('event data', buyer);
+        // initialize the event to listen
+        self.events.subscribe('central:buyers_nearby', (eventData) => {
+            var exists    = false,
+                buyer     = JSON.parse(eventData[0]);
 
             // check if there's really a data
             if (!buyer) {
@@ -67,17 +68,15 @@ export class SellerDashboardPage {
 
             buyer = new Buyer(buyer);
 
-            var exists = false;
-
             // check if the buyer already exists in the object
-            if (this.shoppers || this.shoppers.length !== 0) {
+            if (self.shoppers || self.shoppers.length !== 0) {
                 // check if the shopper already exists
-                for (var s in this.shoppers) {
+                for (var s in self.shoppers) {
                     // check if the ids are the same
-                    if (this.shoppers[s]._id == buyer._id) {
+                    if (self.shoppers[s]._id == buyer._id) {
                         // update the object
-                        this.zone.run(() => {
-                            this.shoppers[s] = buyer;
+                        self.zone.run(() => {
+                            self.shoppers[s] = buyer;
                         });
 
                         exists = true;
@@ -86,16 +85,25 @@ export class SellerDashboardPage {
                 }
             }
 
-            console.log('npa', buyer);
-
             // no shoppers, just push it
-            if (!this.shoppers.length || !exists) {
-                this.zone.run(() => {
-                    this.shoppers.push(buyer);
+            if (!self.shoppers.length || !exists) {
+                var text = buyer.fullname;
+
+                self.zone.run(() => {
+                    self.shoppers.push(buyer);
+
+                    text = (buyer.looking_for) ?
+                        text + ' is looking for "' + buyer.looking_for +'"':
+                        text + ' is nearby and looking for something.';
+
+                    self.events.publish('app:local_notifications', {
+                        title: 'There is a buyer nearby!',
+                        text: text
+                    })
                 });
             }
 
-            console.log(this.shoppers);
+            console.log(self.shoppers);
         });
     }
 
@@ -156,7 +164,7 @@ export class SellerDashboardPage {
             this.shoppers = [];
 
             // stop the scan
-            this.events.publish('central:stopScan');
+            // this.events.publish('central:stop_scan');
 
             // unsubscribe event
             this.events.unsubscribe('central:buyers_nearby', () => {});
@@ -167,7 +175,7 @@ export class SellerDashboardPage {
         this.scanning = true;
 
         // scan
-        this.events.publish('central:startScan');
+        this.events.publish('central:start_scan');
 
         // get the list of shoppers detected
         this.getNearbyShopperDevices();

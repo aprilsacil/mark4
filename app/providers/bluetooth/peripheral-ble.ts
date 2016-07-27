@@ -49,7 +49,6 @@ export class PeripheralBle {
 
         // on peripheral callback
         this.peripheral.onInitPeripheral((response) => {
-            console.log('initialize peripheral response', response);
             // if we are connected
             if(response.status === 'connected') {
                 this.central = response;
@@ -82,7 +81,7 @@ export class PeripheralBle {
                 console.log('Write Bytes: ' + bytes);
 
                 // trigger an event
-                this.events.publish('peripheral:emoteFound', string);
+                this.events.publish('peripheral:buyers_nearby', string);
             }
 
             // subscription?
@@ -97,7 +96,6 @@ export class PeripheralBle {
 
                 console.log(this.central.address + ' has been subscribed.');
             }
-
 
             // disconnection?
             if(response.status === 'disconnected') {
@@ -154,8 +152,6 @@ export class PeripheralBle {
             'value'             : message
         };
 
-        console.log('param', param);
-
         self.peripheral.notifyByChunk(param, function(response) {
             console.log('notify by chunk:' , response);
         }, function(response) {
@@ -194,7 +190,20 @@ export class PeripheralBle {
         console.log('peripheral status', data);
     }
 
+    /**
+     * Stops the peripheral processes
+     */
     stop() {
         clearInterval(this.advertising);
+
+        // stop advertising
+        this.peripheral.stopAdvertising((response) => {
+            console.log('stop advertising', response);
+        });
+
+        // remove services
+        this.peripheral.removeAllServices((response) => {
+            console.log('remove all services', response);
+        });
     }
 }

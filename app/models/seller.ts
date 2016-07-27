@@ -5,7 +5,7 @@ export class Seller {
     store_name: string;
     image: string = null;
     roles: any [];
-    emote: string = null;
+    emote_message: string = null;
 
     constructor(userInfo: any) {
         // assign things
@@ -30,8 +30,8 @@ export class Seller {
         }
 
         // emote
-        if (userInfo.emote) {
-            this.emote = userInfo.emote;
+        if (userInfo.emote_message) {
+            this.emote_message = userInfo.emote_message;
         }
     }
 }

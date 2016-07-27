@@ -55,14 +55,13 @@ var SellerDashboardPage = (function () {
         var _this = this;
         // initialize the event to listen
         this.events.subscribe('central:buyers_nearby', function (eventData) {
-            var buyer = JSON.parse(eventData[0]);
+            var exists = false, buyer = JSON.parse(eventData[0]);
             console.log('event data', buyer);
             // check if there's really a data
             if (!buyer) {
                 return;
             }
             buyer = new buyer_1.Buyer(buyer);
-            var exists = false;
             // check if the buyer already exists in the object
             if (_this.shoppers || _this.shoppers.length !== 0) {
                 // check if the shopper already exists
@@ -78,7 +77,6 @@ var SellerDashboardPage = (function () {
                     }
                 }
             }
-            console.log('npa', buyer);
             // no shoppers, just push it
             if (!_this.shoppers.length || !exists) {
                 _this.zone.run(function () {
@@ -137,7 +135,7 @@ var SellerDashboardPage = (function () {
             // empty out the shoppers
             this.shoppers = [];
             // stop the scan
-            this.events.publish('central:stopScan');
+            this.events.publish('central:stop_scan');
             // unsubscribe event
             this.events.unsubscribe('central:buyers_nearby', function () { });
             return;
@@ -145,7 +143,7 @@ var SellerDashboardPage = (function () {
         // flag that we're scanning
         this.scanning = true;
         // scan
-        this.events.publish('central:startScan');
+        this.events.publish('central:start_scan');
         // get the list of shoppers detected
         this.getNearbyShopperDevices();
         return;

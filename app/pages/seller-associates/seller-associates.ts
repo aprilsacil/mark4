@@ -129,9 +129,9 @@ export class SellerAssociatesPage {
      * Invites this person
      */
     invite(username) {
-    	console.log(username);
     	var headers = new Headers({
-    		'Content-Type': 'application/x-www-form-urlencoded'});
+    		'Content-Type': 'application/x-www-form-urlencoded'
+        });
 
     	var param = {
     		username:username,
@@ -139,12 +139,12 @@ export class SellerAssociatesPage {
     	};
 
 		this.http
-			.post('http://cheers.dev/invite', param, {headers: headers})
+			.post(this.apiEndpoint + 'invite', param, {headers: headers})
 			.map(response => response.json())
 			.subscribe((data) => {
-				this.showToast('You have successfully gave the customer an award.');
-				this.searching = false;
+				this.showToast('Invitation sent!');
 
+				this.searching = false;
 			}, (error) => {
 				console.log(error);
 			});

@@ -184,13 +184,15 @@ var ReloginPage = (function () {
     ReloginPage.prototype.unsubscribeEvents = function () {
         // central
         this.events.unsubscribe('central:start', function () { });
-        this.events.unsubscribe('central:startScan', function () { });
-        this.events.unsubscribe('central:stopScan', function () { });
+        this.events.unsubscribe('central:start_scan', function () { });
+        this.events.unsubscribe('central:stop_scan', function () { });
         this.events.unsubscribe('central:write', function () { });
-        this.events.unsubscribe('central:buyersNearby', function () { });
+        this.events.unsubscribe('central:buyers_nearby', function () { });
         // peripheral
         this.events.unsubscribe('peripheral:start', function () { });
-        this.events.unsubscribe('peripheral:emoteFound', function () { });
+        this.events.unsubscribe('peripheral:buyers_nearby', function () { });
+        // user events
+        this.events.unsubscribe('user:update_details', function () { });
     };
     ReloginPage = __decorate([
         core_1.Component({

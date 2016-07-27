@@ -132,10 +132,17 @@ var LoginPage = (function () {
                         self.localStorage.setToLocal('user', JSON.stringify(buyer));
                         // broadcast event to start some event listeners
                         _this.events.publish('peripheral:start');
-                        // remove image data
-                        delete buyer.image;
+                        // set data to advertise
+                        var advertiseData = {
+                            _id: buyer._id,
+                            fullname: buyer.fullname,
+                            name: buyer.name,
+                            job_description: buyer.job_description,
+                            company_name: buyer.company_name,
+                            level: buyer.level
+                        };
                         // let's advertise
-                        _this.events.publish('peripheral:set_buyer_data', buyer);
+                        _this.events.publish('peripheral:set_buyer_data', advertiseData);
                         // remove loader and set the root page
                         loading.dismiss().then(function () {
                             return self.goToBuyerDashboardPage();

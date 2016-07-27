@@ -198,10 +198,12 @@ var SellerUpdateSettingsPage = (function () {
         // this.events.publish('central:stopScan');
         // unsubscribe all events
         this.events.unsubscribe('central:start', function () { });
-        this.events.unsubscribe('central:startScan', function () { });
-        this.events.unsubscribe('central:stopScan', function () { });
+        this.events.unsubscribe('central:start_scan', function () { });
+        this.events.unsubscribe('central:stop_scan', function () { });
         this.events.unsubscribe('central:write', function () { });
-        this.events.unsubscribe('central:buyersNearby', function () { });
+        this.events.unsubscribe('central:buyers_nearby', function () { });
+        // user events
+        this.events.unsubscribe('user:update_details', function () { });
     };
     SellerUpdateSettingsPage = __decorate([
         core_1.Component({

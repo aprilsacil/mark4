@@ -33,6 +33,7 @@
                 <p class="work">
                     <span *ngIf="user.job_description">{{user.job_description}}</span>
                     <span *ngIf="user.job_description && user.company_name">@</span>
+                    <span *ngIf="!user.job_description && user.company_name">Works at</span>
                     <span *ngIf="user.company_name">{{user.company_name}}</span>
                 </p>
                 <p class="stats">
@@ -88,7 +89,7 @@
 
         <!-- Award -->
         <div *ngIf="history.length">
-            <ion-item class="seller award" *ngFor="let item of history; let i = index">
+            <ion-item class="seller award" *ngFor="let item of history | sortBy : ['-date']">
                 <ion-avatar item-left>
                     <img src="img/default_avatar.jpg" *ngIf="!item.store_image">
                     <img [src]="item.store_image" *ngIf="item.store_image">
@@ -97,7 +98,7 @@
                 <h2>{{item.store}}</h2>
                 <p>{{item.message}}</p>
                 <p class="price" secondary>P {{item.price}}</p>
-                <time class="time-ago" item-right>{{item.date}}</time>
+                <time class="time-ago" item-right>{{item.date | timeAgo}}</time>
             </ion-item>
         </div>
     </ion-list>

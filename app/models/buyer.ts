@@ -10,8 +10,6 @@ export class Buyer {
     looking_for: string = null;
 
     constructor(userInfo: any) {
-        console.log('buyer model', userInfo);
-
         // assign things
         this._id      = userInfo._id;
         this.name     = userInfo.name;

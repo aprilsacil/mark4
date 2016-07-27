@@ -7,7 +7,7 @@ import { Injectable, Pipe } from '@angular/core';
   Angular 2 Pipes.
 */
 @Pipe({
-name: 'time-ago'
+    name: 'timeAgo'
 })
 @Injectable()
 export class TimeAgo {

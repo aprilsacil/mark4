@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { Alert, Loading, NavController, NavParams, Toast, ViewController } from 'ionic-angular';
+import { Alert, Events, Loading, NavController, NavParams, Toast, ViewController } from 'ionic-angular';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
@@ -37,6 +37,7 @@ export class SellerAwardModalPage {
     user = new Seller({});
 
     constructor(
+        private events: Events,
         private localStorage: LocalStorageProvider,
         private nav: NavController,
         private params: NavParams,
@@ -118,6 +119,9 @@ export class SellerAwardModalPage {
                     self.dismiss();
                 })
                 .then(() => {
+                    // trigger an event
+                    self.events.publish('user:pull_awards');
+
                     // delay it for a second
                     setTimeout(() => {
                         // show a toast
