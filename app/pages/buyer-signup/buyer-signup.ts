@@ -10,9 +10,6 @@ import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
-var PouchDB = require('pouchdb');
-PouchDB.plugin(require('pouchdb-authentication'));
-
 /*
   Generated class for the BuyerSignupPage page.
 
@@ -23,8 +20,6 @@ PouchDB.plugin(require('pouchdb-authentication'));
     templateUrl: 'build/pages/buyer-signup/buyer-signup.html'
 })
 export class BuyerSignupPage {
-    localDb: any;
-    pouchDb: any;
     buyer = {
         username: <string> null,
         password: <string> null,
@@ -38,17 +33,7 @@ export class BuyerSignupPage {
         private http: Http,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
-    ) {
-        // couch db integration
-        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
-
-        // local integration
-        this.localDb = new PouchDB('cheers');
-
-        // this will sync locally
-        this.localDb.sync(this.pouchDb, {live: true, retry: true})
-            .on('error', console.log.bind(console));
-    }
+    ) {}
 
     /**
      * Redirects to the login page
@@ -106,15 +91,18 @@ export class BuyerSignupPage {
         // render loader
         self.nav.present(loading);
 
+        // set request header
         var headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded'
         });
 
+        // set the role and the level
         this.buyer.roles = 'buyer';
         this.buyer.level = 0;
 
+        // perform request
         this.http
-            .post(this.apiEndpoint + 'register', this.buyer, {headers: headers})
+            .post(this.apiEndpoint + 'register', this.buyer, { headers: headers })
             .map(response => response.json())
             .subscribe((data) => {
                 if(data.error) {
@@ -139,6 +127,21 @@ export class BuyerSignupPage {
                 loading.dismiss().then(() => {
                     self.goToLoginPage();
                 });
+            },
+            (error) => {
+               loading.dismiss().then(() => {
+                    // show an alert
+                    setTimeout(() => {
+                        var alert = Alert.create({
+                            title: 'Error!',
+                            subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
+                            buttons: ['OK']
+                        });
+
+                        // render in the template
+                        self.nav.present(alert);
+                    }, 300);
+               });
             });
     }
 }

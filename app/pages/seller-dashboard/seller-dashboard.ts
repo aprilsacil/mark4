@@ -164,7 +164,7 @@ export class SellerDashboardPage {
             this.shoppers = [];
 
             // stop the scan
-            // this.events.publish('central:stop_scan');
+            this.events.publish('central:stop_scan');
 
             // unsubscribe event
             this.events.unsubscribe('central:buyers_nearby', () => {});

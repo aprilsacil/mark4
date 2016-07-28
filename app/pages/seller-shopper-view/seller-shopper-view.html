@@ -50,12 +50,18 @@
     <!-- End of Shopper Details -->
 
     <!-- History List -->
-    <ion-list class="history-list" *ngIf="history.length">
-        <ion-list-header>History</ion-list-header>
-        <ion-item class="history" *ngFor="let item of history | sortBy : ['-date']">
-            <h2>{{item.item}}</h2>
-            <p class="price" secondary>P {{item.price}}</p>
-            <time class="time-ago" item-right>{{item.date | timeAgo}}</time>
+    <ion-list class="history-list">
+        <div *ngIf="history.length">
+            <ion-list-header>History</ion-list-header>
+            <ion-item class="history" *ngFor="let item of history | sortBy : ['-date']">
+                <h2>{{item.item}}</h2>
+                <p class="price" secondary>P {{item.price}}</p>
+                <time class="time-ago" item-right>{{item.date | timeAgo}}</time>
+            </ion-item>
+        </div>
+
+        <ion-item class="item-plain" *ngIf="!history.length">
+            Hasn't bought anything from you.
         </ion-item>
     </ion-list>
 </ion-content>
