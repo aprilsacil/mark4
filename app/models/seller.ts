@@ -6,12 +6,14 @@ export class Seller {
     image: string = null;
     roles: any [];
     emote_message: string = null;
+    auth: string;
 
     constructor(userInfo: any) {
         // assign things
         this._id      = userInfo._id;
         this.name     = userInfo.name;
         this.fullname = userInfo.fullname;
+        this.auth = userInfo.auth;
 
         // optional properties
         // store name

@@ -8,12 +8,14 @@ export class Buyer {
     level: number = 0;
     roles: any [];
     looking_for: string = null;
+    auth: string;
 
     constructor(userInfo: any) {
         // assign things
         this._id      = userInfo._id;
         this.name     = userInfo.name;
         this.fullname = userInfo.fullname;
+        this.auth = userInfo.auth;
 
         // optional properties
         // job description
