@@ -14,9 +14,6 @@ import { Seller } from '../../models/seller';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
-var PouchDB = require('pouchdb');
-PouchDB.plugin(require('pouchdb-authentication'));
-
 /*
   Generated class for the LoginPage page.
 
@@ -28,8 +25,6 @@ PouchDB.plugin(require('pouchdb-authentication'));
   providers: [LocalStorageProvider]
 })
 export class LoginPage {
-    localDb: any;
-    pouchDb: any;
     login = {
         username: <string> null,
         password: <string> null
@@ -45,15 +40,6 @@ export class LoginPage {
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
-        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
-
-        // local integration
-        this.localDb = new PouchDB('cheers');
-
-        // this will sync locally
-        this.localDb.sync(this.pouchDb, {live: true, retry: true})
-            .on('error', console.log.bind(console));
-
         this.goBack = this.params.get('go_back') || false;
     }
 
@@ -186,6 +172,21 @@ export class LoginPage {
                         return self.goToBuyerDashboardPage();
                     });
                 }
-            });
+            },
+            (error) => {
+               loading.dismiss().then(() => {
+                    // show an alert
+                    setTimeout(() => {
+                        var alert = Alert.create({
+                            title: 'Error!',
+                            subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
+                            buttons: ['OK']
+                        });
+
+                        // render in the template
+                        self.nav.present(alert);
+                    }, 300);
+               });
+           });
     }
 }

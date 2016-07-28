@@ -1,6 +1,6 @@
 import { Component, provide, ViewChild } from '@angular/core';
 import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { StatusBar, LocalNotifications } from 'ionic-native';
+import { Network, StatusBar, LocalNotifications } from 'ionic-native';
 
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
@@ -162,7 +162,7 @@ export class MyApp {
         var self = this;
 
         // initialize this
-        //self.centralBle.init();
+        self.centralBle.init();
 
         this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
@@ -195,7 +195,6 @@ export class MyApp {
         var self = this;
 
         // initialize the peripheral ble
-
         self.peripheralBle.init();
 
         self.events.subscribe('peripheral:stop', () => {
@@ -208,6 +207,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.124:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.0.124/'})])
-
+    provide('CouchDBEndpoint', {useValue: 'http://0.0.0.0:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://0.0.0.0/'})]);

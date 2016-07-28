@@ -1,5 +1,6 @@
 import { Component, Directive, Inject, Input } from '@angular/core';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
@@ -18,7 +19,8 @@ import 'rxjs/add/operator/map';
 })
 @Component({
     selector: 'cheers-avatar',
-    templateUrl: 'build/components/cheers-avatar/cheers-avatar.html'
+    templateUrl: 'build/components/cheers-avatar/cheers-avatar.html',
+    providers: [LocalStorageProvider]
 })
 export class CheersAvatar {
     @Input() user: any;
@@ -26,6 +28,7 @@ export class CheersAvatar {
 
     constructor(
         private http: Http,
+        private localStorage: LocalStorageProvider,
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {}
 
@@ -63,13 +66,27 @@ export class CheersAvatar {
             .subscribe((data) => {
                 data = data.rows;
                 for ( var i in data ) {
-                    if (this.user.name == data[i].value[0]) {
+                    if (this.user._id == data[i].id) {
                         this.user = data[i].value;
+
+                        // save image data to cache if there's an image provided
+                        if (this.user.image) {
+                            // remove first
+                            this.localStorage.removeFromLocal('chimg_' + this.user._id);
+                            // set
+                            this.localStorage.setToLocal('chimg_' + this.user._id, this.user.image);
+                        }
                         continue;
                     }
                 }
             }, (error) => {
-                console.log(error);
+                // most likely no internet connection
+                // check cache
+                this.localStorage.getFromLocal('chimg_' + this.user._id).then((data) => {
+                    if (data) {
+                        this.user.image = data;
+                    }
+                })
             });
     }
 }

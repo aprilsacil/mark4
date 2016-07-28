@@ -268,7 +268,6 @@ export class BuyerDashboardPage {
      * User History Long Polling
      */
     historyPolling() {
-        console.log('long polling...')
         // TODO: check if the user is connected
 
         setInterval(() => {
