@@ -47,6 +47,8 @@ export class BuyerDashboardPage {
         roles: <string> null
     }
 
+    invitation = {};
+
     constructor(
         private events: Events,
         private localStorage: LocalStorageProvider,
@@ -68,7 +70,7 @@ export class BuyerDashboardPage {
 
         // get user details that is saved in the local storage then get the
         // user history
-        this.getUser()
+        this.getUser();
 
         // listens for buyers that sends out an emote
         this.events.subscribe('peripheral:buyers_nearby',
@@ -154,6 +156,36 @@ export class BuyerDashboardPage {
     }
 
     /**
+     * Get user Invitation
+     */
+    getInvitation() {
+        var self = this;
+
+        // set the headers
+        var headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
+
+        // set the data needed by the api
+        var param = {
+            type: 'per_user',
+            search: self.user.name
+        };
+
+        // perform request to the api
+        self.http
+            .get(
+                self.apiEndpoint + 'invitation?user=' + param.search + '&token=' + self.user.auth + 
+                '&type=' + param.type + '&search=' + param.search, { headers: headers })
+            .map(response => response.json())
+            .subscribe((data) => {
+                this.invitation = data.rows[0].value;
+            }, (error) => {
+                console.log(error);
+            });
+    }
+
+    /**
      * Get user data from the local storage
      */
     getUser() {
@@ -169,6 +201,9 @@ export class BuyerDashboardPage {
 
                 // get history
                 this.getUserHistory();
+
+                // get invitation
+                this.getInvitation();
 
                 // start long polling
                 this.historyPolling();
