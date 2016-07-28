@@ -8,6 +8,7 @@ export class Buyer {
     level: number = 0;
     roles: any [];
     looking_for: string = null;
+    registration_id: any;
 
     constructor(userInfo: any) {
         // assign things
@@ -44,6 +45,11 @@ export class Buyer {
         // looking for message
         if (userInfo.looking_for) {
             this.looking_for = userInfo.looking_for;
+        }
+
+        // registration device id
+        if (userInfo.registration_id) {
+            this.registration_id = userInfo.registration_id;
         }
     }
 }

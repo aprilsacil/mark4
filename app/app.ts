@@ -1,6 +1,6 @@
 import { Component, provide, ViewChild } from '@angular/core';
 import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { StatusBar, LocalNotifications } from 'ionic-native';
+import { StatusBar, LocalNotifications, Push } from 'ionic-native';
 
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
@@ -10,6 +10,8 @@ import { ReloginPage } from './pages/relogin/relogin';
 import { CentralBle } from './providers/bluetooth/central-ble';
 import { PeripheralBle } from './providers/bluetooth/peripheral-ble';
 import { LocalStorageProvider } from './providers/storage/local-storage-provider';
+
+declare var FCMPlugin;
 
 @Component({
     template: '<ion-nav [root]="rootPage"></ion-nav>',
@@ -35,6 +37,9 @@ export class MyApp {
 
         // run events when the application is in background mode
         this.backgroundEvents();
+
+        // push notifications
+        this.pushNotifications();
     }
 
     /**
@@ -156,6 +161,42 @@ export class MyApp {
     }
 
     /**
+     * Handles the push notification services.
+     */
+    pushNotifications() {
+        var push = Push.init({
+            android: {
+                senderID: "86572216527"
+            },
+            ios: {
+                alert: "true",
+                badge: "true",
+                sound: "true"
+            },
+            windows: {}
+        });
+
+        push.on('registration', function(data) {
+            console.log('registration', data);
+            // data.registrationId
+        });
+
+        push.on('notification', function(data) {
+            console.log('notification', data);
+            // data.message,
+            // data.title,
+            // data.count,
+            // data.sound,
+            // data.image,
+            // data.additionalData
+        });
+
+        push.on('error', function(e) {
+            // e.message
+        });
+    }
+
+    /**
      * Seller event listeners
      */
     sellerEvents() {
@@ -208,6 +249,6 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.124:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.0.124/'})])
+    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.128:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://192.168.0.128/'})])
 

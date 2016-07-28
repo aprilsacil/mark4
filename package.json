@@ -14,7 +14,6 @@
     "pouchdb-authentication": "^0.5.3",
     "reflect-metadata": "^0.1.3",
     "rxjs": "5.0.0-beta.6",
-    "typedarray": "0.0.6",
     "zone.js": "^0.6.12"
   },
   "devDependencies": {
@@ -35,7 +34,11 @@
     "cordova-plugin-splashscreen",
     "cordova-plugin-statusbar",
     "cordova-plugin-bluetoothle",
-    "ionic-plugin-keyboard"
+    "ionic-plugin-keyboard",
+    "de.appplant.cordova.plugin.local-notification",
+    "cordova-plugin-camera",
+    "cordova-plugin-network-information",
+    "phonegap-plugin-push"
   ],
   "cordovaPlatforms": [
     "ios",

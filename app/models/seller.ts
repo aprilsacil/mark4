@@ -6,6 +6,7 @@ export class Seller {
     image: string = null;
     roles: any [];
     emote_message: string = null;
+    registration_id: any;
 
     constructor(userInfo: any) {
         // assign things
@@ -32,6 +33,11 @@ export class Seller {
         // emote
         if (userInfo.emote_message) {
             this.emote_message = userInfo.emote_message;
+        }
+
+        // registration device id
+        if (userInfo.registration_id) {
+            this.registration_id = userInfo.registration_id;
         }
     }
 }
