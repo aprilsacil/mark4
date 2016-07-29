@@ -1,4 +1,5 @@
 import { Component, Inject } from '@angular/core';
+import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 import { Alert, Events, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
 import { LoginPage } from '../login/login';
@@ -6,6 +7,9 @@ import { LoginPage } from '../login/login';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 import { Seller } from '../../models/seller';
+
+import 'rxjs/add/operator/toPromise';
+import 'rxjs/add/operator/map';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -25,11 +29,18 @@ export class SellerUpdateSettingsPage {
     localDb: any;
     user = new Seller({});
 
+    // set the headers
+    headers = new Headers({
+        'Content-Type': 'application/x-www-form-urlencoded'
+    });
+
     constructor(
         private events: Events,
         private localStorage: LocalStorageProvider,
         private nav: NavController,
-        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+        private http: Http,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
+        @Inject('APIEndpoint') private apiEndpoint: string
     ) {
         var self = this;
         // couch db integration
@@ -145,27 +156,41 @@ export class SellerUpdateSettingsPage {
 
         // render in the template
         this.nav.present(loading);
+        var param = this.user;
+        param.roles = this.user.roles[0];
 
-        this.pouchDb.putUser(this.user.name, {
-            metadata : {
-                store_name: this.user.store_name,
-                fullname: this.user.fullname,
-                image: this.user.image
-            }
-        }, (err, response) => {
-            if (err) {
-                var message;
+        // perform request to the api
+        self.http
+            .post(
+                self.apiEndpoint + 'update?user=' + self.user.name + '&token=' + self.user.auth,
+                param, { headers: self.headers })
+            .map(response => response.json())
+            .subscribe((data) => {
+                if(data.ok) {
+                    // update user data to the local storage
+                    self.localStorage.setToLocal('user', JSON.stringify(self.user));
 
-                // determine the error
-                switch (err.name) {
-                    case 'not_found':
-                        message = 'Something went wrong while processing your request. Please try again later.';
-                        break;
-                    default:
-                        message = 'Something went wrong while processing your request. Please try again later.';
-                        break;
+                    // broadcast that we have update the user details
+                    self.events.publish('user:update_details');
+
+                    // if no error remove the preloader now
+                    loading.dismiss()
+                    .then(() => {
+                        // show a toast
+                        self.showToast('You have successfully updated your profile.');
+                    });
+
+                    return;
                 }
 
+                if(data.message) {
+                    var message = data.message;
+                }
+
+                if(data.errors) {
+                    var message = data.errors[0];
+                }
+                
                 // render the error
                 loading.dismiss().then(() => {
                     var alert = Alert.create({
@@ -180,32 +205,9 @@ export class SellerUpdateSettingsPage {
                 });
 
                 return;
-            }
-
-            // get user details
-            self.pouchDb.getUser(self.user.name, (err, response) => {
-                // delete the password and salt
-                delete response.password_scheme;
-                delete response.salt
-
-                var user = JSON.stringify(new Seller(response));
-
-                // update user data to the local storage
-                self.localStorage.setToLocal('user', user);
-
-                // broadcast that we have update the user details
-                self.events.publish('user:update_details');
-
-                // if no error remove the preloader now
-                loading.dismiss()
-                .then(() => {
-                    // show a toast
-                    self.showToast('You have successfully updated your profile.');
-                });
+            }, (error) => {
+                console.log(error);
             });
-
-            return;
-        });
     }
 
     /**

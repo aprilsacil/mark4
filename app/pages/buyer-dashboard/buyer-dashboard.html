@@ -68,14 +68,14 @@
         </ion-item>
 
         <!-- Associate Invite -->
-        <ion-item class="seller associate-invite" *ngIf="user.store_uuid">
+        <ion-item class="seller associate-invite" *ngIf="invitation.store_uuid !== null">
             <ion-avatar item-left>
-                <img src="img/default_avatar.jpg" *ngIf="!user.store_image">
-                <img [src]="user.store_image" *ngIf="user.store_image">
+                <img src="img/default_avatar.jpg" *ngIf="!invitation.store_image">
+                <img [src]="invitation.store_image" *ngIf="invitation.store_image">
             </ion-avatar>
 
-            <h2>{{user.store_name}}</h2>
-            <p>{{user.store_name}} hired you as staff!</p>
+            <h2>{{invitation.store_name}}</h2>
+            <p>{{invitation.store_name}} hired you as staff!</p>
 
             <div item-right class="invite-controls">
                 <button outline success (click)="acceptInvitation()">
