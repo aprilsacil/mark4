@@ -32,14 +32,15 @@ export class MyApp {
             // Here you can do any higher level native things you might need.
             StatusBar.styleDefault();
 
+            // start push notifications
+            this.pushNotifications();
+
+            // authentication events
             this.authenticationEvents();
         });
 
         // run events when the application is in background mode
         this.backgroundEvents();
-
-        // push notifications
-        this.pushNotifications();
     }
 
     /**
@@ -135,19 +136,7 @@ export class MyApp {
 
             // listen to some existing events
             self.events.subscribe('app:local_notifications', (eventData) => {
-                var notification = eventData[0];
-
-                if (!notification) {
-                    return;
-                }
-
-                // notify
-                LocalNotifications.schedule({
-                    title: notification.title,
-                    text: notification.text,
-                    // at: new Date(new Date().getTime() + 5 * 1000),
-                    sound: null
-                });
+                self.localNotifications(eventData[0]);
             });
         });
 
@@ -161,9 +150,30 @@ export class MyApp {
     }
 
     /**
+     * Renders passed data as a notification
+     */
+    localNotifications(notification) {
+        if (!notification) {
+            return;
+        }
+
+        // notify
+        LocalNotifications.schedule({
+            title: notification.title,
+            text: notification.text,
+            at: new Date().getTime(),
+            sound: null
+        });
+    }
+
+    /**
      * Handles the push notification services.
      */
     pushNotifications() {
+        var self = this;
+        var additionalData: any;
+
+        // initialize push
         var push = Push.init({
             android: {
                 senderID: "86572216527"
@@ -172,23 +182,27 @@ export class MyApp {
                 alert: "true",
                 badge: "true",
                 sound: "true"
-            },
-            windows: {}
+            }
         });
 
         push.on('registration', function(data) {
             console.log('registration', data);
-            // data.registrationId
+            // save registration id in the local storage
+            self.localStorage.setToLocal('registration_id', data.registrationId);
         });
 
         push.on('notification', function(data) {
             console.log('notification', data);
-            // data.message,
-            // data.title,
-            // data.count,
-            // data.sound,
-            // data.image,
-            // data.additionalData
+            additionalData = data.additionalData;
+
+            // prepare data
+            var notification = {
+                title: data.title,
+                text: additionalData.text
+            };
+
+            // notify
+            self.localNotifications(notification);
         });
 
         push.on('error', function(e) {
@@ -203,7 +217,7 @@ export class MyApp {
         var self = this;
 
         // initialize this
-        //self.centralBle.init();
+        self.centralBle.init();
 
         this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
@@ -236,7 +250,6 @@ export class MyApp {
         var self = this;
 
         // initialize the peripheral ble
-
         self.peripheralBle.init();
 
         self.events.subscribe('peripheral:stop', () => {
