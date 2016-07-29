@@ -2,10 +2,11 @@ export class Seller {
     _id: string;
     name: string;
     fullname: string;
-    store_name: string;
+    store_uuid: string;
     image: string = null;
     roles: any [];
     emote_message: string = null;
+    store: any = {};
     auth: string;
 
     constructor(userInfo: any) {
@@ -16,14 +17,19 @@ export class Seller {
         this.auth = userInfo.auth;
 
         // optional properties
-        // store name
-        if (userInfo.store_name) {
-            this.store_name = userInfo.store_name;
+        // store details
+        if (userInfo.store) {
+            this.store = userInfo.store;
         }
 
         // image
         if (userInfo.image) {
             this.image = userInfo.image;
+        }
+
+        // store_uuid
+        if (userInfo.store_uuid) {
+            this.store_uuid = userInfo.store_uuid;
         }
 
         // roles

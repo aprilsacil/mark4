@@ -6,8 +6,9 @@ export class Buyer {
     company_name: string = null;
     image: string = null;
     level: number = 0;
-    roles: any [];
+    roles: any;
     looking_for: string = null;
+    store: any = {};
     auth: string;
 
     constructor(userInfo: any) {
