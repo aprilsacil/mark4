@@ -1,6 +1,6 @@
 import { Component, provide, ViewChild } from '@angular/core';
 import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { StatusBar, LocalNotifications, Push } from 'ionic-native';
+import { Network, StatusBar, LocalNotifications, Push } from 'ionic-native';
 
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
@@ -10,8 +10,6 @@ import { ReloginPage } from './pages/relogin/relogin';
 import { CentralBle } from './providers/bluetooth/central-ble';
 import { PeripheralBle } from './providers/bluetooth/peripheral-ble';
 import { LocalStorageProvider } from './providers/storage/local-storage-provider';
-
-declare var FCMPlugin;
 
 @Component({
     template: '<ion-nav [root]="rootPage"></ion-nav>',
@@ -263,5 +261,4 @@ export class MyApp {
 
 ionicBootstrap(MyApp, [
     provide('CouchDBEndpoint', {useValue: 'http://192.168.0.128:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.0.128/'})])
-
+    provide('APIEndpoint', {useValue: 'http://192.168.0.128/'})]);
