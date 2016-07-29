@@ -70,7 +70,8 @@ export class SellerAssociatesPage {
     	};
 
 		this.http
-			.post(this.apiEndpoint + 'users', param, {headers: headers})
+			.post(this.apiEndpoint + 'users?user=' + this.user.name +
+            '&token=' + this.user.auth, param, {headers: headers})
 			.map(response => response.json())
 			.subscribe((data) => {
 				data = data.rows;
@@ -106,7 +107,8 @@ export class SellerAssociatesPage {
 
         // perform request
         this.http
-            .post(this.apiEndpoint + 'users', param, {headers: headers})
+            .post(this.apiEndpoint + 'users?user=' + this.user.name +
+            '&token=' + this.user.auth, param, {headers: headers})
             .map(response => response.json())
             .subscribe((data) => {
                 data = data.rows;
@@ -139,7 +141,8 @@ export class SellerAssociatesPage {
     	};
 
 		this.http
-			.post(this.apiEndpoint + 'invite', param, {headers: headers})
+			.post(this.apiEndpoint + 'invite?user=' + this.user.name +
+            '&token=' + this.user.auth, param, {headers: headers})
 			.map(response => response.json())
 			.subscribe((data) => {
 				this.showToast('Invitation sent!');
