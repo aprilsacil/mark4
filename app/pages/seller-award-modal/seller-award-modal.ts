@@ -10,9 +10,6 @@ import { Seller } from '../../models/seller';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
-var PouchDB = require('pouchdb');
-PouchDB.plugin(require('pouchdb-authentication'));
-
 /*
   Generated class for the SellerAwardModalPage page.
 
