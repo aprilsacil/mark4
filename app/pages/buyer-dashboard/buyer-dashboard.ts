@@ -172,8 +172,9 @@ export class BuyerDashboardPage {
                 '&type=' + param.type + '&search=' + param.search, { headers: self.headers })
             .map(response => response.json())
             .subscribe((data) => {
-                console.log(data.rows[0]);
-                this.invitation = data.rows[0].value;
+                if(data.rows.length) {
+                    this.invitation = data.rows[0].value;
+                }
             }, (error) => {
                 console.log(error);
             });
@@ -198,7 +199,6 @@ export class BuyerDashboardPage {
 
                 // get invitation
                 this.getInvitation();
-                console.log(this.invitation);
 
                 // start long polling
                 this.historyPolling();
