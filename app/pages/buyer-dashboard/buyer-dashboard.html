@@ -68,7 +68,7 @@
         </ion-item>
 
         <!-- Associate Invite -->
-        <ion-item class="seller associate-invite" *ngIf="invitation">
+        <ion-item class="seller associate-invite" *ngIf="invitation.store_uuid !== null">
             <ion-avatar item-left>
                 <img src="img/default_avatar.jpg" *ngIf="!invitation.store_image">
                 <img [src]="invitation.store_image" *ngIf="invitation.store_image">

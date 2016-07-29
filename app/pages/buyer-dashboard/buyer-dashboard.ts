@@ -47,7 +47,16 @@ export class BuyerDashboardPage {
         roles: <string> null
     }
 
-    invitation = {};
+    // set the headers
+    headers = new Headers({
+        'Content-Type': 'application/x-www-form-urlencoded'
+    });
+
+    invitation = {
+        store_name : <string> null,
+        store_image : <string> null,
+        store_uuid : <string> null
+    };
 
     constructor(
         private events: Events,
@@ -106,47 +115,36 @@ export class BuyerDashboardPage {
                     // show the loader
                     this.nav.present(loading);
 
-                    self.pouchDb.getUser(this.user.name, (errUser, responseUser) => {
-                        if (errUser) {
-                            if (errUser.name === 'not_found') {
-                              // typo, or you don't have the privileges to see this user
-                            } else {
-                              // some other error
-                            }
-                        } else {
-                            // response is the user object
-                            self.pouchDb.putUser(this.user.name, {
-                                metadata : {
-                                    roles: ['seller']
-                                }
-                            }, (errUser, responseUser) => {
-                                if (errUser) {
-                                    if (errUser.name === 'not_found') {
-                                      // typo, or you don't have the privileges to see this user
-                                    } else {
-                                      // some other error
-                                    }
-                                } else {
-                                    self.pouchDb.getUser(self.user.name, (err, response) => {
-                                        console.log(err, response);
-                                        // delete the password and salt
-                                        delete response.password_scheme;
-                                        delete response.salt
+                    // set the data needed by the api
+                    var param = this.user;
+                    var invi = {
+                        store_name : this.invitation.store_name,
+                        store_image : this.invitation.store_image,
+                        store_uuid: this.invitation.store_uuid,
+                        invitation: true
+                    };
 
-                                        var newuser = JSON.stringify(response);
+                    param.roles = 'seller';
+                    param.store = invi;
 
-                                        // save user data to the local storage
-                                        self.localStorage.setToLocal('user', newuser);
+                    // perform request to the api
+                    self.http
+                        .post(
+                            self.apiEndpoint + 'update?user=' + self.user.name + '&token=' + self.user.auth,
+                            param, { headers: self.headers })
+                        .map(response => response.json())
+                        .subscribe((data) => {
+                            // save user data to the local storage
+                            delete param.store.invitation;
+                            self.localStorage.setToLocal('user', JSON.stringify(param));
 
-                                        // if no error redirect to seller dashboard now
-                                        loading.dismiss();
+                            // if no error redirect to seller dashboard now
+                            loading.dismiss();
 
-                                        return self.nav.setRoot(SellerDashboardPage);
-                                    });
-                                }
-                            });
-                        }
-                    });
+                            return self.nav.setRoot(SellerDashboardPage);
+                        }, (error) => {
+                            console.log(error);
+                        });
                 }
             }]
         });
@@ -161,11 +159,6 @@ export class BuyerDashboardPage {
     getInvitation() {
         var self = this;
 
-        // set the headers
-        var headers = new Headers({
-            'Content-Type': 'application/x-www-form-urlencoded'
-        });
-
         // set the data needed by the api
         var param = {
             type: 'per_user',
@@ -176,9 +169,10 @@ export class BuyerDashboardPage {
         self.http
             .get(
                 self.apiEndpoint + 'invitation?user=' + param.search + '&token=' + self.user.auth + 
-                '&type=' + param.type + '&search=' + param.search, { headers: headers })
+                '&type=' + param.type + '&search=' + param.search, { headers: self.headers })
             .map(response => response.json())
             .subscribe((data) => {
+                console.log(data.rows[0]);
                 this.invitation = data.rows[0].value;
             }, (error) => {
                 console.log(error);
@@ -204,6 +198,7 @@ export class BuyerDashboardPage {
 
                 // get invitation
                 this.getInvitation();
+                console.log(this.invitation);
 
                 // start long polling
                 this.historyPolling();
