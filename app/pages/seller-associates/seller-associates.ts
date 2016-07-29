@@ -70,7 +70,8 @@ export class SellerAssociatesPage {
     	};
 
 		this.http
-			.post(this.apiEndpoint + 'users', param, {headers: headers})
+			.post(this.apiEndpoint + 'users?user=' + this.user.name +
+            '&token=' + this.user.auth, param, {headers: headers})
 			.map(response => response.json())
 			.subscribe((data) => {
 				data = data.rows;
@@ -106,7 +107,8 @@ export class SellerAssociatesPage {
 
         // perform request
         this.http
-            .post(this.apiEndpoint + 'users', param, {headers: headers})
+            .post(this.apiEndpoint + 'users?user=' + this.user.name +
+            '&token=' + this.user.auth, param, {headers: headers})
             .map(response => response.json())
             .subscribe((data) => {
                 data = data.rows;
@@ -128,21 +130,26 @@ export class SellerAssociatesPage {
 	/**
      * Invites this person
      */
-    invite(username) {
+    invite(user) {
     	var headers = new Headers({
     		'Content-Type': 'application/x-www-form-urlencoded'
         });
 
     	var param = {
-    		username:username,
+    		username:user.username,
     		store:this.user.name
     	};
 
 		this.http
-			.post(this.apiEndpoint + 'invite', param, {headers: headers})
+			.post(this.apiEndpoint + 'invite?user=' + this.user.name +
+            '&token=' + this.user.auth, param, {headers: headers})
 			.map(response => response.json())
 			.subscribe((data) => {
 				this.showToast('Invitation sent!');
+
+                // remove user
+                var index = this.results.indexOf(user);
+                this.results.splice(index, 1);
 
 				this.searching = false;
 			}, (error) => {

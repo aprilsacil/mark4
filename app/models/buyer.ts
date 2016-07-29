@@ -6,14 +6,17 @@ export class Buyer {
     company_name: string = null;
     image: string = null;
     level: number = 0;
-    roles: any [];
+    roles: any;
     looking_for: string = null;
+    store: any = {};
+    auth: string;
 
     constructor(userInfo: any) {
         // assign things
         this._id      = userInfo._id;
         this.name     = userInfo.name;
         this.fullname = userInfo.fullname;
+        this.auth = userInfo.auth;
 
         // optional properties
         // job description

@@ -162,7 +162,7 @@ export class MyApp {
         var self = this;
 
         // initialize this
-        self.centralBle.init();
+        // self.centralBle.init();
 
         this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
@@ -195,7 +195,7 @@ export class MyApp {
         var self = this;
 
         // initialize the peripheral ble
-        self.peripheralBle.init();
+        // self.peripheralBle.init();
 
         self.events.subscribe('peripheral:stop', () => {
             self.peripheralBle.stop();
@@ -207,5 +207,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://0.0.0.0:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://0.0.0.0/'})]);
+    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.128:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://192.168.0.128/'})]);
