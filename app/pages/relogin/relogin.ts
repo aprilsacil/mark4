@@ -1,4 +1,5 @@
 import { Component, Inject } from '@angular/core';
+import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 import { Alert, Events, Loading, NavController } from 'ionic-angular';
 
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
@@ -9,6 +10,9 @@ import { LocalStorageProvider } from '../../providers/storage/local-storage-prov
 
 import { Buyer } from '../../models/buyer';
 import { Seller } from '../../models/seller';
+
+import 'rxjs/add/operator/toPromise';
+import 'rxjs/add/operator/map';
 
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
@@ -39,7 +43,9 @@ export class ReloginPage {
         private events: Events,
         private localStorage: LocalStorageProvider,
         private nav: NavController,
-        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+        private http: Http,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
+        @Inject('APIEndpoint') private apiEndpoint: string
     ) {
         this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
@@ -100,117 +106,86 @@ export class ReloginPage {
         // render in the template
         this.nav.present(loading);
 
-        // provide some ajax headers for authorization
-        var ajaxOpts = {
-            ajax: {
-                headers: {
-                    Authorization: 'Basic ' + window.btoa(this.user.name + ':' + this.relogin.password)
-                }
-            }
+        var headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
+
+        var param = {
+            username: this.user.name,
+            password: this.relogin.password
         };
 
-        // login the user
-        this.pouchDb.login(this.user.name, this.relogin.password, ajaxOpts, (err, response) => {
-            console.log(err);
-            console.log('login response', response);
+        this.http
+            .post(this.apiEndpoint + 'authenticate', param, {headers: headers})
+            .map(response => response.json())
+            .subscribe((data) => {
+                if(data.error) {
+                    // remove the loader
+                    loading.dismiss().then(() => {
+                        // show an alert
+                        setTimeout(() => {
+                            var alert = Alert.create({
+                                title: 'Error!',
+                                subTitle: data.errors[0],
+                                buttons: ['OK']
+                            });
 
-            var loginResponse = response;
-
-            if(!err) {
-                // get user details
-                this.pouchDb.getUser(loginResponse.name, (err, response) => {
-                    // delete the password and salt
-                    delete response.password_scheme;
-                    delete response.salt
-
-                    var user = response;
-
-                     // set the timestamp
-                    self.localStorage
-                        .setToLocal('timestamp', Math.round(new Date().getTime()/1000));
-
-                    // if seller redirect to seller dashboard
-                    if (response.roles[0] === 'seller') {
-                        // save user data to the local storage
-                        self.localStorage.setToLocal('user', JSON.stringify(new Seller(user)));
-
-                        // broadcast event to start some event listeners
-                        this.events.publish('central:start', JSON.stringify(new Seller(user)));
-
-                        // remove loader and set the root page
-                        loading.dismiss().then(() => {
-                            this.nav.setRoot(SellerDashboardPage);
-                        });
-                    }
-
-                    // if buyer redirect to buyer dashboard
-                    if (response.roles[0] === 'buyer') {
-                        var buyer = new Buyer(user);
-
-                        // save user data to the local storage
-                        self.localStorage.setToLocal('user', JSON.stringify(buyer));
-
-                        // broadcast event to start some event listeners
-                        this.events.publish('peripheral:start');
-
-                        // set the data to be advertised
-                        var advertiseData = {
-                            _id : buyer._id,
-                            fullname: buyer.fullname,
-                            name: buyer.name,
-                            job_description: buyer.job_description,
-                            company_name: buyer.company_name,
-                            level: buyer.level
-                        }
-
-                        // let's advertise
-                        this.events.publish('peripheral:set_buyer_data', advertiseData);
-
-                        // remove loader and set the root page
-                        loading.dismiss().then(() => {
-                            this.nav.setRoot(BuyerDashboardPage);
-                        });
-                    }
-                });
-
-                return;
-            }
-
-            // remove the loader
-            loading.dismiss().then(() => {
-                var message;
-
-                // check the error message
-                switch (err.message) {
-                    case 'ETIMEDOUT':
-                        message = 'Can\'t connect to the server. Please try again.';
-                        break;
-                    default:
-                        message = err.message;
-                        break;
-                }
-
-                // check status number
-                if (err.status == 500) {
-                    message = 'Something is wrong while processing your request. Please try again later.';
-                }
-
-                // show an alert
-                setTimeout(() => {
-                    var alert = Alert.create({
-                        title: 'Error!',
-                        subTitle: message,
-                        buttons: ['OK']
+                            // render in the template
+                            self.nav.present(alert);
+                        }, 300);
                     });
 
-                    // render in the template
-                    self.nav.present(alert);
-                }, 300);
+                    return;
+                }
+
+                var user = data.user;
+
+                // set the timestamp
+                self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
+
+                // if seller redirect to seller dashboard
+                if(user.roles[0] === 'seller') {
+                    /// save user data to the local storage
+                    self.localStorage.setToLocal('user', JSON.stringify(new Seller(user)));
+
+                    // broadcast event to start some event listeners
+                    this.events.publish('central:start', JSON.stringify(new Seller(user)));
+
+                    // remove loader and set the root page
+                    loading.dismiss().then(() => {
+                        this.nav.setRoot(SellerDashboardPage);
+                    });
+                }
+
+                // if buyer redirect to buyer dashboard
+                if(user.roles[0] === 'buyer') {
+                    var buyer = new Buyer(user);
+
+                    // save user data to the local storage
+                    self.localStorage.setToLocal('user', JSON.stringify(buyer));
+
+                    // broadcast event to start some event listeners
+                    this.events.publish('peripheral:start');
+
+                    // set the data to be advertised
+                    var advertiseData = {
+                        _id : buyer._id,
+                        fullname: buyer.fullname,
+                        name: buyer.name,
+                        job_description: buyer.job_description,
+                        company_name: buyer.company_name,
+                        level: buyer.level
+                    }
+
+                    // let's advertise
+                    this.events.publish('peripheral:set_buyer_data', advertiseData);
+
+                    // remove loader and set the root page
+                    loading.dismiss().then(() => {
+                        this.nav.setRoot(BuyerDashboardPage);
+                    });
+                }
             });
-
-
-            return;
-        });
     }
 
     /**
