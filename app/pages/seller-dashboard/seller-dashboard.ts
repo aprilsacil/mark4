@@ -1,5 +1,6 @@
 import { Component, Inject, NgZone } from '@angular/core';
 import { Events, Modal, NavController, ViewController } from 'ionic-angular';
+import { Geolocation } from 'ionic-native';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
@@ -25,6 +26,7 @@ import { Seller } from '../../models/seller';
   providers: [LocalStorageProvider]
 })
 export class SellerDashboardPage {
+    coordinates: any;
     user: any;
     shoppers = [];
     scanning: boolean = false;
@@ -46,6 +48,11 @@ export class SellerDashboardPage {
         this.events.subscribe('user:update_details', () => {
             // get user details again from the local storage
             this.getUser();
+        });
+
+        // get current coordinates
+        Geolocation.getCurrentPosition().then((response) => {
+            this.coordinates = response.coords;
         });
     }
 

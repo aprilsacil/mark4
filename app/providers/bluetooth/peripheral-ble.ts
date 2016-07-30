@@ -90,9 +90,7 @@ export class PeripheralBle {
                 this.central.subscribe = response;
 
                 // once the central is now subscribed, let's send a notify
-                if (this.advertiseData) {
-                    this.notify(JSON.stringify(this.advertiseData));
-                }
+                this.sendNotifyData();
 
                 console.log(this.central.address + ' has been subscribed.');
             }
@@ -205,5 +203,19 @@ export class PeripheralBle {
         this.peripheral.removeAllServices((response) => {
             console.log('remove all services', response);
         });
+    }
+
+    /**
+     * Notifies the subscribe central device.
+     */
+    sendNotifyData() {
+        var self = this;
+
+        if (!self.advertiseData) {
+            return;
+        }
+
+        // notify
+        self.notify(self.advertiseData);
     }
 }

@@ -1,6 +1,6 @@
 import { Component, provide, ViewChild } from '@angular/core';
 import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { Network, StatusBar, LocalNotifications } from 'ionic-native';
+import { Geolocation, Network, StatusBar, LocalNotifications } from 'ionic-native';
 
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
@@ -16,6 +16,7 @@ import { LocalStorageProvider } from './providers/storage/local-storage-provider
     providers: [CentralBle, LocalStorageProvider, PeripheralBle]
 })
 export class MyApp {
+    private location:any;
     private rootPage:any;
 
     constructor(
@@ -30,6 +31,10 @@ export class MyApp {
             // Here you can do any higher level native things you might need.
             StatusBar.styleDefault();
 
+            // get location
+            this.getCurrentLocation();
+
+            // start some authentication events
             this.authenticationEvents();
         });
 
@@ -78,7 +83,8 @@ export class MyApp {
                             name: user.name,
                             job_description: user.job_description,
                             company_name: user.company_name,
-                            level: user.level
+                            level: user.level,
+                            coordinates: this.location
                         }
 
                         // set data
@@ -156,13 +162,37 @@ export class MyApp {
     }
 
     /**
+     * Get the location of the app.
+     */
+    getCurrentLocation() {
+        console.log('fetching location...');
+        console.log(Geolocation.getCurrentPosition());
+
+        Geolocation.getCurrentPosition({ enableHighAccuracy: true })
+            .then((resp) => {
+                console.log('Geolocation : ' + resp.coords.latitude + ', ' + resp.coords.longitude);
+            })
+            .catch((error)=>{
+                console.log('error geo', error)
+            });
+
+        var watch = Geolocation.watchPosition({ enableHighAccuracy: true });
+
+        watch.subscribe((data) => {
+            console.log('watch', data);
+         // data.coords.latitude
+         // data.coords.longitude
+        })
+    }
+
+    /**
      * Seller event listeners
      */
     sellerEvents() {
         var self = this;
 
         // initialize this
-        // self.centralBle.init();
+        self.centralBle.init();
 
         this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
@@ -195,7 +225,7 @@ export class MyApp {
         var self = this;
 
         // initialize the peripheral ble
-        // self.peripheralBle.init();
+        self.peripheralBle.init();
 
         self.events.subscribe('peripheral:stop', () => {
             self.peripheralBle.stop();
@@ -207,5 +237,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.128:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.0.128/'})]);
+    provide('CouchDBEndpoint', {useValue: 'http://192.168.1.46:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://192.168.1.46/'})]);
