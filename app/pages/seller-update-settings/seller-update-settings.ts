@@ -162,7 +162,7 @@ export class SellerUpdateSettingsPage {
         // perform request to the api
         self.http
             .post(
-                self.apiEndpoint + 'update?user=' + self.user.name + '&token=' + self.user.auth,
+                self.apiEndpoint + 'update?user=' + self.user.store.store_uuid + '&token=' + self.user.auth,
                 param, { headers: self.headers })
             .map(response => response.json())
             .subscribe((data) => {

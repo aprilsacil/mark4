@@ -28,7 +28,7 @@ export class SellerAccountSettingsPage {
 
 	pouchDb: any;
     localDb: any;
-    user = new Seller({});
+    user: any;
 
     // set the headers
     headers = new Headers({
@@ -55,9 +55,9 @@ export class SellerAccountSettingsPage {
 
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = new Seller(JSON.parse(data));
+            this.user.password = null;
+            this.user.confirm = null;
         });
-
-        console.log(self);
     }
 
     /**
@@ -165,7 +165,7 @@ export class SellerAccountSettingsPage {
         // perform request to the api
         self.http
             .post(
-                self.apiEndpoint + 'update?user=' + self.user.name + '&token=' + self.user.auth,
+                self.apiEndpoint + 'update?user=' + self.user.store.store_uuid + '&token=' + self.user.auth,
                 param, { headers: self.headers })
             .map(response => response.json())
             .subscribe((data) => {
