@@ -1,10 +1,11 @@
 import { Component, Inject, NgZone } from '@angular/core';
-import { Events, Modal, NavController, ViewController } from 'ionic-angular';
+import { Events, Modal, NavController, ViewController, Popover } from 'ionic-angular';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
 import { SellerShopperViewPage } from '../seller-shopper-view/seller-shopper-view';
 import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-update-settings';
+import { SellerPopoverPage } from '../seller-popover/seller-popover';
 
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
@@ -234,5 +235,16 @@ export class SellerDashboardPage {
         // unsubscribe event
         this.events.unsubscribe('central:buyers_nearby', () => {});
         return;
+    }
+
+    /**
+     * Show the Popover
+     */
+    presentPopover(pop) {
+        var popover = Popover.create(SellerPopoverPage);
+        
+        this.nav.present(popover, {
+          ev: pop
+        });
     }
 }

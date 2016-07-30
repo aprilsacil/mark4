@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController, ViewController } from 'ionic-angular';
+
+import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-update-settings';
+import { SellerAccountSettingsPage } from '../seller-account-settings/seller-account-settings';
 
 /*
   Generated class for the SellerPopoverPage page.
@@ -12,8 +15,21 @@ import { NavController } from 'ionic-angular';
 })
 export class SellerPopoverPage {
 
-  constructor(private nav: NavController) {
+  constructor(
+  	private nav: NavController,
+  	private view: ViewController) {}
 
-  }
+  	/**
+     * Goto seller update settings page
+     */
+	goToUpdateSettingsPage() {
+		this.nav.push(SellerUpdateSettingsPage);
+	}
 
+	/**
+     * Goto seller account settings page
+     */
+	goToAccountSettingsPage() {
+		this.nav.push(SellerAccountSettingsPage);
+	}
 }
