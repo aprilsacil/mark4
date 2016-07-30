@@ -27,7 +27,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 export class SellerUpdateSettingsPage {
     pouchDb: any;
     localDb: any;
-    user = new Seller({});
+    user: any;
 
     // set the headers
     headers = new Headers({
@@ -167,6 +167,10 @@ export class SellerUpdateSettingsPage {
             .map(response => response.json())
             .subscribe((data) => {
                 if(data.ok) {
+                    // assign the roles to an array
+                    delete self.user ['roles'];
+                    self.user.roles = ['seller']
+                    
                     // update user data to the local storage
                     self.localStorage.setToLocal('user', JSON.stringify(self.user));
 
