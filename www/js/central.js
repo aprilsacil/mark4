@@ -57,7 +57,7 @@ var BLECentral = function() {
         },
 
         // init location
-        initLocation: function() {
+        initLocation: function(callback) {
             var self = this;
 
             // is location enabled?

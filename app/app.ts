@@ -1,6 +1,6 @@
 import { Component, provide, ViewChild } from '@angular/core';
 import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { Network, StatusBar, LocalNotifications } from 'ionic-native';
+import { Diagnostic, Network, StatusBar, LocalNotifications } from 'ionic-native';
 
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
@@ -162,20 +162,10 @@ export class MyApp {
         var self = this;
 
         // initialize this
-        // self.centralBle.init();
+        self.centralBle.init();
 
         this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
-
-            // check if the bluetooth is enabled or not
-            self.centralBle.status().then(result => {
-                if (!result) {
-                    console.log('Bluetooth not enabled');
-                    return;
-                }
-
-                // check if location services is enabled
-            });
 
             // start scanning
             self.centralBle.scan();
@@ -195,7 +185,7 @@ export class MyApp {
         var self = this;
 
         // initialize the peripheral ble
-        // self.peripheralBle.init();
+        self.peripheralBle.init();
 
         self.events.subscribe('peripheral:stop', () => {
             self.peripheralBle.stop();
@@ -208,4 +198,4 @@ export class MyApp {
 
 ionicBootstrap(MyApp, [
     provide('CouchDBEndpoint', {useValue: 'http://192.168.0.128:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.0.128/'})]);
+    provide('APIEndpoint', {useValue: 'http://192.168.1.46/'})]);

@@ -1,5 +1,6 @@
 import { Component, Inject, NgZone } from '@angular/core';
-import { Events, Modal, NavController, ViewController } from 'ionic-angular';
+import { Alert, Events, Modal, NavController, ViewController } from 'ionic-angular';
+import { Diagnostic } from 'ionic-native';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
@@ -190,6 +191,32 @@ export class SellerDashboardPage {
         this.nav.present(modal);
     }
 
+    startDiagnostics() {
+        return new Promise((resolve, reject) => {
+            // check if bluetooth is enabled
+            Diagnostic.isBluetoothEnabled().then(response => {
+                if (!response) {
+                    reject({
+                        tool: 'bluetooth',
+                        enabled: false
+                    });
+                }
+
+                // check location services
+                Diagnostic.isLocationEnabled().then(response => {
+                    if (!response) {
+                        reject({
+                            tool: 'location_services',
+                            enabled: false
+                        });
+                    }
+
+                    resolve({ enabled: true });
+                });
+            });
+        });
+    }
+
     /**
      * Will start or stop the scanning of devices nearby the user.
      */
@@ -199,22 +226,52 @@ export class SellerDashboardPage {
 
         // check if we're not scanning
         if (!self.scanning) {
-            // flag that we're scanning
-            this.scanning = true;
+            // check if bluetooth and location services are enabled
+            self.startDiagnostics().then(response => {
+                // flag that we're scanning
+                self.scanning = true;
 
-            // scan
-            this.events.publish('central:start_scan');
+                // scan
+                self.events.publish('central:start_scan');
 
-            // get the list of shoppers detected
-            this.getNearbyShopperDevices();
+                // get the list of shoppers detected
+                self.getNearbyShopperDevices();
 
-            // this.events.publish('central:buyers_nearby', '{"_id":"org.couchdb.user:johnbuyer","fullname":"John Buyer","name":"johnbuyer","job_description":null,"company_name":null,"level":0}', Math.round(new Date().getTime() / 1000));
+                // this.events.publish('central:buyers_nearby', '{"_id":"org.couchdb.user:johnbuyer","fullname":"John Buyer","name":"johnbuyer","job_description":null,"company_name":null,"level":0}', Math.round(new Date().getTime() / 1000));
 
-            // create an interval every 20 seconds to check if the shoppers are inactive
-            inactiveChecker = setInterval(() => {
-                console.log('interval');
-                this.checkForInactiveShoppers();
-            }, 20000);
+                // create an interval every 20 seconds to check if the shoppers are inactive
+                inactiveChecker = setInterval(() => {
+                    self.checkForInactiveShoppers();
+                }, 20000);
+                return;
+            }, response => {
+                // check if the bluetooth is not enabled
+                if (response.tool == 'bluetooth' && !response.enabled) {
+                    var alert = Alert.create({
+                        title: 'Bluetooth is turned off',
+                        message: 'Please enable bluetooth to detect nearby buyers.',
+                        buttons: ['OK']
+                    });
+
+                    // render
+                    self.nav.present(alert);
+                    return;
+                }
+
+                // check if location services is enabled
+                if (response.tool == 'location_services' && !response.enabled) {
+                    var alert = Alert.create({
+                        title: 'Location Services is turned off',
+                        message: 'Please enable location services to detect nearby buyers.',
+                        buttons: ['OK']
+                    });
+
+                    // render
+                    self.nav.present(alert);
+                    return;
+                }
+            });
+
             return;
         }
 
