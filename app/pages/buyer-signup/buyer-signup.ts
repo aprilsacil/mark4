@@ -7,6 +7,8 @@ import { SellerSignupPage } from '../seller-signup/seller-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
 
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
@@ -25,15 +27,22 @@ export class BuyerSignupPage {
         password: <string> null,
         name: <string> null,
         roles: null,
-        level: null
+        level: null,
+        registration_id: null
     };
 
     constructor(
+        private localStorage: LocalStorageProvider,
         private nav: NavController,
         private http: Http,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
-    ) {}
+    ) {
+        // get registration id
+        this.localStorage.getFromLocal('registration_id').then((id) => {
+            this.buyer.registration_id = id || '';
+        });
+    }
 
     /**
      * Redirects to the login page

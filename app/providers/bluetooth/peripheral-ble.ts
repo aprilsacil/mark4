@@ -29,14 +29,7 @@ export class PeripheralBle {
             console.log('event: peripheral data', eventData);
             var data = eventData[0];
 
-            // get registration id
-            this.localStorageProvider.getFromLocal('registration_id').then((id) => {
-                if (id) {
-                    data.registration_id = id;
-                }
-
-                this.advertiseData = data;
-            });
+            this.advertiseData = data;
         });
     }
 
