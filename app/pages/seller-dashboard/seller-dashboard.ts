@@ -1,12 +1,12 @@
 import { Component, Inject, NgZone } from '@angular/core';
 import { Alert, Events, Modal, NavController, ViewController } from 'ionic-angular';
-import { Diagnostic } from 'ionic-native';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
 import { SellerShopperViewPage } from '../seller-shopper-view/seller-shopper-view';
 import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-update-settings';
 
+import { Diagnostics } from '../../providers/diagnostics/diagnostics';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
@@ -23,7 +23,7 @@ import { Seller } from '../../models/seller';
 @Component({
   templateUrl: 'build/pages/seller-dashboard/seller-dashboard.html',
   directives: [CheersAvatar],
-  providers: [LocalStorageProvider]
+  providers: [Diagnostics, LocalStorageProvider]
 })
 export class SellerDashboardPage {
     user: any;
@@ -31,6 +31,7 @@ export class SellerDashboardPage {
     scanning: boolean = false;
 
     constructor(
+        private diagnostics: Diagnostics,
         private events: Events,
         private localStorage: LocalStorageProvider,
         private nav: NavController,
@@ -191,32 +192,6 @@ export class SellerDashboardPage {
         this.nav.present(modal);
     }
 
-    startDiagnostics() {
-        return new Promise((resolve, reject) => {
-            // check if bluetooth is enabled
-            Diagnostic.isBluetoothEnabled().then(response => {
-                if (!response) {
-                    reject({
-                        tool: 'bluetooth',
-                        enabled: false
-                    });
-                }
-
-                // check location services
-                Diagnostic.isLocationEnabled().then(response => {
-                    if (!response) {
-                        reject({
-                            tool: 'location_services',
-                            enabled: false
-                        });
-                    }
-
-                    resolve({ enabled: true });
-                });
-            });
-        });
-    }
-
     /**
      * Will start or stop the scanning of devices nearby the user.
      */
@@ -227,7 +202,7 @@ export class SellerDashboardPage {
         // check if we're not scanning
         if (!self.scanning) {
             // check if bluetooth and location services are enabled
-            self.startDiagnostics().then(response => {
+            self.diagnostics.bluetoothLocationServices().then(response => {
                 // flag that we're scanning
                 self.scanning = true;
 

@@ -9,17 +9,19 @@ import { ReloginPage } from './pages/relogin/relogin';
 
 import { CentralBle } from './providers/bluetooth/central-ble';
 import { PeripheralBle } from './providers/bluetooth/peripheral-ble';
+import { Diagnostics } from './providers/diagnostics/diagnostics';
 import { LocalStorageProvider } from './providers/storage/local-storage-provider';
 
 @Component({
     template: '<ion-nav [root]="rootPage"></ion-nav>',
-    providers: [CentralBle, LocalStorageProvider, PeripheralBle]
+    providers: [CentralBle, Diagnostics, LocalStorageProvider, PeripheralBle]
 })
 export class MyApp {
     private rootPage:any;
 
     constructor(
         private centralBle: CentralBle,
+        private diagnostics: Diagnostics,
         private events: Events,
         private localStorage: LocalStorageProvider,
         private peripheralBle: PeripheralBle,
@@ -153,6 +155,18 @@ export class MyApp {
                 console.log('cancelled');
             });
         });
+
+        // check if GPS is enabled
+        self.diagnostics.gpsStatus().then(response => {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    // save location
+                    self.localStorage.setToLocal('coordinates', JSON.stringify(position.coords));
+                }, error => {
+                    // prompt something
+                }, { timeout: 10000 });
+            }, response => {
+                // turned off, prompt something
+            });
     }
 
     /**
