@@ -22,6 +22,14 @@
         padding
         class="padding-less-input"
         #accountSettingsForm="ngForm">
+        <ion-item class="avatar-wrapper">
+            <ion-avatar (click)="openTheCamera()">
+                <ion-icon name="camera"></ion-icon>
+                <img src="img/default_avatar.jpg" *ngIf="!user.image">
+                <img [src]="user.image" *ngIf="user.image">
+            </ion-avatar>
+        </ion-item>
+
          <ion-item>
             <ion-label stacked>Your name</ion-label>
             <ion-input
@@ -41,26 +49,7 @@
                 item-right
                 *ngIf="sellerName.touched && !sellerName.valid"></ion-icon>
         </ion-item>
-<!--         <ion-item>
-            <ion-label stacked>Username</ion-label>
-            <ion-input
-                type="text"
-                placeholder="What's your Username?"
-                [(ngModel)]="user.name"
-                required
-                ngControl="sellerUsername"
-                #sellerUsername="ngForm"></ion-input>
-
-            <ion-icon
-                name="checkmark-circle"
-                item-right
-                *ngIf="sellerUsername.touched && sellerUsername.valid"></ion-icon>
-            <ion-icon
-                name="close-circle"
-                item-right
-                *ngIf="sellerUsername.touched && !sellerUsername.valid"></ion-icon>
-        </ion-item> -->
-        <ion-item>
+        <!-- <ion-item>
             <ion-label stacked>Password</ion-label>
             <ion-input
                 type="password"
@@ -95,7 +84,7 @@
                 name="close-circle"
                 item-right
                 *ngIf="sellerConfirmPassword.touched && !sellerConfirmPassword.valid"></ion-icon>
-        </ion-item>
+        </ion-item> -->
     </form>
 </ion-content>
 <ion-footer>
