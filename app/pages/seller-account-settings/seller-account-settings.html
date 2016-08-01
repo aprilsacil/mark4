@@ -8,12 +8,6 @@
 <ion-header>
     <ion-navbar cheers>
         <ion-title>Settings</ion-title>
-
-        <ion-buttons end>
-            <button (click)="saveStoreSettings(accountSettingsForm)">
-                Save
-            </button>
-        </ion-buttons>
     </ion-navbar>
 </ion-header>
 
@@ -89,6 +83,8 @@
 </ion-content>
 <ion-footer>
     <ion-toolbar>
-        <button clear block (click)="logout()">Logout</button>
+        <button clear block (click)="saveStoreSettings(accountSettingsForm)">
+            Save
+        </button>
     </ion-toolbar>
 </ion-footer>

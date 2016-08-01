@@ -5,6 +5,19 @@
   Ionic pages and navigation.
 -->
 
+<ion-header>
+    <ion-navbar cheers>
+        <ion-title>Settings</ion-title>
+
+        <ion-buttons end>
+            <button (click)="logout()">
+                Logout
+            </button>
+        </ion-buttons>
+    </ion-navbar>
+</ion-header>
+
+
 <ion-tabs>
 	<ion-tab tabTitle="Update Settings" [root]="updateSettingsTab"></ion-tab>
 	<ion-tab tabTitle="Account Settings" [root]="accountSettingsTab"></ion-tab>
