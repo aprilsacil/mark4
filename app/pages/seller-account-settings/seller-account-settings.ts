@@ -167,8 +167,7 @@ export class SellerAccountSettingsPage {
             .map(response => response.json())
             .subscribe((data) => {
                 if(data.ok) {
-
-                    console.log(self.user);
+                    
                     // update user data to the local storage
                     self.localStorage.setToLocal('user', JSON.stringify(self.user));
 
