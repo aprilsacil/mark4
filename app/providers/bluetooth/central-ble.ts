@@ -35,7 +35,7 @@ export class CentralBle {
         self.central = BLECentral();
 
         // debug
-        self.central.setDebug(true);
+        self.central.setDebug(false);
 
         // on debug
         self.central.onDebug((message) => {
@@ -44,6 +44,10 @@ export class CentralBle {
 
         // on subscribe notify
         self.central.onSubscribe(function(response) {
+            var currentTimestamp = Math.round(new Date().getTime() / 1000);
+            // get the peripheral
+            var peripheral = self.peripherals[response.address];
+
             // notification from server?
             if (response.status === 'subscribedResult') {
                 // get encoded data
@@ -54,8 +58,12 @@ export class CentralBle {
                 console.log('Notify: ' + string);
                 console.log('Notify Bytes: ' + bytes);
 
+                console.log('active peripheral', peripheral);
+                // TODO: check the approximate distance of the device
+
                 // create an event
-                self.events.publish('central:buyers_nearby', string);
+                self.events
+                    .publish('central:buyers_nearby', string, currentTimestamp);
 
                 // once the central subscribe to the peripheral, send the
                 // details of the central
@@ -110,29 +118,29 @@ export class CentralBle {
     handleScan(peripheral) {
         var self = this;
 
-        peripheral.rssi = null;
+        // peripheral.rssi = null;
 
         // peripheral exists?
-        if(!(peripheral.name in this.peripherals)) {
+        if(!(peripheral.address in this.peripherals)) {
             // set peripheral key
-            self.peripherals[peripheral.name] = {};
+            self.peripherals[peripheral.address] = {};
 
             // set peripheral info
-            self.peripherals[peripheral.name].info   = peripheral;
+            self.peripherals[peripheral.address].info   = peripheral;
             // set peripheral status
-            self.peripherals[peripheral.name].status = 'disconnected';
+            self.peripherals[peripheral.address].status = 'disconnected';
             // set peripheral timestamp
-            self.peripherals[peripheral.name].added  = Date.now();
+            self.peripherals[peripheral.address].added  = Date.now();
             // set peripheral expire
-            self.peripherals[peripheral.name].expire = Date.now() + (60000 * 5);
+            self.peripherals[peripheral.address].expire = Date.now() + (60000 * 5);
 
             return self.peripherals;
         }
 
         // peripheral exists?
-        if(peripheral.name in self.peripherals) {
+        if(peripheral.address in self.peripherals) {
             // get the original
-            var original = JSON.stringify(self.peripherals[peripheral.name].info);
+            var original = JSON.stringify(self.peripherals[peripheral.address].info);
             // get the recent
             var recent   = JSON.stringify(peripheral);
 
@@ -144,15 +152,15 @@ export class CentralBle {
                 console.log('Device information updated.');
 
                 // is it expired?
-                if(this.peripherals[peripheral.name].expire <= Date.now()) {
+                if(this.peripherals[peripheral.address].expire <= Date.now()) {
                     // remove the peripheral
-                    delete self.peripherals[peripheral.name];
+                    delete self.peripherals[peripheral.address];
 
                     return self.peripherals;
                 }
 
                 // set peripheral info
-                self.peripherals[peripheral.name].info   = peripheral;
+                self.peripherals[peripheral.address].info   = peripheral;
             }
 
             return self.peripherals;
@@ -226,85 +234,48 @@ export class CentralBle {
             return;
         }
 
-        // get the peripheral template
-        // var baseTpl  = peripheralTpl.innerHTML;
-        // combined template
-        // var combined = '';
-
-        // iterate on each peripherals
-        for(var i in peripherals) {
-            console.log('peripheral ' + i, peripherals[i]);
-            // var tpl = baseTpl;
-
-            // tpl = tpl
-            // .replace('{{name}}', peripherals[i].info.address)
-            // .replace('{{id}}', peripherals[i].info.address)
-            // .replace('{{id}}', peripherals[i].info.address)
-            // .replace('{{status}}', peripherals[i].status);
-
-            // combined += tpl;
-        }
-
-        // update peripheral container
-        // peripheralContainer.innerHTML = combined;
-
         return;
     }
 
     write(data) {
-        var self = this;
-
+        var self    = this;
         var message = data;
 
-        // prompt for message
-        // var message = prompt('Enter your message: ');
-
-        // get the address
-        // var address         = e.getAttribute('data-id');
-        // var address = self.peripherals[0].info.address;
-        // get the information
+        // stores the peripheral information
         var information: any;
 
         // look for that id
         for(var i in self.peripherals) {
-            // matched the id?
-            // if(self.peripherals[i].info.address === address) {
-                // get the information
-                information = self.peripherals[i];
+            information = self.peripherals[i];
 
-                // break;
-            // }
-        }
+            // get the services
+            var services = information.device.services;
+            // look for our service
+            var service: any;
 
-        console.log('device', information);
+            for(var i in services) {
+                var uuid = services[i].uuid;
 
-        // get the services
-        var services = information.device.services;
-        // look for our service
-        var service: any;
-
-        for(var i in services) {
-            var uuid = services[i].uuid;
-
-            if(uuid === '1000') {
-                service = services[i];
+                if(uuid === '1000') {
+                    service = services[i];
+                }
             }
+
+            // set request params
+            var param = {
+                'address'           : information.info.address,
+                'service'           : service.uuid,
+                'characteristic'    : service.characteristics[0].uuid,
+                'type'              : 'noResponse',
+                'value'             : message
+            };
+
+            self.central.writeByChunk(param, function(response) {
+                console.log('write by chunk okay:', response);
+            }, function(response) {
+                console.log('write by chunk fail:', response);
+            });
         }
-
-        // set request params
-        var param = {
-            'address'           : information.info.address,
-            'service'           : service.uuid,
-            'characteristic'    : service.characteristics[0].uuid,
-            'type'              : 'noResponse',
-            'value'             : message
-        };
-
-        self.central.writeByChunk(param, function(response) {
-            console.log('write', response);
-        }, function(response) {
-
-        });
     }
 
     /**
@@ -326,7 +297,6 @@ export class CentralBle {
     sendEmoteMessageToBuyers() {
         // get the emote message from the local storage
         this.localStorageProvider.getFromLocal('emote_message').then((message) => {
-            console.log('emote', message);
             // check if there's a message
             if (!message) {
                 return;

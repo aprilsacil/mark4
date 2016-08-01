@@ -130,13 +130,13 @@ export class SellerAssociatesPage {
 	/**
      * Invites this person
      */
-    invite(username) {
+    invite(user) {
     	var headers = new Headers({
     		'Content-Type': 'application/x-www-form-urlencoded'
         });
 
     	var param = {
-    		username:username,
+    		username:user.username,
     		store:this.user.name
     	};
 
@@ -146,6 +146,10 @@ export class SellerAssociatesPage {
 			.map(response => response.json())
 			.subscribe((data) => {
 				this.showToast('Invitation sent!');
+
+                // remove user
+                var index = this.results.indexOf(user);
+                this.results.splice(index, 1);
 
 				this.searching = false;
 			}, (error) => {

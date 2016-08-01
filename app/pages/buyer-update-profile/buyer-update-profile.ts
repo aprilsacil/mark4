@@ -168,6 +168,10 @@ export class BuyerUpdateProfilePage {
             .map(response => response.json())
             .subscribe((data) => {
                 if(data.ok) {
+                    // assign the roles to an array
+                    delete self.user ['roles'];
+                    self.user.roles = ['buyer'];
+                    
                     // update user data to the local storage
                     self.localStorage.setToLocal('user', JSON.stringify(self.user));
 

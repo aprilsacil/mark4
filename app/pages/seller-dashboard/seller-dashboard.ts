@@ -1,10 +1,11 @@
 import { Component, Inject, NgZone } from '@angular/core';
-import { Events, Modal, NavController, ViewController } from 'ionic-angular';
+import { Events, Modal, NavController, ViewController, Popover } from 'ionic-angular';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
 import { SellerShopperViewPage } from '../seller-shopper-view/seller-shopper-view';
 import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-update-settings';
+import { SellerPopoverPage } from '../seller-popover/seller-popover';
 
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
@@ -50,6 +51,41 @@ export class SellerDashboardPage {
     }
 
     /**
+     * Checks for inactive shoppers.
+     */
+    checkForInactiveShoppers() {
+        var currentTimestamp = Math.round(new Date().getTime() / 1000),
+            shoppers         = this.shoppers;
+
+        console.log('checking...');
+
+        if (!shoppers.length) {
+            return;
+        }
+
+        // loop
+        for (var s in shoppers) {
+            var index = this.shoppers.indexOf(shoppers[s]);
+
+            // check the timestamp
+            if (shoppers[s].timestamp) {
+                var difference = currentTimestamp - shoppers[s].timestamp;
+
+                // check if the shopper is inactive for almost 5 minutes
+                if (difference > 60) {
+                    // remove from the list
+                    this.shoppers.splice(index, 1);
+                }
+
+                return;
+            }
+
+            // no timestamp, auto remove
+            this.shoppers.splice(index, 1);
+        }
+    }
+
+    /**
      * Listens to an event triggered by the central ble library to get nearby
      * peripheral devices details and render it to the app.
      */
@@ -68,6 +104,9 @@ export class SellerDashboardPage {
 
             buyer = new Buyer(buyer);
 
+            // add timestamp
+            buyer.timestamp = eventData[1];
+
             // check if the buyer already exists in the object
             if (self.shoppers || self.shoppers.length !== 0) {
                 // check if the shopper already exists
@@ -79,6 +118,7 @@ export class SellerDashboardPage {
                             self.shoppers[s] = buyer;
                         });
 
+                        // flag that the incoming buyer data already exists
                         exists = true;
                         break;
                     }
@@ -89,13 +129,16 @@ export class SellerDashboardPage {
             if (!self.shoppers.length || !exists) {
                 var text = buyer.fullname;
 
+                // update
                 self.zone.run(() => {
                     self.shoppers.push(buyer);
 
+                    // prepare the text for the notification
                     text = (buyer.looking_for) ?
                         text + ' is looking for "' + buyer.looking_for +'"':
                         text + ' is nearby and looking for something.';
 
+                    // notify!
                     self.events.publish('app:local_notifications', {
                         title: 'There is a buyer nearby!',
                         text: text
@@ -103,7 +146,7 @@ export class SellerDashboardPage {
                 });
             }
 
-            console.log(self.shoppers);
+            console.log('list of shoppers', self.shoppers);
         });
     }
 
@@ -152,33 +195,56 @@ export class SellerDashboardPage {
      * Will start or stop the scanning of devices nearby the user.
      */
     toggleScan() {
-        var self = this;
+        var self = this,
+            inactiveChecker;
 
-        // check if we're scanning
-        if (self.scanning) {
-            // currently scanning, so we're going to stop it
-            // flag that we're stopped scanning
-            this.scanning = false;
+        // check if we're not scanning
+        if (!self.scanning) {
+            // flag that we're scanning
+            this.scanning = true;
 
-            // empty out the shoppers
-            this.shoppers = [];
+            // scan
+            this.events.publish('central:start_scan');
 
-            // stop the scan
-            this.events.publish('central:stop_scan');
+            // get the list of shoppers detected
+            this.getNearbyShopperDevices();
 
-            // unsubscribe event
-            this.events.unsubscribe('central:buyers_nearby', () => {});
+            // this.events.publish('central:buyers_nearby', '{"_id":"org.couchdb.user:johnbuyer","fullname":"John Buyer","name":"johnbuyer","job_description":null,"company_name":null,"level":0}', Math.round(new Date().getTime() / 1000));
+
+            // create an interval every 20 seconds to check if the shoppers are inactive
+            inactiveChecker = setInterval(() => {
+                console.log('interval');
+                this.checkForInactiveShoppers();
+            }, 20000);
             return;
         }
 
-        // flag that we're scanning
-        this.scanning = true;
+        // currently scanning, so we're going to stop it
+        // flag that we're stopped scanning
+        this.scanning = false;
 
-        // scan
-        this.events.publish('central:start_scan');
+        // clear interval
+        clearInterval(inactiveChecker);
 
-        // get the list of shoppers detected
-        this.getNearbyShopperDevices();
+        // empty out the shoppers
+        this.shoppers = [];
+
+        // stop the scan
+        this.events.publish('central:stop_scan');
+
+        // unsubscribe event
+        this.events.unsubscribe('central:buyers_nearby', () => {});
         return;
+    }
+
+    /**
+     * Show the Popover
+     */
+    presentPopover(pop) {
+        var popover = Popover.create(SellerPopoverPage);
+        
+        this.nav.present(popover, {
+          ev: pop
+        });
     }
 }
