@@ -9,7 +9,7 @@
         <ion-title>Account Update</ion-title>
 
         <ion-buttons end>
-            <button (click)="saveStoreSettings(updateSettingsForm)">
+            <button (click)="saveStoreSettings(accountSettingsForm)">
                 Save
             </button>
         </ion-buttons>
@@ -20,7 +20,7 @@
     <form
         padding
         class="padding-less-input"
-        #updateSettingsForm="ngForm">
+        #accountSettingsForm="ngForm">
          <ion-item>
             <ion-label stacked>Your name</ion-label>
             <ion-input

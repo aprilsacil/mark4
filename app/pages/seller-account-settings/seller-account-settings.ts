@@ -136,10 +136,10 @@ export class SellerAccountSettingsPage {
     /**
      * Saves the provided data in the form.
      */
-    saveStoreSettings(updateSettingsForm) {
+    saveStoreSettings(accountSettingsForm) {
         var self = this;
 
-        if (!updateSettingsForm.valid) {
+        if (!accountSettingsForm.valid) {
             // prompt that something is wrong in the form
             var alert = Alert.create({
                 title: 'Ooops...',
@@ -165,7 +165,7 @@ export class SellerAccountSettingsPage {
         // perform request to the api
         self.http
             .post(
-                self.apiEndpoint + 'update?user=' + self.user.store.store_uuid + '&token=' + self.user.auth,
+                self.apiEndpoint + 'update?user=' + self.user.name + '&token=' + self.user.auth,
                 param, { headers: self.headers })
             .map(response => response.json())
             .subscribe((data) => {

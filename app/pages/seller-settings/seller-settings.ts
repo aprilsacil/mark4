@@ -15,6 +15,6 @@ import { SellerAccountSettingsPage } from '../seller-account-settings/seller-acc
 })
 
 export class SellerSettingsPage {
-	UpdateSettingsTab = SellerUpdateSettingsPage;
-	AccountSettingsTab = SellerAccountSettingsPage;
+	updateSettingsTab = SellerUpdateSettingsPage;
+	accountSettingsTab = SellerAccountSettingsPage;
 }
