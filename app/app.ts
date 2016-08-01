@@ -162,7 +162,11 @@ export class MyApp {
         var self = this;
 
         // initialize this
+<<<<<<< Updated upstream
         // self.centralBle.init();
+=======
+        //self.centralBle.init();
+>>>>>>> Stashed changes
 
         this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
@@ -196,6 +200,7 @@ export class MyApp {
 
         // initialize the peripheral ble
         // self.peripheralBle.init();
+
 
         self.events.subscribe('peripheral:stop', () => {
             self.peripheralBle.stop();
