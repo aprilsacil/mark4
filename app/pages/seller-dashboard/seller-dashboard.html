@@ -51,6 +51,12 @@
             *ngFor="let shopper of shoppers"
             (click)="goToShopperDetails(shopper)">
                 <cheers-avatar [user]="shopper" item-left></cheers-avatar>
+
+                <distance-calculator
+                    item-right
+                    *ngIf="shopper.coordinates"
+                    [coordinates]="shopper.coordinates"
+                    [currentUserCoordinates]="coordinates"></distance-calculator>
                 <!-- <ion-avatar item-left>
                     <img src="img/default_avatar.jpg" *ngIf="!shopper.image">
                     <img [src]="shopper.image" *ngIf="shopper.image">

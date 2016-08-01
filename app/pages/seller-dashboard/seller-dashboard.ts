@@ -10,6 +10,7 @@ import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-updat
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
+import { DistanceCalculator } from '../../components/distance-calculator/distance-calculator';
 
 import { Buyer } from '../../models/buyer';
 import { Seller } from '../../models/seller';
@@ -22,7 +23,7 @@ import { Seller } from '../../models/seller';
 */
 @Component({
   templateUrl: 'build/pages/seller-dashboard/seller-dashboard.html',
-  directives: [CheersAvatar],
+  directives: [CheersAvatar, DistanceCalculator],
   providers: [LocalStorageProvider]
 })
 export class SellerDashboardPage {
@@ -50,10 +51,20 @@ export class SellerDashboardPage {
             this.getUser();
         });
 
-        // get current coordinates
-        Geolocation.getCurrentPosition().then((response) => {
-            this.coordinates = response.coords;
-        });
+        // get coordinates from local storage
+        this.localStorage.getFromLocal('coordinates').then(coordinates => {
+            if (coordinates) {
+                // parse it because it is saved in JSON.stringify
+                this.coordinates = JSON.parse(coordinates);
+                return;
+            }
+
+            // no coordinates, get it!
+            Geolocation.getCurrentPosition().then((response) => {
+                this.coordinates = response.coords;
+            });
+        })
+
     }
 
     /**

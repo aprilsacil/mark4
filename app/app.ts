@@ -31,9 +31,6 @@ export class MyApp {
             // Here you can do any higher level native things you might need.
             StatusBar.styleDefault();
 
-            // get location
-            this.getCurrentLocation();
-
             // start some authentication events
             this.authenticationEvents();
         });
@@ -159,30 +156,6 @@ export class MyApp {
                 console.log('cancelled');
             });
         });
-    }
-
-    /**
-     * Get the location of the app.
-     */
-    getCurrentLocation() {
-        console.log('fetching location...');
-        console.log(Geolocation.getCurrentPosition());
-
-        Geolocation.getCurrentPosition({ enableHighAccuracy: true })
-            .then((resp) => {
-                console.log('Geolocation : ' + resp.coords.latitude + ', ' + resp.coords.longitude);
-            })
-            .catch((error)=>{
-                console.log('error geo', error)
-            });
-
-        var watch = Geolocation.watchPosition({ enableHighAccuracy: true });
-
-        watch.subscribe((data) => {
-            console.log('watch', data);
-         // data.coords.latitude
-         // data.coords.longitude
-        })
     }
 
     /**

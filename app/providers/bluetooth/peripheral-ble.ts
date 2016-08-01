@@ -22,6 +22,8 @@ export class PeripheralBle {
         this.events.subscribe('peripheral:set_buyer_data', (eventData) => {
             console.log('event: peripheral data', eventData);
 
+            // TODO: get data coordinates from local storage
+
             this.advertiseData = eventData[0];
         });
     }

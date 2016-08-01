@@ -15,11 +15,7 @@ export class DistanceCalculator {
     @Input() currentUserCoordinates: any;
     distance: any;
 
-    constructor() {
-        if (!this.currentUserCoordinates) {
-            // get from local storage
-        }
-
+    ngOnInit() {
         this.computeDistance();
     }
 

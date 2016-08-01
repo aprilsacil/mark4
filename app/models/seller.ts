@@ -8,6 +8,7 @@ export class Seller {
     emote_message: string = null;
     store: any = {};
     auth: string;
+    coordinates: any;
 
     constructor(userInfo: any) {
         // assign things
@@ -40,6 +41,11 @@ export class Seller {
         // emote
         if (userInfo.emote_message) {
             this.emote_message = userInfo.emote_message;
+        }
+
+        // coordinates
+        if (userInfo.coordinates) {
+            this.coordinates = userInfo.coordinates;
         }
     }
 }
