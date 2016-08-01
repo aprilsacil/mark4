@@ -27,7 +27,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 export class SellerUpdateSettingsPage {
     pouchDb: any;
     localDb: any;
-    user: any;
+    user = new Seller({});
 
     // set the headers
     headers = new Headers({

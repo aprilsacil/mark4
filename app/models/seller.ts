@@ -8,6 +8,8 @@ export class Seller {
     emote_message: string = null;
     store: any = {};
     auth: string;
+    password: string = null;
+    confirm: string = null;
 
     constructor(userInfo: any) {
         // assign things
