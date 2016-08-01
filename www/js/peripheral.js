@@ -314,6 +314,7 @@ var BLEPeripheral = function() {
 
         // notify by chunks
         notifyByChunk : function(data, successCallback, errorCallback) {
+            console.log('notify by chunk', data);
             // maximum packet size
             var MAX_PACKET_SIZE = 20;
             // max message chunk size

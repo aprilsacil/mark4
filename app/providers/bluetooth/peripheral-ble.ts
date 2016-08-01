@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Events } from 'ionic-angular';
 
+import { LocalStorageProvider } from '../storage/local-storage-provider';
+
 declare var bluetoothle: any;
 declare var BLEPeripheral: any;
 
@@ -17,12 +19,13 @@ export class PeripheralBle {
     private central: any;
     private peripheral: any;
 
-    constructor(private events: Events) {
+    constructor(
+        private events: Events,
+        private localStorage: LocalStorageProvider
+    ) {
         // listen for this event
         this.events.subscribe('peripheral:set_buyer_data', (eventData) => {
             console.log('event: peripheral data', eventData);
-
-            // TODO: get data coordinates from local storage
 
             this.advertiseData = eventData[0];
         });
@@ -149,7 +152,7 @@ export class PeripheralBle {
             'address'           : self.central.address,
             'service'           : self.central.subscribe.service,
             'characteristic'    : self.central.subscribe.characteristic,
-            'value'             : message
+            'value'             : JSON.stringify(message)
         };
 
         self.peripheral.notifyByChunk(param, function(response) {
@@ -217,7 +220,15 @@ export class PeripheralBle {
             return;
         }
 
-        // notify
-        self.notify(self.advertiseData);
+        // get coordinates from the local storage
+        self.localStorage.getFromLocal('coordinates').then(coordinates => {
+            if (coordinates) {
+                // append coordinates
+                self.advertiseData.coordinates = JSON.parse(coordinates);
+            }
+
+            // notify
+            self.notify(self.advertiseData);
+        });
     }
 }

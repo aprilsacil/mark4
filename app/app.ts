@@ -9,11 +9,12 @@ import { ReloginPage } from './pages/relogin/relogin';
 
 import { CentralBle } from './providers/bluetooth/central-ble';
 import { PeripheralBle } from './providers/bluetooth/peripheral-ble';
+import { Diagnostics } from './providers/diagnostics/diagnostics';
 import { LocalStorageProvider } from './providers/storage/local-storage-provider';
 
 @Component({
     template: '<ion-nav [root]="rootPage"></ion-nav>',
-    providers: [CentralBle, LocalStorageProvider, PeripheralBle]
+    providers: [CentralBle, Diagnostics, LocalStorageProvider, PeripheralBle]
 })
 export class MyApp {
     private location:any;
@@ -21,6 +22,7 @@ export class MyApp {
 
     constructor(
         private centralBle: CentralBle,
+        private diagnostics: Diagnostics,
         private events: Events,
         private localStorage: LocalStorageProvider,
         private peripheralBle: PeripheralBle,
@@ -156,6 +158,23 @@ export class MyApp {
                 console.log('cancelled');
             });
         });
+
+        // check if GPS is enabled
+        self.diagnostics.gpsStatus().then(response => {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    var data = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+
+                    // save location
+                    self.localStorage.setToLocal('coordinates', JSON.stringify(data));
+                }, error => {
+                    // prompt something
+                }, { timeout: 10000 });
+            }, response => {
+                // turned off, prompt something
+            });
     }
 
     /**
@@ -169,16 +188,6 @@ export class MyApp {
 
         this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
-
-            // check if the bluetooth is enabled or not
-            self.centralBle.status().then(result => {
-                if (!result) {
-                    console.log('Bluetooth not enabled');
-                    return;
-                }
-
-                // check if location services is enabled
-            });
 
             // start scanning
             self.centralBle.scan();
@@ -210,5 +219,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.1.46:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.1.46/'})]);
+    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.128:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://192.168.0.128/'})]);
