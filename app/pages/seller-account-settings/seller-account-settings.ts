@@ -55,8 +55,6 @@ export class SellerAccountSettingsPage {
 
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = new Seller(JSON.parse(data));
-            this.user.password = null;
-            this.user.confirm = null;
         });
     }
 
@@ -160,7 +158,6 @@ export class SellerAccountSettingsPage {
         // render in the template
         this.nav.present(loading);
         var param = this.user;
-        param.roles = this.user.roles[0];
 
         // perform request to the api
         self.http
@@ -170,10 +167,8 @@ export class SellerAccountSettingsPage {
             .map(response => response.json())
             .subscribe((data) => {
                 if(data.ok) {
-                	// assign the roles to an array
-                	delete self.user ['roles'];
-		            self.user.roles = ['seller'];
 
+                    console.log(self.user);
                     // update user data to the local storage
                     self.localStorage.setToLocal('user', JSON.stringify(self.user));
 

@@ -4,7 +4,7 @@ export class Seller {
     fullname: string;
     store_uuid: string;
     image: string = null;
-    roles: any [];
+    roles: string;
     emote_message: string = null;
     store: any = {};
     auth: string;
