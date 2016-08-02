@@ -3,7 +3,6 @@ export class Seller {
     name: string;
     fullname: string;
     store_uuid: string;
-    store_image: string = null;
     image: string = null;
     roles: string;
     emote_message: string = null;
@@ -29,11 +28,6 @@ export class Seller {
         // image
         if (userInfo.image) {
             this.image = userInfo.image;
-        }
-
-        // store_image
-        if (userInfo.store_image) {
-            this.store_image = userInfo.store_image;
         }
 
         // store_uuid
