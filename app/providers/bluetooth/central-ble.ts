@@ -91,7 +91,7 @@ export class CentralBle {
                 self.peripherals = self.handleScan(response);
             }
         }, (response) => {
-
+            self.events.publish('central:bluetooth_disabled');
         });
 
         this.scanTimeout = setTimeout(() => {
@@ -336,18 +336,5 @@ export class CentralBle {
             // turn off bluetooth
             bluetoothle.disable();
         });
-    }
-
-    /**
-     * Checks the status of the bluetooth
-     */
-    status() {
-        var self = this;
-
-        return new Promise(resolve => {
-            bluetoothle.isEnabled(response => {
-                resolve(response.isEnabled);
-            });
-        })
     }
 }

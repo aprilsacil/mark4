@@ -1,3 +1,50 @@
-.seller-account-settings {
+.seller-account-settings-page {
+	form {
+        .avatar-wrapper {
+            .item-inner {
+                border-bottom: 0;
+                padding-right: 0;
+            }
 
+            ion-label {
+                margin-right: 0;
+            }
+
+            ion-avatar {
+                margin: auto auto 5px;
+                width: 10rem;
+                height: 10rem;
+                position: relative;
+
+                ion-icon.item-icon {
+                    color: #ffffff;
+                    font-size: 4rem;
+                    left: 50%;
+                    position: absolute;
+                    top: 50%;
+                    transform: translate(-50%, -50%);
+                }
+
+                img {
+                    border-radius: 50%;
+                    height: 100%;
+                    margin: auto;
+                    max-height: 10rem;
+                    max-width: 10rem;
+                    object-fit: cover;
+                    width: 100%;
+                }
+            }
+        }
+
+        ion-item.item {
+            ion-icon {
+                align-self: flex-end;
+            }
+        }
+    }
+
+    ion-footer .toolbar { min-height: 2.5rem; }
+    ion-footer .toolbar-background { background: #ef9d51; }
+    ion-footer .toolbar-content .button-clear { color: #ffffff; height: 2.5rem; }
 }

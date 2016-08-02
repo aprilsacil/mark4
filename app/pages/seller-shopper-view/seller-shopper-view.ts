@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
-import { Events, Modal, NavController, NavParams } from 'ionic-angular';
+import { Events, Modal, NavController, NavParams, Alert } from 'ionic-angular';
 
 import { SellerAwardModalPage } from '../seller-award-modal/seller-award-modal';
 
@@ -90,7 +90,17 @@ export class SellerShopperViewPage {
                     this.history.push(data.rows[i].value);
                 }
             }, (error) => {
-              console.log(error);
+                // show an alert
+                setTimeout(() => {
+                    var alert = Alert.create({
+                        title: 'Error!',
+                        subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
+                        buttons: ['OK']
+                    });
+
+                    // render in the template
+                    self.nav.present(alert);
+                }, 300);
             });
     }
 

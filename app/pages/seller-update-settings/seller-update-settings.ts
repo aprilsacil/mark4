@@ -27,7 +27,7 @@ PouchDB.plugin(require('pouchdb-authentication'));
 export class SellerUpdateSettingsPage {
     pouchDb: any;
     localDb: any;
-    user: any;
+    user = new Seller({});
 
     // set the headers
     headers = new Headers({
@@ -124,7 +124,7 @@ export class SellerUpdateSettingsPage {
             let imgdata = "data:image/jpeg;base64," + data;
 
             // assign the image to the user object
-            this.user.image = imgdata;
+            this.user.store_image = imgdata;
         }, (error) => {
             // bring out a toast error message
         });
@@ -157,19 +157,15 @@ export class SellerUpdateSettingsPage {
         // render in the template
         this.nav.present(loading);
         var param = this.user;
-        param.roles = this.user.roles[0];
 
         // perform request to the api
         self.http
             .post(
-                self.apiEndpoint + 'update?user=' + self.user.store.store_uuid + '&token=' + self.user.auth,
+                self.apiEndpoint + 'update?user=' + self.user.name + '&token=' + self.user.auth,
                 param, { headers: self.headers })
             .map(response => response.json())
             .subscribe((data) => {
                 if(data.ok) {
-                    // assign the roles to an array
-                    delete self.user ['roles'];
-                    self.user.roles = ['seller']
                     
                     // update user data to the local storage
                     self.localStorage.setToLocal('user', JSON.stringify(self.user));
@@ -210,7 +206,19 @@ export class SellerUpdateSettingsPage {
 
                 return;
             }, (error) => {
-                console.log(error);
+                loading.dismiss().then(() => {
+                    // show an alert
+                    setTimeout(() => {
+                        var alert = Alert.create({
+                            title: 'Error!',
+                            subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
+                            buttons: ['OK']
+                        });
+
+                        // render in the template
+                        self.nav.present(alert);
+                    }, 300);
+               });
             });
     }
 
