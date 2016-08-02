@@ -1,6 +1,7 @@
 import { Component, Inject, NgZone } from '@angular/core';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 import { Alert, Events, Modal, NavController, ViewController } from 'ionic-angular';
+import { Geolocation } from 'ionic-native';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
@@ -11,6 +12,7 @@ import { Diagnostics } from '../../providers/diagnostics/diagnostics';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
+import { DistanceCalculator } from '../../components/distance-calculator/distance-calculator';
 
 import { Buyer } from '../../models/buyer';
 import { Seller } from '../../models/seller';
@@ -26,10 +28,11 @@ import 'rxjs/add/operator/map';
 */
 @Component({
   templateUrl: 'build/pages/seller-dashboard/seller-dashboard.html',
-  directives: [CheersAvatar],
+  directives: [CheersAvatar, DistanceCalculator],
   providers: [Diagnostics, LocalStorageProvider]
 })
 export class SellerDashboardPage {
+    coordinates: any;
     user: any;
     shoppers = [];
     scanning: boolean = false;
@@ -55,6 +58,21 @@ export class SellerDashboardPage {
             // get user details again from the local storage
             this.getUser();
         });
+
+        // get coordinates from local storage
+        this.localStorage.getFromLocal('coordinates').then(coordinates => {
+            if (coordinates) {
+                // parse it because it is saved in JSON.stringify
+                this.coordinates = JSON.parse(coordinates);
+                return;
+            }
+
+            // no coordinates, get it!
+            Geolocation.getCurrentPosition().then((response) => {
+                this.coordinates = response.coords;
+            });
+        })
+
     }
 
     /**

@@ -10,6 +10,7 @@ export class Buyer {
     looking_for: string = null;
     store: any = {};
     auth: string;
+    coordinates: any;
     purchase: number = 0;
     conversion: number = 0;
 
@@ -59,6 +60,11 @@ export class Buyer {
         // looking for message
         if (userInfo.looking_for) {
             this.looking_for = userInfo.looking_for;
+        }
+
+        // coordinates
+        if (userInfo.coordinates) {
+            this.coordinates = userInfo.coordinates;
         }
     }
 }

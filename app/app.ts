@@ -1,6 +1,6 @@
 import { Component, provide, ViewChild } from '@angular/core';
 import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { Diagnostic, Network, StatusBar, LocalNotifications } from 'ionic-native';
+import { Geolocation, Network, StatusBar, LocalNotifications } from 'ionic-native';
 
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
@@ -17,6 +17,7 @@ import { LocalStorageProvider } from './providers/storage/local-storage-provider
     providers: [CentralBle, Diagnostics, LocalStorageProvider, PeripheralBle]
 })
 export class MyApp {
+    private location:any;
     private rootPage:any;
 
     constructor(
@@ -32,6 +33,7 @@ export class MyApp {
             // Here you can do any higher level native things you might need.
             StatusBar.styleDefault();
 
+            // start some authentication events
             this.authenticationEvents();
         });
 
@@ -80,7 +82,8 @@ export class MyApp {
                             name: user.name,
                             job_description: user.job_description,
                             company_name: user.company_name,
-                            level: user.level
+                            level: user.level,
+                            coordinates: this.location
                         }
 
                         // set data
@@ -159,8 +162,13 @@ export class MyApp {
         // check if GPS is enabled
         self.diagnostics.gpsStatus().then(response => {
                 navigator.geolocation.getCurrentPosition((position) => {
+                    var data = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+
                     // save location
-                    self.localStorage.setToLocal('coordinates', JSON.stringify(position.coords));
+                    self.localStorage.setToLocal('coordinates', JSON.stringify(data));
                 }, error => {
                     // prompt something
                 }, { timeout: 10000 });
