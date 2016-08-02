@@ -124,7 +124,7 @@ export class SellerUpdateSettingsPage {
             let imgdata = "data:image/jpeg;base64," + data;
 
             // assign the image to the user object
-            this.user.store_image = imgdata;
+            this.user.store.store_image = imgdata;
         }, (error) => {
             // bring out a toast error message
         });
