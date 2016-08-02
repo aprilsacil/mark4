@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { NavController, Toast } from 'ionic-angular';
+import { NavController, Toast, Alert } from 'ionic-angular';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
@@ -85,7 +85,17 @@ export class SellerAssociatesPage {
 					});
 				}
 			}, (error) => {
-				console.log(error);
+                // show an alert
+                setTimeout(() => {
+                    var alert = Alert.create({
+                        title: 'Error!',
+                        subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
+                        buttons: ['OK']
+                    });
+
+                    // render in the template
+                    this.nav.present(alert);
+                }, 300);
 			});
 	}
 
