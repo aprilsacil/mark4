@@ -126,12 +126,13 @@ export class LoginPage {
                 }
 
                 var user = data.user;
+                user.level = Math.floor((Math.sqrt(user.experience / 15) / 2));
 
                 // set the timestamp
                 self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
 
                 // if seller redirect to seller dashboard
-                if(user.roles[0] === 'seller') {
+                if(user.roles === 'seller') {
                     // save user data to the local storage
                     self.localStorage.setToLocal('user', JSON.stringify(new Seller(user)));
 
@@ -145,7 +146,7 @@ export class LoginPage {
                 }
 
                 // if buyer redirect to buyer dashboard
-                if(user.roles[0] === 'buyer') {
+                if(user.roles === 'buyer') {
                     var buyer = new Buyer(user);
 
                     // save user data to the local storage

@@ -2,12 +2,11 @@ import { Component, Inject } from '@angular/core';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 import { Alert, Events, Loading, NavController, Toast } from 'ionic-angular';
 import { Camera } from 'ionic-native';
-
 import { LoginPage } from '../login/login';
 
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
-import { Buyer } from '../../models/buyer';
+import { Seller } from '../../models/seller';
 
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
@@ -16,18 +15,20 @@ var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
 
 /*
-  Generated class for the BuyerUpdateProfilePage page.
+  Generated class for the SellerAccountSettingsPage page.
 
   See http://ionicframework.com/docs/v2/components/#navigation for more info on
   Ionic pages and navigation.
 */
 @Component({
-  templateUrl: 'build/pages/buyer-update-profile/buyer-update-profile.html',
+  templateUrl: 'build/pages/seller-account-settings/seller-account-settings.html',
+  providers: [LocalStorageProvider]
 })
-export class BuyerUpdateProfilePage {
-    pouchDb: any;
+export class SellerAccountSettingsPage {
+
+	pouchDb: any;
     localDb: any;
-    user = new Buyer({});
+    user = new Seller({});
 
     // set the headers
     headers = new Headers({
@@ -42,6 +43,7 @@ export class BuyerUpdateProfilePage {
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
+        var self = this;
         // couch db integration
         this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
 
@@ -49,14 +51,10 @@ export class BuyerUpdateProfilePage {
         this.localDb = new PouchDB('cheers');
 
         // this will sync locally
-        this.localDb.sync(this.pouchDb, {live: true, retry: true})
-            .on('error', console.log.bind(console));
+        this.pouchDb.sync(this.localDb, {live: true, retry: true}).on('error', console.log.bind(console));
 
         this.localStorage.getFromLocal('user').then((data) => {
-            var user = JSON.parse(data);
-
-            // set the data
-            this.user = new Buyer(user);
+            this.user = new Seller(JSON.parse(data));
         });
     }
 
@@ -72,8 +70,9 @@ export class BuyerUpdateProfilePage {
      */
     logout() {
         var self = this;
+
         // initialize the Alert component
-        let alert = Alert.create({
+        var alert = Alert.create({
             title: 'Log out',
             message : 'Are you sure you want to log out of Cheers?',
             buttons: [{
@@ -85,8 +84,8 @@ export class BuyerUpdateProfilePage {
             {
                 text: 'Yes',
                 handler: data => {
-                    // unsubscribe events
-                    this.unsubscribeEvents();
+                    // unsubscribe all seller events
+                    self.unsubscribeEvents();
 
                     // remove data of the user from the storage
                     // redirect to login page
@@ -94,6 +93,7 @@ export class BuyerUpdateProfilePage {
                         // remove from the local storage
                         self.localStorage.removeFromLocal('user');
                         self.localStorage.removeFromLocal('timestamp');
+                        self.localStorage.removeFromLocal('emote_message');
 
                         // set to login page
                         self.nav.setRoot(LoginPage);
@@ -105,6 +105,7 @@ export class BuyerUpdateProfilePage {
         // render it
         this.nav.present(alert);
     }
+
 
     /**
      * Opens up the camera and waits for the image to be fetched.
@@ -121,7 +122,7 @@ export class BuyerUpdateProfilePage {
 
         // once the user accepted the taken photo to be used
         Camera.getPicture(options).then((data) => {
-            var imgdata = "data:image/jpeg;base64," + data;
+            let imgdata = "data:image/jpeg;base64," + data;
 
             // assign the image to the user object
             this.user.image = imgdata;
@@ -133,10 +134,10 @@ export class BuyerUpdateProfilePage {
     /**
      * Saves the provided data in the form.
      */
-    saveProfileDetails(updateProfileForm) {
+    saveStoreSettings(accountSettingsForm) {
         var self = this;
 
-        if (!updateProfileForm.valid) {
+        if (!accountSettingsForm.valid) {
             // prompt that something is wrong in the form
             var alert = Alert.create({
                 title: 'Ooops...',
@@ -156,7 +157,6 @@ export class BuyerUpdateProfilePage {
 
         // render in the template
         this.nav.present(loading);
-
         var param = this.user;
 
         // perform request to the api
@@ -237,16 +237,21 @@ export class BuyerUpdateProfilePage {
     }
 
     /**
-     * Unsubscribe to all peripheral events
+     * Unsubscribes all central events
      */
     unsubscribeEvents() {
-        // TODO: stop advertising
-        this.events.publish('peripheral:stop');
+        // first, stop the scanning
+        this.events.publish('central:stop_scan');
 
-        this.events.unsubscribe('peripheral:start', () => {});
-        this.events.unsubscribe('peripheral:emoteFound', () => {});
+        // unsubscribe all events
+        this.events.unsubscribe('central:start', () => {});
+        this.events.unsubscribe('central:start_scan', () => {});
+        this.events.unsubscribe('central:stop_scan', () => {});
+        this.events.unsubscribe('central:write', () => {});
+        this.events.unsubscribe('central:buyers_nearby', () => {});
 
         // user events
         this.events.unsubscribe('user:update_details', () => {});
     }
+
 }
