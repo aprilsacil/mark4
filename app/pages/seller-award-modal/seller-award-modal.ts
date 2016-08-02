@@ -111,7 +111,8 @@ export class SellerAwardModalPage {
         param.store_image =  self.user.store.store_image;
 
         self.http
-            .post(self.apiEndpoint + 'history', param, {headers: headers})
+            .post(self.apiEndpoint + 'history?user=' + self.user.name +
+            '&token=' + self.user.auth, param, {headers: headers})
             .map(response => response.json())
             .subscribe((data) => {
                 if (!data.ok) {
