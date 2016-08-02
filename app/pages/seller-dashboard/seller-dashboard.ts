@@ -1,12 +1,12 @@
 import { Component, Inject, NgZone } from '@angular/core';
-import { Events, Modal, NavController, ViewController, Popover } from 'ionic-angular';
+import { Alert, Events, Modal, NavController, ViewController } from 'ionic-angular';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
 import { SellerShopperViewPage } from '../seller-shopper-view/seller-shopper-view';
-import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-update-settings';
-import { SellerPopoverPage } from '../seller-popover/seller-popover';
+import { SellerSettingsPage } from '../seller-settings/seller-settings';
 
+import { Diagnostics } from '../../providers/diagnostics/diagnostics';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
@@ -23,7 +23,7 @@ import { Seller } from '../../models/seller';
 @Component({
   templateUrl: 'build/pages/seller-dashboard/seller-dashboard.html',
   directives: [CheersAvatar],
-  providers: [LocalStorageProvider]
+  providers: [Diagnostics, LocalStorageProvider]
 })
 export class SellerDashboardPage {
     user: any;
@@ -31,6 +31,7 @@ export class SellerDashboardPage {
     scanning: boolean = false;
 
     constructor(
+        private diagnostics: Diagnostics,
         private events: Events,
         private localStorage: LocalStorageProvider,
         private nav: NavController,
@@ -174,10 +175,10 @@ export class SellerDashboardPage {
     }
 
     /**
-     * Goes to update settings page
+     * Goes to settings page
      */
-    goToUpdateSettingsPage() {
-        this.nav.push(SellerUpdateSettingsPage);
+    goToSettingsPage() {
+        this.nav.push(SellerSettingsPage);
     }
 
     /**
@@ -200,22 +201,52 @@ export class SellerDashboardPage {
 
         // check if we're not scanning
         if (!self.scanning) {
-            // flag that we're scanning
-            this.scanning = true;
+            // check if bluetooth and location services are enabled
+            self.diagnostics.bluetoothLocationServices().then(response => {
+                // flag that we're scanning
+                self.scanning = true;
 
-            // scan
-            this.events.publish('central:start_scan');
+                // scan
+                self.events.publish('central:start_scan');
 
-            // get the list of shoppers detected
-            this.getNearbyShopperDevices();
+                // get the list of shoppers detected
+                self.getNearbyShopperDevices();
 
-            // this.events.publish('central:buyers_nearby', '{"_id":"org.couchdb.user:johnbuyer","fullname":"John Buyer","name":"johnbuyer","job_description":null,"company_name":null,"level":0}', Math.round(new Date().getTime() / 1000));
+                // this.events.publish('central:buyers_nearby', '{"_id":"org.couchdb.user:johnbuyer","fullname":"John Buyer","name":"johnbuyer","job_description":null,"company_name":null,"level":0}', Math.round(new Date().getTime() / 1000));
 
-            // create an interval every 20 seconds to check if the shoppers are inactive
-            inactiveChecker = setInterval(() => {
-                console.log('interval');
-                this.checkForInactiveShoppers();
-            }, 20000);
+                // create an interval every 20 seconds to check if the shoppers are inactive
+                inactiveChecker = setInterval(() => {
+                    self.checkForInactiveShoppers();
+                }, 20000);
+                return;
+            }, response => {
+                // check if the bluetooth is not enabled
+                if (response.tool == 'bluetooth' && !response.enabled) {
+                    var alert = Alert.create({
+                        title: 'Bluetooth is turned off',
+                        message: 'Please enable bluetooth to detect nearby buyers.',
+                        buttons: ['OK']
+                    });
+
+                    // render
+                    self.nav.present(alert);
+                    return;
+                }
+
+                // check if location services is enabled
+                if (response.tool == 'location_services' && !response.enabled) {
+                    var alert = Alert.create({
+                        title: 'Location Services is turned off',
+                        message: 'Please enable location services to detect nearby buyers.',
+                        buttons: ['OK']
+                    });
+
+                    // render
+                    self.nav.present(alert);
+                    return;
+                }
+            });
+
             return;
         }
 
@@ -237,14 +268,4 @@ export class SellerDashboardPage {
         return;
     }
 
-    /**
-     * Show the Popover
-     */
-    presentPopover(pop) {
-        var popover = Popover.create(SellerPopoverPage);
-        
-        this.nav.present(popover, {
-          ev: pop
-        });
-    }
 }

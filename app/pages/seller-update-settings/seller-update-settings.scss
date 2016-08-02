@@ -43,4 +43,8 @@
             }
         }
     }
+
+    ion-footer .toolbar { min-height: 2.5rem; }
+    ion-footer .toolbar-background { background: #ef9d51; }
+    ion-footer .toolbar-content .button-clear { color: #ffffff; height: 2.5rem; }
 }

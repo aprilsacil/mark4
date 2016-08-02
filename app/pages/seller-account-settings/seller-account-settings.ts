@@ -28,7 +28,7 @@ export class SellerAccountSettingsPage {
 
 	pouchDb: any;
     localDb: any;
-    user: any;
+    user = new Seller({});
 
     // set the headers
     headers = new Headers({
@@ -55,8 +55,6 @@ export class SellerAccountSettingsPage {
 
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = new Seller(JSON.parse(data));
-            this.user.password = null;
-            this.user.confirm = null;
         });
     }
 
@@ -136,10 +134,10 @@ export class SellerAccountSettingsPage {
     /**
      * Saves the provided data in the form.
      */
-    saveStoreSettings(updateSettingsForm) {
+    saveStoreSettings(accountSettingsForm) {
         var self = this;
 
-        if (!updateSettingsForm.valid) {
+        if (!accountSettingsForm.valid) {
             // prompt that something is wrong in the form
             var alert = Alert.create({
                 title: 'Ooops...',
@@ -160,20 +158,16 @@ export class SellerAccountSettingsPage {
         // render in the template
         this.nav.present(loading);
         var param = this.user;
-        param.roles = this.user.roles[0];
 
         // perform request to the api
         self.http
             .post(
-                self.apiEndpoint + 'update?user=' + self.user.store.store_uuid + '&token=' + self.user.auth,
+                self.apiEndpoint + 'update?user=' + self.user.name + '&token=' + self.user.auth,
                 param, { headers: self.headers })
             .map(response => response.json())
             .subscribe((data) => {
                 if(data.ok) {
-                	// assign the roles to an array
-                	delete self.user ['roles'];
-		            self.user.roles = ['seller'];
-
+                    
                     // update user data to the local storage
                     self.localStorage.setToLocal('user', JSON.stringify(self.user));
 
@@ -213,7 +207,19 @@ export class SellerAccountSettingsPage {
 
                 return;
             }, (error) => {
-                console.log(error);
+                loading.dismiss().then(() => {
+                    // show an alert
+                    setTimeout(() => {
+                        var alert = Alert.create({
+                            title: 'Error!',
+                            subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
+                            buttons: ['OK']
+                        });
+
+                        // render in the template
+                        self.nav.present(alert);
+                    }, 300);
+               });
             });
     }
 

@@ -144,7 +144,7 @@ export class ReloginPage {
                 self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
 
                 // if seller redirect to seller dashboard
-                if(user.roles[0] === 'seller') {
+                if(user.roles === 'seller') {
                     /// save user data to the local storage
                     self.localStorage.setToLocal('user', JSON.stringify(new Seller(user)));
 
@@ -158,7 +158,7 @@ export class ReloginPage {
                 }
 
                 // if buyer redirect to buyer dashboard
-                if(user.roles[0] === 'buyer') {
+                if(user.roles === 'buyer') {
                     var buyer = new Buyer(user);
 
                     // save user data to the local storage
@@ -185,7 +185,22 @@ export class ReloginPage {
                         this.nav.setRoot(BuyerDashboardPage);
                     });
                 }
-            });
+            }, 
+            (error) => {
+               loading.dismiss().then(() => {
+                    // show an alert
+                    setTimeout(() => {
+                        var alert = Alert.create({
+                            title: 'Error!',
+                            subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
+                            buttons: ['OK']
+                        });
+
+                        // render in the template
+                        self.nav.present(alert);
+                    }, 300);
+               });
+           });
     }
 
     /**

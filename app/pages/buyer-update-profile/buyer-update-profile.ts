@@ -158,7 +158,6 @@ export class BuyerUpdateProfilePage {
         this.nav.present(loading);
 
         var param = this.user;
-        param.roles = this.user.roles[0];
 
         // perform request to the api
         self.http
@@ -168,9 +167,6 @@ export class BuyerUpdateProfilePage {
             .map(response => response.json())
             .subscribe((data) => {
                 if(data.ok) {
-                    // assign the roles to an array
-                    delete self.user ['roles'];
-                    self.user.roles = ['buyer'];
                     
                     // update user data to the local storage
                     self.localStorage.setToLocal('user', JSON.stringify(self.user));
@@ -211,7 +207,19 @@ export class BuyerUpdateProfilePage {
 
                 return;
             }, (error) => {
-                console.log(error);
+                loading.dismiss().then(() => {
+                    // show an alert
+                    setTimeout(() => {
+                        var alert = Alert.create({
+                            title: 'Error!',
+                            subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
+                            buttons: ['OK']
+                        });
+
+                        // render in the template
+                        self.nav.present(alert);
+                    }, 300);
+               });
             });
     }
 
