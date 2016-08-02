@@ -33,7 +33,7 @@ export class DistanceCalculator {
 
         var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         var d = R * c; // Distance in km
-        var m = d * 100; // Distance in m
+        var m = d * 1000; // Distance in m
 
         this.distance = m.toFixed(2);
     }
