@@ -28,7 +28,9 @@ export class SellerAwardModalPage {
         message: <string> null,
         username: <string> null,
         store: <string> null,
-        image: <string> null
+        seller: <string> null,
+        image: <string> null,
+        store_image: <string> null
     };
     shopper: any;
     user = new Seller({});
