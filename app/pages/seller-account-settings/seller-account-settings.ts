@@ -15,17 +15,18 @@ var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-authentication'));
 
 /*
-  Generated class for the SellerUpdateSettingsPage page.
+  Generated class for the SellerAccountSettingsPage page.
 
   See http://ionicframework.com/docs/v2/components/#navigation for more info on
   Ionic pages and navigation.
 */
 @Component({
-    templateUrl: 'build/pages/seller-update-settings/seller-update-settings.html',
-    providers: [LocalStorageProvider]
+  templateUrl: 'build/pages/seller-account-settings/seller-account-settings.html',
+  providers: [LocalStorageProvider]
 })
-export class SellerUpdateSettingsPage {
-    pouchDb: any;
+export class SellerAccountSettingsPage {
+
+	pouchDb: any;
     localDb: any;
     user = new Seller({});
 
@@ -124,7 +125,7 @@ export class SellerUpdateSettingsPage {
             let imgdata = "data:image/jpeg;base64," + data;
 
             // assign the image to the user object
-            this.user.store_image = imgdata;
+            this.user.image = imgdata;
         }, (error) => {
             // bring out a toast error message
         });
@@ -133,10 +134,10 @@ export class SellerUpdateSettingsPage {
     /**
      * Saves the provided data in the form.
      */
-    saveStoreSettings(updateSettingsForm) {
+    saveStoreSettings(accountSettingsForm) {
         var self = this;
 
-        if (!updateSettingsForm.valid) {
+        if (!accountSettingsForm.valid) {
             // prompt that something is wrong in the form
             var alert = Alert.create({
                 title: 'Ooops...',
@@ -252,4 +253,5 @@ export class SellerUpdateSettingsPage {
         // user events
         this.events.unsubscribe('user:update_details', () => {});
     }
+
 }

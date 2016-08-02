@@ -1,7 +1,6 @@
 import { Component, provide, ViewChild } from '@angular/core';
 import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { Network, StatusBar, LocalNotifications, Push } from 'ionic-native';
-
+import { Diagnostic, Network, StatusBar, LocalNotifications, Push } from 'ionic-native';
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from './pages/seller-dashboard/seller-dashboard';
@@ -9,17 +8,19 @@ import { ReloginPage } from './pages/relogin/relogin';
 
 import { CentralBle } from './providers/bluetooth/central-ble';
 import { PeripheralBle } from './providers/bluetooth/peripheral-ble';
+import { Diagnostics } from './providers/diagnostics/diagnostics';
 import { LocalStorageProvider } from './providers/storage/local-storage-provider';
 
 @Component({
     template: '<ion-nav [root]="rootPage"></ion-nav>',
-    providers: [CentralBle, LocalStorageProvider, PeripheralBle]
+    providers: [CentralBle, Diagnostics, LocalStorageProvider, PeripheralBle]
 })
 export class MyApp {
     private rootPage:any;
 
     constructor(
         private centralBle: CentralBle,
+        private diagnostics: Diagnostics,
         private events: Events,
         private localStorage: LocalStorageProvider,
         private peripheralBle: PeripheralBle,
@@ -65,7 +66,7 @@ export class MyApp {
                     var user = JSON.parse(data);
 
                     // get the role
-                    var role = user.roles[0];
+                    var role = user.roles;
 
                     // update timestamp
                     this.localStorage.setToLocal('timestamp', currentTimestamp);
@@ -145,6 +146,18 @@ export class MyApp {
                 console.log('cancelled');
             });
         });
+
+        // check if GPS is enabled
+        self.diagnostics.gpsStatus().then(response => {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    // save location
+                    self.localStorage.setToLocal('coordinates', JSON.stringify(position.coords));
+                }, error => {
+                    // prompt something
+                }, { timeout: 10000 });
+            }, response => {
+                // turned off, prompt something
+            });
     }
 
     /**
@@ -220,16 +233,6 @@ export class MyApp {
         this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
 
-            // check if the bluetooth is enabled or not
-            self.centralBle.status().then(result => {
-                if (!result) {
-                    console.log('Bluetooth not enabled');
-                    return;
-                }
-
-                // check if location services is enabled
-            });
-
             // start scanning
             self.centralBle.scan();
         });
@@ -260,5 +263,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.128:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.0.128/'})]);
+    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.123:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://192.168.0.123/'})]);
