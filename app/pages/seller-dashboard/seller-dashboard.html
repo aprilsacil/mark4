@@ -52,10 +52,6 @@
             (click)="goToShopperDetails(shopper)">
                 <cheers-avatar [user]="shopper" item-left></cheers-avatar>
 
-                <distance-calculator
-                    *ngIf="shopper.coordinates"
-                    [coordinates]="shopper.coordinates"
-                    [currentUserCoordinates]="coordinates"></distance-calculator>
                 <!-- <ion-avatar item-left>
                     <img src="img/default_avatar.jpg" *ngIf="!shopper.image">
                     <img [src]="shopper.image" *ngIf="shopper.image">
@@ -82,6 +78,10 @@
                         <ion-icon name="cash" secondary></ion-icon> 0%
                     </span>
                 </p>
+                <distance-calculator
+                    *ngIf="shopper.coordinates"
+                    [coordinates]="shopper.coordinates"
+                    [currentUserCoordinates]="coordinates"></distance-calculator>
                 <p class="looking-for" *ngIf="shopper.looking_for">
                     <span class="label">Looking for:</span>
                     <span class="product">{{shopper.looking_for}}</span>
