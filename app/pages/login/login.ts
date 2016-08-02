@@ -132,6 +132,7 @@ export class LoginPage {
                 }
 
                 var user = data.user;
+                user.level = Math.floor((Math.sqrt(user.experience / 15) / 2));
 
                 // set the timestamp
                 self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));

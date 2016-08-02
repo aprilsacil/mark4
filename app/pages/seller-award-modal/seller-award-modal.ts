@@ -100,8 +100,10 @@ export class SellerAwardModalPage {
         var param = self.award;
 
         param.username  = self.shopper.name;
-        param.image     = self.shopper.image;
-        param.store     = self.user.name;
+        param.image     = self.user.image;
+        param.seller     = self.user.name;
+        param.store     = self.user.store_uuid;
+        param.store_image =  self.user.store.store_image;
 
         self.http
             .post(self.apiEndpoint + 'history', param, {headers: headers})

@@ -313,6 +313,9 @@ export class BuyerDashboardPage {
         setInterval(() => {
             console.log('fetching...');
             this.getUserHistory();
+
+            // get invitation
+            this.getInvitation();
         }, 30000);
     }
 
