@@ -27,7 +27,8 @@ import 'rxjs/add/operator/map';
 export class LoginPage {
     login = {
         username: <string> null,
-        password: <string> null
+        password: <string> null,
+        registration_id: null
     };
     goBack = false;
 
@@ -41,6 +42,11 @@ export class LoginPage {
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
         this.goBack = this.params.get('go_back') || false;
+
+        // get registration id
+        this.localStorage.getFromLocal('registration_id').then((id) => {
+            this.login.registration_id = id || '';
+        });
     }
 
     /**
