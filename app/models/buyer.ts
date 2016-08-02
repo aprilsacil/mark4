@@ -11,6 +11,8 @@ export class Buyer {
     store: any = {};
     auth: string;
     coordinates: any;
+    purchase: number = 0;
+    conversion: number = 0;
 
     constructor(userInfo: any) {
         // assign things
@@ -38,6 +40,16 @@ export class Buyer {
         // level
         if (userInfo.level) {
             this.level = userInfo.level;
+        }
+
+        // purchase
+        if (userInfo.purchase) {
+            this.purchase = userInfo.purchase;
+        }
+
+        // conversion
+        if (userInfo.conversion) {
+            this.conversion = userInfo.conversion;
         }
 
         // roles
