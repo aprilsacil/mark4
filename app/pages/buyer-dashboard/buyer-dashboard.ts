@@ -143,19 +143,7 @@ export class BuyerDashboardPage {
 
                             return self.nav.setRoot(SellerDashboardPage);
                         }, (error) => {
-                            loading.dismiss().then(() => {
-                                // show an alert
-                                setTimeout(() => {
-                                    var alert = Alert.create({
-                                        title: 'Error!',
-                                        subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
-                                        buttons: ['OK']
-                                    });
-
-                                    // render in the template
-                                    self.nav.present(alert);
-                                }, 300);
-                           });
+                            console.log(error);
                         });
                 }
             }]
