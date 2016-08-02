@@ -4,7 +4,7 @@ import { Alert, Events, Modal, NavController, ViewController } from 'ionic-angul
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
 import { SellerShopperViewPage } from '../seller-shopper-view/seller-shopper-view';
-import { SellerUpdateSettingsPage } from '../seller-update-settings/seller-update-settings';
+import { SellerSettingsPage } from '../seller-settings/seller-settings';
 
 import { Diagnostics } from '../../providers/diagnostics/diagnostics';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
@@ -175,10 +175,10 @@ export class SellerDashboardPage {
     }
 
     /**
-     * Goes to update settings page
+     * Goes to settings page
      */
-    goToUpdateSettingsPage() {
-        this.nav.push(SellerUpdateSettingsPage);
+    goToSettingsPage() {
+        this.nav.push(SellerSettingsPage);
     }
 
     /**
@@ -267,4 +267,5 @@ export class SellerDashboardPage {
         this.events.unsubscribe('central:buyers_nearby', () => {});
         return;
     }
+
 }

@@ -63,7 +63,7 @@ export class MyApp {
                     var user = JSON.parse(data);
 
                     // get the role
-                    var role = user.roles[0];
+                    var role = user.roles;
 
                     // update timestamp
                     this.localStorage.setToLocal('timestamp', currentTimestamp);
@@ -211,5 +211,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.128:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.1.46/'})]);
+    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.123:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://192.168.0.123/'})]);
