@@ -111,11 +111,7 @@ export class SellerDashboardPage {
 
             buyer = new Buyer(buyer);
 
-            var headers = new Headers({
-                'Content-Type': 'application/x-www-form-urlencoded'
-            });
-
-             // add timestamp
+            // add timestamp
             buyer.timestamp = eventData[1];
 
             // check if the buyer already exists in the object
@@ -126,6 +122,8 @@ export class SellerDashboardPage {
                     if (self.shoppers[s]._id == buyer._id) {
                         // update the object
                         self.zone.run(() => {
+                            buyer.purchase = self.shoppers[s].purchase;
+                            buyer.conversion = self.shoppers[s].conversion;
                             self.shoppers[s] = buyer;
                         });
 
@@ -142,49 +140,68 @@ export class SellerDashboardPage {
 
                 // update
                 self.zone.run(() => {
-                    self.shoppers.push(buyer);
 
-                    // prepare the text for the notification
-                    text = (buyer.looking_for) ?
-                        text + ' is looking for "' + buyer.looking_for +'"':
-                        text + ' is nearby and looking for something.';
+                    var headers = new Headers({
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    });
 
-                    // notify!
-                    self.events.publish('app:local_notifications', {
-                        title: 'There is a buyer nearby!',
-                        text: text
-                    })
+                    // connection of user
+                    self.http
+                    .get(self.apiEndpoint + 'connection?user='+self.user.name+
+                        '&token='+self.user.auth+'&search='+buyer.name, {headers: headers})
+                    .map(response => response.json())
+                    .subscribe((data) => {
+                        if(!data) {
+                            buyer.purchase = 0;
+                            buyer.conversion = 0;
+
+                            self.shoppers.push(buyer);
+
+                            // prepare the text for the notification
+                            text = (buyer.looking_for) ?
+                                text + ' is looking for "' + buyer.looking_for +'"':
+                                text + ' is nearby and looking for something.';
+
+                            // notify!
+                            self.events.publish('app:local_notifications', {
+                                title: 'There is a buyer nearby!',
+                                text: text
+                            });
+                        } else {
+                            var connections = data;
+
+                            self.http
+                                .get(self.apiEndpoint + 'history?user='+self.user.name+
+                                    '&token='+self.user.auth+'&search='+self.user.name+'-'+
+                                    buyer.name+'&type=per_user_store', {headers: headers})
+                                .map(response => response.json())
+                                .subscribe((data) => {
+                                    buyer.purchase = data.total_rows;
+                                    buyer.conversion = Math.round((buyer.purchase / connections) * 100);
+
+                                    self.shoppers.push(buyer);
+
+                                    // prepare the text for the notification
+                                    text = (buyer.looking_for) ?
+                                        text + ' is looking for "' + buyer.looking_for +'"':
+                                        text + ' is nearby and looking for something.';
+
+                                    // notify!
+                                    self.events.publish('app:local_notifications', {
+                                        title: 'There is a buyer nearby!',
+                                        text: text
+                                    });
+
+                                }, (error) => {
+                                console.log('History error:', error);
+                            });
+                        }
+
+                    }, (error) => {
+                        console.log('Connection error:', error);
+                    });
                 });
             }
-
-            // connection of user
-            self.http
-            .get(self.apiEndpoint + 'connection?user='+self.user.name+
-                '&token='+self.user.auth+'&search='+buyer.name, {headers: headers})
-            .map(response => response.json())
-            .subscribe((data) => {
-                if(!data) {
-                    buyer.purchase = 0;
-                    buyer.conversion = 0;
-                } else {
-                    var connections = data;
-
-                    self.http
-                        .get(self.apiEndpoint + 'history?user='+self.user.name+
-                            '&token='+self.user.auth+'&search='+self.user.name+'-'+
-                            buyer.name+'&type=per_user_store', {headers: headers})
-                        .map(response => response.json())
-                        .subscribe((data) => {
-                            buyer.purchase = data.total_rows;
-                            buyer.conversion = Math.round((buyer.purchase / connections) * 100);
-
-                        }, (error) => {
-                        console.log('History error:', error);
-                    });
-                }
-            }, (error) => {
-                console.log('Connection error:', error);
-            });
 
             console.log('list of shoppers', self.shoppers);
         });
