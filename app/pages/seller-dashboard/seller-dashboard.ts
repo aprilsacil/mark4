@@ -129,7 +129,7 @@ export class SellerDashboardPage {
                 .map(response => response.json())
                 .subscribe((data) => {
                     buyer.purchase = data.total_rows;
-                    buyer.conversion = Math.round((buyer.purchase / connections.length) * 100);
+                    buyer.conversion = Math.round((buyer.purchase / connections) * 100);
 
                     // add timestamp
                     buyer.timestamp = eventData[1];

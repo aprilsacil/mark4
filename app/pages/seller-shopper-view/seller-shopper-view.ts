@@ -104,7 +104,7 @@ export class SellerShopperViewPage {
                     '&token='+this.seller.auth+'&search='+this.shopper.name, {headers: headers})
                 .map(response => response.json())
                 .subscribe((data) => {
-                    this.shopper.conversion = Math.round((this.shopper.purchase / data.length) * 100);
+                    this.shopper.conversion = Math.round((this.shopper.purchase / data) * 100);
                 });
             }, (error) => {
                 // show an alert
