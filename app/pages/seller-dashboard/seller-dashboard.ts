@@ -1,5 +1,4 @@
 import { Component, Inject, NgZone } from '@angular/core';
-import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 import { Alert, Events, Modal, NavController, ViewController } from 'ionic-angular';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
@@ -14,9 +13,6 @@ import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
 
 import { Buyer } from '../../models/buyer';
 import { Seller } from '../../models/seller';
-
-import 'rxjs/add/operator/toPromise';
-import 'rxjs/add/operator/map';
 
 /*
   Generated class for the SellerDashboardPage page.
@@ -41,9 +37,7 @@ export class SellerDashboardPage {
         private nav: NavController,
         private view: ViewController,
         private zone: NgZone,
-        private http: Http,
-        @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
-        @Inject('APIEndpoint') private apiEndpoint: string
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
         this.scanning = false;
 
@@ -113,6 +107,7 @@ export class SellerDashboardPage {
 
             // add timestamp
             buyer.timestamp = eventData[1];
+
             // check if the buyer already exists in the object
             if (self.shoppers || self.shoppers.length !== 0) {
                 // check if the shopper already exists
@@ -121,8 +116,6 @@ export class SellerDashboardPage {
                     if (self.shoppers[s]._id == buyer._id) {
                         // update the object
                         self.zone.run(() => {
-                            buyer.purchase = self.shoppers[s].purchase;
-                            buyer.conversion = self.shoppers[s].conversion;
                             self.shoppers[s] = buyer;
                         });
 
@@ -139,79 +132,18 @@ export class SellerDashboardPage {
 
                 // update
                 self.zone.run(() => {
+                    self.shoppers.push(buyer);
 
-                    var headers = new Headers({
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    });
+                    // prepare the text for the notification
+                    text = (buyer.looking_for) ?
+                        text + ' is looking for "' + buyer.looking_for +'"':
+                        text + ' is nearby and looking for something.';
 
-                    // connection of user
-                    self.http
-                    .get(self.apiEndpoint + 'connection?user='+self.user.name+
-                        '&token='+self.user.auth+'&search='+buyer.name+'&store='
-                        +self.user.store_uuid, {headers: headers})
-                    .map(response => response.json())
-                    .subscribe((data) => {
-                        if(!data) {
-                            buyer.purchase = 0;
-                            buyer.conversion = 0;
-
-                            self.shoppers.push(buyer);
-
-                            // prepare the text for the notification
-                            text = (buyer.looking_for) ?
-                                text + ' is looking for "' + buyer.looking_for +'"':
-                                text + ' is nearby and looking for something.';
-
-                            // notify!
-                            self.events.publish('app:local_notifications', {
-                                title: 'There is a buyer nearby!',
-                                text: text
-                            });
-                        } else {
-                            var connections = data;
-
-                            self.http
-                                .get(self.apiEndpoint + 'history?user='+self.user.name+
-                                    '&token='+self.user.auth+'&search='+self.user.name+'-'+
-                                    buyer.name+'&type=per_user_store', {headers: headers})
-                                .map(response => response.json())
-                                .subscribe((data) => {
-                                    buyer.purchase = data.total_rows;
-                                    buyer.conversion = Math.round((buyer.purchase / connections) * 100);
-
-                                    self.shoppers.push(buyer);
-
-                                    // prepare the text for the notification
-                                    text = (buyer.looking_for) ?
-                                        text + ' is looking for "' + buyer.looking_for +'"':
-                                        text + ' is nearby and looking for something.';
-
-                                    // notify!
-                                    self.events.publish('app:local_notifications', {
-                                        title: 'There is a buyer nearby!',
-                                        text: text
-                                    });
-
-                                }, (error) => {
-                                console.log('History error:', error);
-                            });
-                        }
-                    }, (error) => {
-                        console.log('Connection error:', error);
-                    });
-
-                    var param = {
-                        user: buyer.name,
-                        store: self.user.store_uuid,
-                        detected: 1
-                    };
-
-                    // send connection
-                    self.http
-                    .post(self.apiEndpoint + 'connection?user='+self.user.name+
-                        '&token='+self.user.auth, param, {headers: headers})
-                    .map(response => response.json())
-                    .subscribe((data) => {});
+                    // notify!
+                    self.events.publish('app:local_notifications', {
+                        title: 'There is a buyer nearby!',
+                        text: text
+                    })
                 });
             }
 
