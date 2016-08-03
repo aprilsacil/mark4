@@ -14,9 +14,6 @@ import { Seller } from '../../models/seller';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
-var PouchDB = require('pouchdb');
-PouchDB.plugin(require('pouchdb-authentication'));
-
 /*
   Generated class for the ReloginPage page.
 
@@ -28,8 +25,6 @@ PouchDB.plugin(require('pouchdb-authentication'));
     providers: [LocalStorageProvider]
 })
 export class ReloginPage {
-    localDb: any;
-    pouchDb: any;
     user = {
         name: <string> null,
         image: <string> null
@@ -47,15 +42,6 @@ export class ReloginPage {
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
     ) {
-        this.pouchDb = new PouchDB(this.couchDbEndpoint + 'cheers', {skipSetup: true});
-
-        // local integration
-        this.localDb = new PouchDB('cheers');
-
-        // this will sync locally
-        this.localDb.sync(this.pouchDb, {live: true, retry: true})
-            .on('error', console.log.bind(console));
-
         // get user
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = JSON.parse(data);

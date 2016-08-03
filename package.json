@@ -36,7 +36,10 @@
     "cordova-plugin-splashscreen",
     "cordova-plugin-statusbar",
     "cordova-plugin-bluetoothle",
-    "ionic-plugin-keyboard"
+    "ionic-plugin-keyboard",
+    "de.appplant.cordova.plugin.local-notification",
+    "cordova-plugin-camera",
+    "cordova-plugin-network-information"
   ],
   "cordovaPlatforms": [
     "ios",
