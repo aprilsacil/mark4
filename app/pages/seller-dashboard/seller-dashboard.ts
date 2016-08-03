@@ -113,7 +113,6 @@ export class SellerDashboardPage {
 
             // add timestamp
             buyer.timestamp = eventData[1];
-
             // check if the buyer already exists in the object
             if (self.shoppers || self.shoppers.length !== 0) {
                 // check if the shopper already exists
