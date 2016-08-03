@@ -10,6 +10,8 @@ export class Buyer {
     looking_for: string = null;
     store: any = {};
     auth: string;
+    purchase: number = 0;
+    conversion: number = 0;
 
     constructor(userInfo: any) {
         // assign things
