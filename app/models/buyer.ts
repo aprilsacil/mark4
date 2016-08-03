@@ -10,9 +10,6 @@ export class Buyer {
     looking_for: string = null;
     store: any = {};
     auth: string;
-    coordinates: any;
-    purchase: number = 0;
-    conversion: number = 0;
 
     constructor(userInfo: any) {
         // assign things
@@ -42,16 +39,6 @@ export class Buyer {
             this.level = userInfo.level;
         }
 
-        // purchase
-        if (userInfo.purchase) {
-            this.purchase = userInfo.purchase;
-        }
-
-        // conversion
-        if (userInfo.conversion) {
-            this.conversion = userInfo.conversion;
-        }
-
         // roles
         if (userInfo.roles) {
             this.roles = userInfo.roles;
@@ -60,11 +47,6 @@ export class Buyer {
         // looking for message
         if (userInfo.looking_for) {
             this.looking_for = userInfo.looking_for;
-        }
-
-        // coordinates
-        if (userInfo.coordinates) {
-            this.coordinates = userInfo.coordinates;
         }
     }
 }

@@ -3,12 +3,12 @@ export class Seller {
     name: string;
     fullname: string;
     store_uuid: string;
+    store_image: string = null;
     image: string = null;
     roles: string;
     emote_message: string = null;
     store: any = {};
     auth: string;
-    coordinates: any;
     password: string = null;
     confirm: string = null;
 
@@ -30,6 +30,11 @@ export class Seller {
             this.image = userInfo.image;
         }
 
+        // store_image
+        if (userInfo.store_image) {
+            this.store_image = userInfo.store_image;
+        }
+
         // store_uuid
         if (userInfo.store_uuid) {
             this.store_uuid = userInfo.store_uuid;
@@ -43,11 +48,6 @@ export class Seller {
         // emote
         if (userInfo.emote_message) {
             this.emote_message = userInfo.emote_message;
-        }
-
-        // coordinates
-        if (userInfo.coordinates) {
-            this.coordinates = userInfo.coordinates;
         }
     }
 }

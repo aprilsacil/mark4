@@ -1,7 +1,5 @@
 import { Component, Inject, NgZone } from '@angular/core';
-import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 import { Alert, Events, Modal, NavController, ViewController } from 'ionic-angular';
-import { Geolocation } from 'ionic-native';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
 import { SellerEmoteModalPage } from '../seller-emote-modal/seller-emote-modal';
@@ -12,13 +10,9 @@ import { Diagnostics } from '../../providers/diagnostics/diagnostics';
 import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
 
 import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
-import { DistanceCalculator } from '../../components/distance-calculator/distance-calculator';
 
 import { Buyer } from '../../models/buyer';
 import { Seller } from '../../models/seller';
-
-import 'rxjs/add/operator/toPromise';
-import 'rxjs/add/operator/map';
 
 /*
   Generated class for the SellerDashboardPage page.
@@ -28,11 +22,10 @@ import 'rxjs/add/operator/map';
 */
 @Component({
   templateUrl: 'build/pages/seller-dashboard/seller-dashboard.html',
-  directives: [CheersAvatar, DistanceCalculator],
+  directives: [CheersAvatar],
   providers: [Diagnostics, LocalStorageProvider]
 })
 export class SellerDashboardPage {
-    coordinates: any;
     user: any;
     shoppers = [];
     scanning: boolean = false;
@@ -44,9 +37,7 @@ export class SellerDashboardPage {
         private nav: NavController,
         private view: ViewController,
         private zone: NgZone,
-        private http: Http,
-        @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
-        @Inject('APIEndpoint') private apiEndpoint: string
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
     ) {
         this.scanning = false;
 
@@ -58,21 +49,6 @@ export class SellerDashboardPage {
             // get user details again from the local storage
             this.getUser();
         });
-
-        // get coordinates from local storage
-        this.localStorage.getFromLocal('coordinates').then(coordinates => {
-            if (coordinates) {
-                // parse it because it is saved in JSON.stringify
-                this.coordinates = JSON.parse(coordinates);
-                return;
-            }
-
-            // no coordinates, get it!
-            Geolocation.getCurrentPosition().then((response) => {
-                this.coordinates = response.coords;
-            });
-        })
-
     }
 
     /**
@@ -129,71 +105,49 @@ export class SellerDashboardPage {
 
             buyer = new Buyer(buyer);
 
-            var headers = new Headers({
-            'Content-Type': 'application/x-www-form-urlencoded'
-        });
+            // add timestamp
+            buyer.timestamp = eventData[1];
 
-        this.http
-            .get(this.apiEndpoint + 'connection?user='+self.user.name+
-                '&token='+self.user.auth+'&search='+buyer.name, {headers: headers})
-            .map(response => response.json())
-            .subscribe((data) => {
-                var connections = data;
-
-                this.http
-                .get(this.apiEndpoint + 'history?user='+self.user.name+
-                    '&token='+self.user.auth+'&search='+self.user.name+'-'+
-                    buyer.name+'&type=per_user_store', {headers: headers})
-                .map(response => response.json())
-                .subscribe((data) => {
-                    buyer.purchase = data.total_rows;
-                    buyer.conversion = Math.round((buyer.purchase / connections.length) * 100);
-
-                    // add timestamp
-                    buyer.timestamp = eventData[1];
-
-                    // check if the buyer already exists in the object
-                    if (self.shoppers || self.shoppers.length !== 0) {
-                        // check if the shopper already exists
-                        for (var s in self.shoppers) {
-                            // check if the ids are the same
-                            if (self.shoppers[s]._id == buyer._id) {
-                                // update the object
-                                self.zone.run(() => {
-                                    self.shoppers[s] = buyer;
-                                });
-
-                                // flag that the incoming buyer data already exists
-                                exists = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    // no shoppers, just push it
-                    if (!self.shoppers.length || !exists) {
-                        var text = buyer.fullname;
-
-                        // update
+            // check if the buyer already exists in the object
+            if (self.shoppers || self.shoppers.length !== 0) {
+                // check if the shopper already exists
+                for (var s in self.shoppers) {
+                    // check if the ids are the same
+                    if (self.shoppers[s]._id == buyer._id) {
+                        // update the object
                         self.zone.run(() => {
-                            self.shoppers.push(buyer);
-
-                            // prepare the text for the notification
-                            text = (buyer.looking_for) ?
-                                text + ' is looking for "' + buyer.looking_for +'"':
-                                text + ' is nearby and looking for something.';
-
-                            // notify!
-                            self.events.publish('app:local_notifications', {
-                                title: 'There is a buyer nearby!',
-                                text: text
-                            })
+                            self.shoppers[s] = buyer;
                         });
-                    }
 
-                    console.log('list of shoppers', self.shoppers);
+                        // flag that the incoming buyer data already exists
+                        exists = true;
+                        break;
+                    }
+                }
+            }
+
+            // no shoppers, just push it
+            if (!self.shoppers.length || !exists) {
+                var text = buyer.fullname;
+
+                // update
+                self.zone.run(() => {
+                    self.shoppers.push(buyer);
+
+                    // prepare the text for the notification
+                    text = (buyer.looking_for) ?
+                        text + ' is looking for "' + buyer.looking_for +'"':
+                        text + ' is nearby and looking for something.';
+
+                    // notify!
+                    self.events.publish('app:local_notifications', {
+                        title: 'There is a buyer nearby!',
+                        text: text
+                    })
                 });
-            });
+            }
+
+            console.log('list of shoppers', self.shoppers);
         });
     }
 

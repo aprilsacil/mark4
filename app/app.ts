@@ -1,6 +1,6 @@
 import { Component, provide, ViewChild } from '@angular/core';
 import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { Geolocation, Network, StatusBar, LocalNotifications } from 'ionic-native';
+import { Diagnostic, Network, StatusBar, LocalNotifications } from 'ionic-native';
 
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
@@ -17,7 +17,6 @@ import { LocalStorageProvider } from './providers/storage/local-storage-provider
     providers: [CentralBle, Diagnostics, LocalStorageProvider, PeripheralBle]
 })
 export class MyApp {
-    private location:any;
     private rootPage:any;
 
     constructor(
@@ -33,7 +32,6 @@ export class MyApp {
             // Here you can do any higher level native things you might need.
             StatusBar.styleDefault();
 
-            // start some authentication events
             this.authenticationEvents();
         });
 
@@ -82,8 +80,7 @@ export class MyApp {
                             name: user.name,
                             job_description: user.job_description,
                             company_name: user.company_name,
-                            level: user.level,
-                            coordinates: this.location
+                            level: user.level
                         }
 
                         // set data
@@ -162,13 +159,8 @@ export class MyApp {
         // check if GPS is enabled
         self.diagnostics.gpsStatus().then(response => {
                 navigator.geolocation.getCurrentPosition((position) => {
-                    var data = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    };
-
                     // save location
-                    self.localStorage.setToLocal('coordinates', JSON.stringify(data));
+                    self.localStorage.setToLocal('coordinates', JSON.stringify(position.coords));
                 }, error => {
                     // prompt something
                 }, { timeout: 10000 });
@@ -184,9 +176,7 @@ export class MyApp {
         var self = this;
 
         // initialize this
-
-        //self.centralBle.init();
-
+        self.centralBle.init();
 
         this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
@@ -209,8 +199,7 @@ export class MyApp {
         var self = this;
 
         // initialize the peripheral ble
-        //self.peripheralBle.init();
-
+        self.peripheralBle.init();
 
         self.events.subscribe('peripheral:stop', () => {
             self.peripheralBle.stop();

@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Events } from 'ionic-angular';
 
-import { LocalStorageProvider } from '../storage/local-storage-provider';
-
 declare var bluetoothle: any;
 declare var BLEPeripheral: any;
 
@@ -19,10 +17,7 @@ export class PeripheralBle {
     private central: any;
     private peripheral: any;
 
-    constructor(
-        private events: Events,
-        private localStorage: LocalStorageProvider
-    ) {
+    constructor(private events: Events) {
         // listen for this event
         this.events.subscribe('peripheral:set_buyer_data', (eventData) => {
             console.log('event: peripheral data', eventData);
@@ -95,7 +90,9 @@ export class PeripheralBle {
                 this.central.subscribe = response;
 
                 // once the central is now subscribed, let's send a notify
-                this.sendNotifyData();
+                if (this.advertiseData) {
+                    this.notify(JSON.stringify(this.advertiseData));
+                }
 
                 console.log(this.central.address + ' has been subscribed.');
             }
@@ -152,7 +149,7 @@ export class PeripheralBle {
             'address'           : self.central.address,
             'service'           : self.central.subscribe.service,
             'characteristic'    : self.central.subscribe.characteristic,
-            'value'             : JSON.stringify(message)
+            'value'             : message
         };
 
         self.peripheral.notifyByChunk(param, function(response) {
@@ -207,28 +204,6 @@ export class PeripheralBle {
         // remove services
         this.peripheral.removeAllServices((response) => {
             console.log('remove all services', response);
-        });
-    }
-
-    /**
-     * Notifies the subscribe central device.
-     */
-    sendNotifyData() {
-        var self = this;
-
-        if (!self.advertiseData) {
-            return;
-        }
-
-        // get coordinates from the local storage
-        self.localStorage.getFromLocal('coordinates').then(coordinates => {
-            if (coordinates) {
-                // append coordinates
-                self.advertiseData.coordinates = JSON.parse(coordinates);
-            }
-
-            // notify
-            self.notify(self.advertiseData);
         });
     }
 }

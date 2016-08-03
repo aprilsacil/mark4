@@ -30,13 +30,7 @@ import 'rxjs/add/operator/map';
 })
 export class SellerShopperViewPage {
     seller = new Seller({});
-    shopper = { 
-        _id: <string> null,
-        name: <string> null, 
-        image: <string> null,
-        purchase: <number> 0,
-        conversion: <number> 0
-    };
+    shopper = { _id: <string> null, image: <string> null };
     history = [];
 
     constructor(
@@ -88,24 +82,13 @@ export class SellerShopperViewPage {
         };
 
         this.http
-            .get(this.apiEndpoint + 'history?user='+this.seller.name+
-                    '&token='+this.seller.auth+'&type=' + param.type +
+            .get(this.apiEndpoint + 'history?type=' + param.type +
                 '&search=' + param.search, {headers: headers})
             .map(response => response.json())
             .subscribe((data) => {
                 for ( var i in data.rows ) {
                     this.history.push(data.rows[i].value);
                 }
-
-                this.shopper.purchase = data.total_rows;
-
-                this.http
-                .get(this.apiEndpoint + 'connection?user='+this.seller.name+
-                    '&token='+this.seller.auth+'&search='+this.shopper.name, {headers: headers})
-                .map(response => response.json())
-                .subscribe((data) => {
-                    this.shopper.conversion = Math.round((this.shopper.purchase / data.length) * 100);
-                });
             }, (error) => {
                 // show an alert
                 setTimeout(() => {

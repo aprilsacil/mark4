@@ -31,9 +31,7 @@ export class SellerAwardModalPage {
         message: <string> null,
         username: <string> null,
         store: <string> null,
-        seller: <string> null,
-        image: <string> null,
-        store_image: <string> null
+        image: <string> null
     };
     shopper: any;
     user = new Seller({});
@@ -105,14 +103,11 @@ export class SellerAwardModalPage {
         var param = self.award;
 
         param.username  = self.shopper.name;
-        param.image     = self.user.image;
-        param.seller     = self.user.name;
-        param.store     = self.user.store_uuid;
-        param.store_image =  self.user.store.store_image;
+        param.image     = self.shopper.image;
+        param.store     = self.user.name;
 
         self.http
-            .post(self.apiEndpoint + 'history?user=' + self.user.name +
-            '&token=' + self.user.auth, param, {headers: headers})
+            .post(self.apiEndpoint + 'history', param, {headers: headers})
             .map(response => response.json())
             .subscribe((data) => {
                 if (!data.ok) {

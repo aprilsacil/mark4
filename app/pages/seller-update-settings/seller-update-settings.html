@@ -19,8 +19,8 @@
         <ion-item class="avatar-wrapper">
             <ion-avatar (click)="openTheCamera()">
                 <ion-icon name="camera"></ion-icon>
-                <img src="img/default_avatar.jpg" *ngIf="!user.store.store_image">
-                <img [src]="user.store.store_image" *ngIf="user.store.store_image">
+                <img src="img/default_avatar.jpg" *ngIf="!user.store_image">
+                <img [src]="user.store_image" *ngIf="user.store_image">
             </ion-avatar>
         </ion-item>
 
