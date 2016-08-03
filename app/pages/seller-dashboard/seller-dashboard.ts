@@ -112,70 +112,81 @@ export class SellerDashboardPage {
             buyer = new Buyer(buyer);
 
             var headers = new Headers({
-            'Content-Type': 'application/x-www-form-urlencoded'
-        });
+                'Content-Type': 'application/x-www-form-urlencoded'
+            });
 
-        this.http
-            .get(this.apiEndpoint + 'connection?user='+self.user.name+
+             // add timestamp
+            buyer.timestamp = eventData[1];
+
+            // check if the buyer already exists in the object
+            if (self.shoppers || self.shoppers.length !== 0) {
+                // check if the shopper already exists
+                for (var s in self.shoppers) {
+                    // check if the ids are the same
+                    if (self.shoppers[s]._id == buyer._id) {
+                        // update the object
+                        self.zone.run(() => {
+                            self.shoppers[s] = buyer;
+                        });
+
+                        // flag that the incoming buyer data already exists
+                        exists = true;
+                        break;
+                    }
+                }
+            }
+
+            // no shoppers, just push it
+            if (!self.shoppers.length || !exists) {
+                var text = buyer.fullname;
+
+                // update
+                self.zone.run(() => {
+                    self.shoppers.push(buyer);
+
+                    // prepare the text for the notification
+                    text = (buyer.looking_for) ?
+                        text + ' is looking for "' + buyer.looking_for +'"':
+                        text + ' is nearby and looking for something.';
+
+                    // notify!
+                    self.events.publish('app:local_notifications', {
+                        title: 'There is a buyer nearby!',
+                        text: text
+                    })
+                });
+            }
+
+            // connection of user
+            self.http
+            .get(self.apiEndpoint + 'connection?user='+self.user.name+
                 '&token='+self.user.auth+'&search='+buyer.name, {headers: headers})
             .map(response => response.json())
             .subscribe((data) => {
-                var connections = data;
+                if(!data) {
+                    buyer.purchase = 0;
+                    buyer.conversion = 0;
+                } else {
+                    var connections = data;
 
-                this.http
-                .get(this.apiEndpoint + 'history?user='+self.user.name+
-                    '&token='+self.user.auth+'&search='+self.user.name+'-'+
-                    buyer.name+'&type=per_user_store', {headers: headers})
-                .map(response => response.json())
-                .subscribe((data) => {
-                    buyer.purchase = data.total_rows;
-                    buyer.conversion = Math.round((buyer.purchase / connections) * 100);
+                    self.http
+                        .get(self.apiEndpoint + 'history?user='+self.user.name+
+                            '&token='+self.user.auth+'&search='+self.user.name+'-'+
+                            buyer.name+'&type=per_user_store', {headers: headers})
+                        .map(response => response.json())
+                        .subscribe((data) => {
+                            buyer.purchase = data.total_rows;
+                            buyer.conversion = Math.round((buyer.purchase / connections) * 100);
 
-                    // add timestamp
-                    buyer.timestamp = eventData[1];
-
-                    // check if the buyer already exists in the object
-                    if (self.shoppers || self.shoppers.length !== 0) {
-                        // check if the shopper already exists
-                        for (var s in self.shoppers) {
-                            // check if the ids are the same
-                            if (self.shoppers[s]._id == buyer._id) {
-                                // update the object
-                                self.zone.run(() => {
-                                    self.shoppers[s] = buyer;
-                                });
-
-                                // flag that the incoming buyer data already exists
-                                exists = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    // no shoppers, just push it
-                    if (!self.shoppers.length || !exists) {
-                        var text = buyer.fullname;
-
-                        // update
-                        self.zone.run(() => {
-                            self.shoppers.push(buyer);
-
-                            // prepare the text for the notification
-                            text = (buyer.looking_for) ?
-                                text + ' is looking for "' + buyer.looking_for +'"':
-                                text + ' is nearby and looking for something.';
-
-                            // notify!
-                            self.events.publish('app:local_notifications', {
-                                title: 'There is a buyer nearby!',
-                                text: text
-                            })
-                        });
-                    }
-
-                    console.log('list of shoppers', self.shoppers);
-                });
+                        }, (error) => {
+                        console.log('History error:', error);
+                    });
+                }
+            }, (error) => {
+                console.log('Connection error:', error);
             });
+
+            console.log('list of shoppers', self.shoppers);
         });
     }
 
