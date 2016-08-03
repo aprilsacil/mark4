@@ -86,43 +86,6 @@ export class SellerShopperViewPage {
             type: 'per_user_store',
             search: this.seller.name + '-' + this.shopper._id.replace('org.couchdb.user:', '')
         };
-
-        this.http
-            .get(this.apiEndpoint + 'history?user='+this.seller.name+
-                    '&token='+this.seller.auth+'&type=' + param.type +
-                '&search=' + param.search, {headers: headers})
-            .map(response => response.json())
-            .subscribe((data) => {
-                for ( var i in data.rows ) {
-                    this.history.push(data.rows[i].value);
-                }
-
-                this.shopper.purchase = data.total_rows;
-
-                this.http
-                .get(this.apiEndpoint + 'connection?user='+this.seller.name+
-                    '&token='+this.seller.auth+'&search='+this.shopper.name, {headers: headers})
-                .map(response => response.json())
-                .subscribe((data) => {
-                    if(data) {
-                        this.shopper.conversion = Math.round((this.shopper.purchase / data) * 100);
-                    } else {
-                        this.shopper.conversion = 0;
-                    }
-                });
-            }, (error) => {
-                // show an alert
-                setTimeout(() => {
-                    var alert = Alert.create({
-                        title: 'Error!',
-                        subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
-                        buttons: ['OK']
-                    });
-
-                    // render in the template
-                    self.nav.present(alert);
-                }, 300);
-            });
     }
 
     /**

@@ -148,7 +148,8 @@ export class SellerDashboardPage {
                     // connection of user
                     self.http
                     .get(self.apiEndpoint + 'connection?user='+self.user.name+
-                        '&token='+self.user.auth+'&search='+buyer.name, {headers: headers})
+                        '&token='+self.user.auth+'&search='+buyer.name+'&store='
+                        +self.user.store_uuid, {headers: headers})
                     .map(response => response.json())
                     .subscribe((data) => {
                         if(!data) {
@@ -196,10 +197,22 @@ export class SellerDashboardPage {
                                 console.log('History error:', error);
                             });
                         }
-
                     }, (error) => {
                         console.log('Connection error:', error);
                     });
+
+                    var param = {
+                        user: buyer.name,
+                        store: self.user.store_uuid,
+                        detected: 1
+                    };
+
+                    // send connection
+                    self.http
+                    .post(self.apiEndpoint + 'connection?user='+self.user.name+
+                        '&token='+self.user.auth, param, {headers: headers})
+                    .map(response => response.json())
+                    .subscribe((data) => {});
                 });
             }
 
