@@ -69,6 +69,8 @@ export class SellerAssociatesPage {
     		search:keyword
     	};
 
+        this.results = [];
+        
 		this.http
 			.post(this.apiEndpoint + 'users?user=' + this.user.name +
             '&token=' + this.user.auth, param, {headers: headers})
