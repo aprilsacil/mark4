@@ -24,6 +24,7 @@ import 'rxjs/add/operator/map';
 })
 export class CheersAvatar {
     @Input() user: any;
+    seller = { name: <string> null, auth: <string> null };
     fetching = true;
 
     constructor(
@@ -36,12 +37,16 @@ export class CheersAvatar {
      * Will run once the component was initialized
      */
     ngOnInit() {
-        // get the user details
-        if (!this.user.image) {
-            this.getUserDetails();
-        }
+        this.localStorage.getFromLocal('user').then((data) => {
+            this.seller = JSON.parse(data);
 
-        this.fetching = false;
+            // get the user details
+            if (!this.user.image) {
+                this.getUserDetails();
+            }
+
+            this.fetching = false;
+        });
     }
 
     /**
@@ -61,7 +66,8 @@ export class CheersAvatar {
 
         // send request
         this.http
-            .post(this.apiEndpoint + 'users', param, {headers: headers})
+            .post(this.apiEndpoint + 'users?user=' + this.seller.name +
+            '&token=' + this.seller.auth, param, {headers: headers})
             .map(response => response.json())
             .subscribe((data) => {
                 data = data.rows;
