@@ -24,6 +24,13 @@ export class SellerAssociatesPage {
     associates = [];
     results = [];
     searching = false;
+    notif = {
+        ids: [],
+        data: {
+            title: null,
+            text: null
+        }
+    };
 
 	constructor(
 		private localStorage: LocalStorageProvider,
@@ -77,13 +84,12 @@ export class SellerAssociatesPage {
 			.map(response => response.json())
 			.subscribe((data) => {
 				data = data.rows;
-
-                console.log(data);
 				for ( var i in data ) {
 					this.results.push({
 						username: data[i].key,
 						fullname: data[i].value[0],
-						image: data[i].value[1]
+                        image: data[i].value[1],
+						registration_id: data[i].value[2][0]
 					});
 				}
 			}, (error) => {
@@ -131,7 +137,8 @@ export class SellerAssociatesPage {
 
                     this.associates.push({
                         fullname: data[i].value[0],
-                        image: data[i].value[1]
+                        image: data[i].value[1],
+                        registration_id: data[i].value[2][0],
                     });
                 }
             }, (error) => {
@@ -152,12 +159,33 @@ export class SellerAssociatesPage {
     		store:this.user.name
     	};
 
+        this.notif = {
+            ids: [user.registration_id],
+            data: {
+                title: this.user.fullname + ' invited you!',
+                text: 'Work at ' + this.user.store.store_name
+            }
+        }; 
+
 		this.http
 			.post(this.apiEndpoint + 'invite?user=' + this.user.name +
             '&token=' + this.user.auth, param, {headers: headers})
 			.map(response => response.json())
 			.subscribe((data) => {
 				this.showToast('Invitation sent!');
+
+                // send push notifications
+                this.http
+                    .post(this.apiEndpoint + 'push?user=' + this.user.name +
+                    '&token=' + this.user.auth, this.notif, {headers: headers})
+                    .map(response => response.json())
+                    .subscribe((data) => {}, (error) => {
+                    // there's an error, just show a message
+                        setTimeout(() => {
+                            // show the message
+                            this.showToast('Something went wrong while sending award notification.');
+                        });
+                    });
 
                 // remove user
                 var index = this.results.indexOf(user);

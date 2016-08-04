@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Events } from 'ionic-angular';
 
+import { LocalStorageProvider } from '../storage/local-storage-provider';
+
 declare var bluetoothle: any;
 declare var BLEPeripheral: any;
 
@@ -16,13 +18,18 @@ export class PeripheralBle {
     private advertiseData: any;
     private central: any;
     private peripheral: any;
+    private registrationId: string = null;
 
-    constructor(private events: Events) {
+    constructor(
+        private events: Events,
+        private localStorageProvider: LocalStorageProvider
+    ) {
         // listen for this event
         this.events.subscribe('peripheral:set_buyer_data', (eventData) => {
             console.log('event: peripheral data', eventData);
+            var data = eventData[0];
 
-            this.advertiseData = eventData[0];
+            this.advertiseData = data;
         });
     }
 

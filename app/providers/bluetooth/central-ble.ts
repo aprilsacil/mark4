@@ -35,7 +35,7 @@ export class CentralBle {
         self.central = BLECentral();
 
         // debug
-        self.central.setDebug(false);
+        self.central.setDebug(true);
 
         // on debug
         self.central.onDebug((message) => {
@@ -44,9 +44,11 @@ export class CentralBle {
 
         // on subscribe notify
         self.central.onSubscribe(function(response) {
+            console.log('response', response);
+
             var currentTimestamp = Math.round(new Date().getTime() / 1000);
             // get the peripheral
-            var peripheral = self.peripherals[response.address];
+            // var peripheral = self.peripherals[response.address];
 
             // notification from server?
             if (response.status === 'subscribedResult') {
@@ -58,7 +60,7 @@ export class CentralBle {
                 console.log('Notify: ' + string);
                 console.log('Notify Bytes: ' + bytes);
 
-                console.log('active peripheral', peripheral);
+                // console.log('active peripheral', peripheral);
                 // TODO: check the approximate distance of the device
 
                 // create an event
@@ -117,30 +119,32 @@ export class CentralBle {
      */
     handleScan(peripheral) {
         var self = this;
+        console.log('peripherals', self.peripherals);
+        console.log('peripheral', peripheral);
 
         // peripheral.rssi = null;
 
         // peripheral exists?
-        if(!(peripheral.address in this.peripherals)) {
+        if(!(peripheral.name in this.peripherals)) {
             // set peripheral key
-            self.peripherals[peripheral.address] = {};
+            self.peripherals[peripheral.name] = {};
 
             // set peripheral info
-            self.peripherals[peripheral.address].info   = peripheral;
+            self.peripherals[peripheral.name].info   = peripheral;
             // set peripheral status
-            self.peripherals[peripheral.address].status = 'disconnected';
+            self.peripherals[peripheral.name].status = 'disconnected';
             // set peripheral timestamp
-            self.peripherals[peripheral.address].added  = Date.now();
+            self.peripherals[peripheral.name].added  = Date.now();
             // set peripheral expire
-            self.peripherals[peripheral.address].expire = Date.now() + (60000 * 5);
+            self.peripherals[peripheral.name].expire = Date.now() + (60000 * 5);
 
             return self.peripherals;
         }
 
         // peripheral exists?
-        if(peripheral.address in self.peripherals) {
+        if(peripheral.name in self.peripherals) {
             // get the original
-            var original = JSON.stringify(self.peripherals[peripheral.address].info);
+            var original = JSON.stringify(self.peripherals[peripheral.name].info);
             // get the recent
             var recent   = JSON.stringify(peripheral);
 
@@ -152,15 +156,15 @@ export class CentralBle {
                 console.log('Device information updated.');
 
                 // is it expired?
-                if(this.peripherals[peripheral.address].expire <= Date.now()) {
+                if(this.peripherals[peripheral.name].expire <= Date.now()) {
                     // remove the peripheral
-                    delete self.peripherals[peripheral.address];
+                    delete self.peripherals[peripheral.name];
 
                     return self.peripherals;
                 }
 
                 // set peripheral info
-                self.peripherals[peripheral.address].info   = peripheral;
+                self.peripherals[peripheral.name].info   = peripheral;
             }
 
             return self.peripherals;
@@ -244,9 +248,17 @@ export class CentralBle {
         // stores the peripheral information
         var information: any;
 
+        console.log('peripherals', self.peripherals);
+
         // look for that id
         for(var i in self.peripherals) {
             information = self.peripherals[i];
+
+            console.log('info', information);
+
+            if (!information.device.services) {
+                continue;
+            }
 
             // get the services
             var services = information.device.services;
