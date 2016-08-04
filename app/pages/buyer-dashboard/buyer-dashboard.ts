@@ -298,7 +298,7 @@ export class BuyerDashboardPage {
                 // notify
                 self.events.publish('app:local_notifications', {
                     title: 'There is a seller nearby!',
-                    text: seller.store.store_name + ' says: ' + seller.emote_message
+                    text: seller.store_uuid + ' says: ' + seller.emote_message
                 });
             });
         }

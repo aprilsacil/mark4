@@ -36,7 +36,8 @@ export class ReloginPage {
     };
 
     relogin = {
-        password: <string> null
+        password: <string> null,
+        registration_id: null
     }
 
     constructor(
@@ -59,6 +60,11 @@ export class ReloginPage {
         // get user
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = JSON.parse(data);
+        });
+
+        // get registration id
+        this.localStorage.getFromLocal('registration_id').then((id) => {
+            this.relogin.registration_id = id || '';
         });
     }
 
@@ -112,7 +118,8 @@ export class ReloginPage {
 
         var param = {
             username: this.user.name,
-            password: this.relogin.password
+            password: this.relogin.password,
+            registration_id : this.relogin.registration_id
         };
 
         this.http
