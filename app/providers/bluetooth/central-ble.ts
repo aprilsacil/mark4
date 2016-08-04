@@ -47,8 +47,6 @@ export class CentralBle {
 
         // on subscribe notify
         self.central.onSubscribe(function(response) {
-            console.log('response', response);
-
             var currentTimestamp = Math.round(new Date().getTime() / 1000);
             // get the peripheral
             // var peripheral = self.peripherals[response.address];
@@ -126,9 +124,9 @@ export class CentralBle {
 
                 self.stopScanTimeout = setTimeout(() => {
                     self.scan();
-                }, 10000);
+                }, 5000);
             });
-        }, 2000);
+        }, 1000);
 
         return this;
     }
@@ -144,26 +142,26 @@ export class CentralBle {
         // peripheral.rssi = null;
 
         // peripheral exists?
-        if(!(peripheral.name in this.peripherals)) {
+        if(!(peripheral.address in this.peripherals)) {
             // set peripheral key
-            self.peripherals[peripheral.name] = {};
+            self.peripherals[peripheral.address] = {};
 
             // set peripheral info
-            self.peripherals[peripheral.name].info   = peripheral;
+            self.peripherals[peripheral.address].info   = peripheral;
             // set peripheral status
-            self.peripherals[peripheral.name].status = 'disconnected';
+            self.peripherals[peripheral.address].status = 'disconnected';
             // set peripheral timestamp
-            self.peripherals[peripheral.name].added  = Date.now();
+            self.peripherals[peripheral.address].added  = Date.now();
             // set peripheral expire
-            self.peripherals[peripheral.name].expire = Date.now() + (60000 * 5);
+            self.peripherals[peripheral.address].expire = Date.now() + (60000 * 5);
 
             return self.peripherals;
         }
 
         // peripheral exists?
-        if(peripheral.name in self.peripherals) {
+        if(peripheral.address in self.peripherals) {
             // get the original
-            var original = JSON.stringify(self.peripherals[peripheral.name].info);
+            var original = JSON.stringify(self.peripherals[peripheral.address].info);
             // get the recent
             var recent   = JSON.stringify(peripheral);
 
@@ -175,15 +173,15 @@ export class CentralBle {
                 console.log('Device information updated.');
 
                 // is it expired?
-                if(this.peripherals[peripheral.name].expire <= Date.now()) {
+                if(this.peripherals[peripheral.address].expire <= Date.now()) {
                     // remove the peripheral
-                    delete self.peripherals[peripheral.name];
+                    delete self.peripherals[peripheral.address];
 
                     return self.peripherals;
                 }
 
                 // set peripheral info
-                self.peripherals[peripheral.name].info   = peripheral;
+                self.peripherals[peripheral.address].info   = peripheral;
             }
 
             return self.peripherals;

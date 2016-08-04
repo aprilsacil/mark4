@@ -144,20 +144,19 @@ export class SellerSignupPage {
 
                 return;
             }, (error) => {
-                console.log('seller signup error', error);
-               // loading.dismiss().then(() => {
-               //      // show an alert
-               //      setTimeout(() => {
-               //          var alert = Alert.create({
-               //              title: 'Error!',
-               //              subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
-               //              buttons: ['OK']
-               //          });
+               loading.dismiss().then(() => {
+                    // show an alert
+                    setTimeout(() => {
+                        var alert = Alert.create({
+                            title: 'Error!',
+                            subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
+                            buttons: ['OK']
+                        });
 
-               //          // render in the template
-               //          self.nav.present(alert);
-               //      }, 300);
-               // });
+                        // render in the template
+                        self.nav.present(alert);
+                    }, 300);
+               });
            });
     }
 }
