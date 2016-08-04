@@ -52,7 +52,10 @@
     <plugin name="de.appplant.cordova.plugin.local-notification" spec="~0.8.4" />
     <plugin name="cordova-plugin-camera" spec="~2.2.0" />
     <plugin name="cordova-plugin-network-information" spec="~1.2.1" />
+    <plugin name="phonegap-plugin-push" spec="https://github.com/phonegap/phonegap-plugin-push">
+        <variable name="SENDER_ID" value="527464074640" />
+    </plugin>
+    <engine name="android" spec="~5.1.1" />
     <icon src="resources/android/icon/drawable-xhdpi-icon.png" />
     <plugin name="cordova.plugins.diagnostic" spec="~3.1.1" />
-    <engine name="android" spec="~5.1.1" />
 </widget>

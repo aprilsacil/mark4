@@ -10,6 +10,7 @@ export class Buyer {
     looking_for: string = null;
     store: any = {};
     auth: string;
+    registration_id: any;
     purchase: number = 0;
     conversion: number = 0;
 
@@ -49,6 +50,11 @@ export class Buyer {
         // looking for message
         if (userInfo.looking_for) {
             this.looking_for = userInfo.looking_for;
+        }
+
+        // registration device id
+        if (userInfo.registration_id) {
+            this.registration_id = userInfo.registration_id;
         }
     }
 }

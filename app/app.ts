@@ -1,7 +1,6 @@
 import { Component, provide, ViewChild } from '@angular/core';
 import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
-import { Diagnostic, Network, StatusBar, LocalNotifications } from 'ionic-native';
-
+import { Diagnostic, Network, StatusBar, LocalNotifications, Push } from 'ionic-native';
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from './pages/seller-dashboard/seller-dashboard';
@@ -32,6 +31,10 @@ export class MyApp {
             // Here you can do any higher level native things you might need.
             StatusBar.styleDefault();
 
+            // start push notifications
+            this.pushNotifications();
+
+            // authentication events
             this.authenticationEvents();
         });
 
@@ -80,7 +83,8 @@ export class MyApp {
                             name: user.name,
                             job_description: user.job_description,
                             company_name: user.company_name,
-                            level: user.level
+                            level: user.level,
+                            registration_id: user.registration_id
                         }
 
                         // set data
@@ -132,19 +136,7 @@ export class MyApp {
 
             // listen to some existing events
             self.events.subscribe('app:local_notifications', (eventData) => {
-                var notification = eventData[0];
-
-                if (!notification) {
-                    return;
-                }
-
-                // notify
-                LocalNotifications.schedule({
-                    title: notification.title,
-                    text: notification.text,
-                    // at: new Date(new Date().getTime() + 5 * 1000),
-                    sound: null
-                });
+                self.localNotifications(eventData[0]);
             });
         });
 
@@ -167,6 +159,67 @@ export class MyApp {
             }, response => {
                 // turned off, prompt something
             });
+    }
+
+    /**
+     * Renders passed data as a notification
+     */
+    localNotifications(notification) {
+        if (!notification) {
+            return;
+        }
+
+        // notify
+        LocalNotifications.schedule({
+            title: notification.title,
+            text: notification.text,
+            at: new Date().getTime(),
+            sound: null
+        });
+    }
+
+    /**
+     * Handles the push notification services.
+     */
+    pushNotifications() {
+        var self = this;
+        var additionalData: any;
+
+        // initialize push
+        var push = Push.init({
+            android: {
+                senderID: "527464074640"
+            },
+            ios: {
+                alert: "true",
+                badge: "true",
+                sound: "true"
+            }
+        });
+
+        push.on('registration', function(data) {
+            console.log('registration', data);
+            // save registration id in the local storage
+            self.localStorage.setToLocal('registration_id', data.registrationId);
+        });
+
+        push.on('notification', function(data) {
+            console.log('notification', data);
+            additionalData = data.additionalData;
+
+            // prepare data
+            var notification = {
+                title: data.title,
+                text: additionalData.text
+            };
+
+            // notify
+            self.localNotifications(notification);
+        });
+
+        push.on('error', function(e) {
+            // e.message
+        });
     }
 
     /**
@@ -211,5 +264,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://127.0.0.1:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://cheers.dev/'})]);
+    provide('CouchDBEndpoint', {useValue: 'http://208.113.130.196:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://208.113.130.196/'})]);

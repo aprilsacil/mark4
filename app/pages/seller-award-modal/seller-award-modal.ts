@@ -10,9 +10,6 @@ import { Seller } from '../../models/seller';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
-var PouchDB = require('pouchdb');
-PouchDB.plugin(require('pouchdb-authentication'));
-
 /*
   Generated class for the SellerAwardModalPage page.
 
@@ -36,6 +33,13 @@ export class SellerAwardModalPage {
         store: <string> null,
         store_name: <string> null,
         store_image: <string> null
+    };
+    notif = {
+        ids: [],
+        data: {
+            title: null,
+            text: null
+        }
     };
     shopper: any;
     user = new Seller({});
@@ -105,15 +109,24 @@ export class SellerAwardModalPage {
         });
 
         var param = self.award;
-
         param.username      = self.shopper.name;
         param.image         = self.user.image;
         param.seller        = self.user.name;
         param.seller_name   = self.user.fullname;
         param.store         = self.user.store_uuid;
         param.store_name    = self.user.store.store_name;
-        param.store_image   =  self.user.store.store_image;
+        param.store_image   = self.user.store.store_image;
 
+        // notification parameters
+        self.notif = {
+            ids: [self.shopper.registration_id],
+            data: {
+                title: self.user.store.store_name + ' awarded you!',
+                text: self.award.message
+            }
+        }; 
+
+        // send history to api
         self.http
             .post(self.apiEndpoint + 'history?user=' + self.user.name +
             '&token=' + self.user.auth, param, {headers: headers})
@@ -122,6 +135,21 @@ export class SellerAwardModalPage {
                 if (!data.ok) {
                     return;
                 }
+
+                // send push notifications
+                self.http
+                    .post(self.apiEndpoint + 'push?user=' + self.user.name +
+                    '&token=' + self.user.auth, self.notif, {headers: headers})
+                    .map(response => response.json())
+                    .subscribe((data) => {}, (error) => {
+                        // there's an error, just show a message
+                        loading.dismiss().then(() => {
+                            setTimeout(() => {
+                                // show the message
+                                self.showToast('Something went wrong while sending award notification.');
+                            });
+                        });
+                    });
 
                 loading.dismiss().then(() => {
                     // close the modal

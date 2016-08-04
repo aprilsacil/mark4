@@ -7,6 +7,8 @@ import { SellerSignupPage } from '../seller-signup/seller-signup';
 import { BuyerDashboardPage } from '../buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from '../seller-dashboard/seller-dashboard';
 
+import { LocalStorageProvider } from '../../providers/storage/local-storage-provider';
+
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
@@ -25,15 +27,22 @@ export class BuyerSignupPage {
         password: <string> null,
         name: <string> null,
         roles: null,
-        level: null
+        level: null,
+        registration_id: null
     };
 
     constructor(
+        private localStorage: LocalStorageProvider,
         private nav: NavController,
         private http: Http,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
-    ) {}
+    ) {
+        // get registration id
+        this.localStorage.getFromLocal('registration_id').then((id) => {
+            this.buyer.registration_id = id || '';
+        });
+    }
 
     /**
      * Redirects to the login page
@@ -127,21 +136,23 @@ export class BuyerSignupPage {
                 loading.dismiss().then(() => {
                     self.goToLoginPage();
                 });
-            },
-            (error) => {
-               loading.dismiss().then(() => {
-                    // show an alert
-                    setTimeout(() => {
-                        var alert = Alert.create({
-                            title: 'Error!',
-                            subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
-                            buttons: ['OK']
-                        });
 
-                        // render in the template
-                        self.nav.present(alert);
-                    }, 300);
-               });
+                return;
+            }, (error) => {
+               console.log('buyer signup error', error);
+               // loading.dismiss().then(() => {
+               //      // show an alert
+               //      setTimeout(() => {
+               //          var alert = Alert.create({
+               //              title: 'Error!',
+               //              subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
+               //              buttons: ['OK']
+               //          });
+
+               //          // render in the template
+               //          self.nav.present(alert);
+               //      }, 300);
+               // });
             });
     }
 }
