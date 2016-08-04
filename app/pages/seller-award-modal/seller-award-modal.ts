@@ -30,9 +30,11 @@ export class SellerAwardModalPage {
         price: <string> null,
         message: <string> null,
         username: <string> null,
-        store: <string> null,
         seller: <string> null,
+        seller_name: <string> null,
         image: <string> null,
+        store: <string> null,
+        store_name: <string> null,
         store_image: <string> null
     };
     shopper: any;
@@ -107,7 +109,9 @@ export class SellerAwardModalPage {
         param.username      = self.shopper.name;
         param.image         = self.user.image;
         param.seller        = self.user.name;
+        param.seller_name   = self.user.fullname;
         param.store         = self.user.store_uuid;
+        param.store_name    = self.user.store.store_name;
         param.store_image   =  self.user.store.store_image;
 
         self.http
