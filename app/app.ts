@@ -83,7 +83,8 @@ export class MyApp {
                             name: user.name,
                             job_description: user.job_description,
                             company_name: user.company_name,
-                            level: user.level
+                            level: user.level,
+                            registration_id: user.registration_id
                         }
 
                         // set data
@@ -187,7 +188,7 @@ export class MyApp {
         // initialize push
         var push = Push.init({
             android: {
-                senderID: "86572216527"
+                senderID: "527464074640"
             },
             ios: {
                 alert: "true",
@@ -228,9 +229,7 @@ export class MyApp {
         var self = this;
 
         // initialize this
-
-        //self.centralBle.init();
-
+        self.centralBle.init();
 
         this.events.subscribe('central:start_scan', (eventData) => {
             console.log('event: start scan');
@@ -253,8 +252,7 @@ export class MyApp {
         var self = this;
 
         // initialize the peripheral ble
-        //self.peripheralBle.init();
-
+        self.peripheralBle.init();
 
         self.events.subscribe('peripheral:stop', () => {
             self.peripheralBle.stop();
@@ -266,5 +264,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.123:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.0.123/'})]);
+    provide('CouchDBEndpoint', {useValue: 'http://192.168.1.40:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://192.168.1.40/'})]);

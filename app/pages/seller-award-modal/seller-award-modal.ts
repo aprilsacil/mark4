@@ -32,6 +32,13 @@ export class SellerAwardModalPage {
         image: <string> null,
         store_image: <string> null
     };
+    notif = {
+        ids: [],
+        data: {
+            title: null,
+            text: null
+        }
+    };
     shopper: any;
     user = new Seller({});
 
@@ -100,13 +107,22 @@ export class SellerAwardModalPage {
         });
 
         var param = self.award;
-
         param.username      = self.shopper.name;
         param.image         = self.user.image;
         param.seller        = self.user.name;
         param.store         = self.user.store_uuid;
-        param.store_image   =  self.user.store.store_image;
+        param.store_image   = self.user.store.store_image;
 
+        // notification parameters
+        self.notif = {
+            ids: [self.shopper.registration_id],
+            data: {
+                title: self.user.store.store_name + ' awarded you:',
+                text: self.award.message
+            }
+        }; 
+
+        // send history to api
         self.http
             .post(self.apiEndpoint + 'history?user=' + self.user.name +
             '&token=' + self.user.auth, param, {headers: headers})
@@ -115,6 +131,21 @@ export class SellerAwardModalPage {
                 if (!data.ok) {
                     return;
                 }
+
+                // send push notifications
+                self.http
+                    .post(self.apiEndpoint + 'push?user=' + self.user.name +
+                    '&token=' + self.user.auth, self.notif, {headers: headers})
+                    .map(response => response.json())
+                    .subscribe((data) => {}, (error) => {
+                        // there's an error, just show a message
+                        loading.dismiss().then(() => {
+                            setTimeout(() => {
+                                // show the message
+                                self.showToast('Something went while sending award notification.');
+                            });
+                        });
+                    });
 
                 loading.dismiss().then(() => {
                     // close the modal

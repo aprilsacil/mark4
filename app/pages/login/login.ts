@@ -168,7 +168,8 @@ export class LoginPage {
                         name: buyer.name,
                         job_description: buyer.job_description,
                         company_name: buyer.company_name,
-                        level: buyer.level
+                        level: buyer.level,
+                        registration_id: this.login.registration_id
                     }
 
                     // let's advertise
