@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Events } from 'ionic-angular';
+
+import { Diagnostics } from '../diagnostics/diagnostics';
 import { LocalStorageProvider } from '../storage/local-storage-provider';
 
 declare var bluetoothle: any;
@@ -19,6 +21,7 @@ export class CentralBle {
     private stopScanTimeout: any;
 
     constructor(
+        private diagnostics: Diagnostics,
         private events: Events,
         private localStorageProvider: LocalStorageProvider
     ) {}
@@ -82,6 +85,21 @@ export class CentralBle {
 
         // start scanning
         self.central.scan((response) => {
+            console.log('scan', response);
+            // check if location services is enabled.
+            // there's no way to check if the location services is enabled using
+            // the library so we're going to use the Diagnostics plugin
+            self.diagnostics.locationServices().then(response => {
+                console.log(response)
+                // if (!response.enabled) {
+                //     self.events.publish('central:location_disabled');
+
+                //     // stop
+                //     self.stop();
+                //     return;
+                // }
+            });
+
             // peripheral result?
             if(response.status === 'scanResult') {
                 // maximum rssi?
@@ -93,6 +111,7 @@ export class CentralBle {
                 self.peripherals = self.handleScan(response);
             }
         }, (response) => {
+            console.log('scan error', response);
             self.events.publish('central:bluetooth_disabled');
         });
 

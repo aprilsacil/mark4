@@ -41,10 +41,24 @@ export class Diagnostics {
         });
     }
 
+    locationServices() {
+        return new Promise((resolve, reject) => {
+            // check location services
+            Diagnostic.isLocationEnabled().then(response => {
+                if (!response) {
+                    reject({
+                        enabled: false
+                    });
+                }
+
+                resolve({ enabled: true });
+            });
+        });
+    }
+
     gpsStatus() {
         return new Promise((resolve, reject) => {
             Diagnostic.isGpsLocationEnabled().then(response => {
-                console.log('gps', response);
                 if (response) {
                     resolve({
                         tool: 'gps',
