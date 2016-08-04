@@ -236,9 +236,8 @@ export class BuyerDashboardPage {
         // perform request to the api
         self.http
             .get(
-                self.apiEndpoint + 'history?type=' + param.type + '&search=' + param.search, {
-                    headers: headers
-                })
+                self.apiEndpoint + 'history?user=' + user.name + '&token=' + user.auth +
+                '&type=' + param.type + '&search=' + param.search, {headers: headers})
             .map(response => response.json())
             .subscribe((data) => {
                 // check if there's a response or something

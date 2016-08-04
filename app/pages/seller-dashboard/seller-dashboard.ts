@@ -1,4 +1,5 @@
 import { Component, Inject, NgZone } from '@angular/core';
+import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
 import { Alert, Events, Modal, NavController, ViewController } from 'ionic-angular';
 
 import { SellerAssociatesPage } from '../seller-associates/seller-associates';
@@ -13,6 +14,10 @@ import { CheersAvatar } from '../../components/cheers-avatar/cheers-avatar';
 
 import { Buyer } from '../../models/buyer';
 import { Seller } from '../../models/seller';
+
+import 'rxjs/add/operator/toPromise';
+import 'rxjs/add/operator/map';
+
 
 /*
   Generated class for the SellerDashboardPage page.
@@ -37,7 +42,9 @@ export class SellerDashboardPage {
         private nav: NavController,
         private view: ViewController,
         private zone: NgZone,
-        @Inject('CouchDBEndpoint') private couchDbEndpoint: string
+        private http: Http,
+        @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
+        @Inject('APIEndpoint') private apiEndpoint: string
     ) {
         this.scanning = false;
 
@@ -116,6 +123,8 @@ export class SellerDashboardPage {
                     if (self.shoppers[s]._id == buyer._id) {
                         // update the object
                         self.zone.run(() => {
+                            buyer.purchase = self.shoppers[s].purchase;
+                            buyer.conversion = self.shoppers[s].conversion;
                             self.shoppers[s] = buyer;
                         });
 
@@ -132,7 +141,55 @@ export class SellerDashboardPage {
 
                 // update
                 self.zone.run(() => {
+                    var index = self.shoppers.length;
                     self.shoppers.push(buyer);
+
+                    var headers = new Headers({
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    });
+
+                    // connection of user
+                    self.http
+                    .get(self.apiEndpoint + 'connection?user='+self.user.name+
+                        '&token='+self.user.auth+'&search='+buyer.name+'&store='
+                        +self.user.store_uuid, {headers: headers})
+                    .map(response => response.json())
+                    .subscribe((data) => {
+                        if(!data) {
+                            self.shoppers[index].purchase = 0;
+                            self.shoppers[index].conversion = 0;
+                        } else {
+                            var connections = data + 1;
+
+                            self.http
+                                .get(self.apiEndpoint + 'history?user='+self.user.name+
+                                    '&token='+self.user.auth+'&search='+self.user.name+'-'+
+                                    buyer.name+'&type=per_user_store', {headers: headers})
+                                .map(response => response.json())
+                                .subscribe((data) => {
+                                    self.shoppers[index].purchase = data.total_rows;
+                                    self.shoppers[index].conversion = Math.round((data.total_rows / connections) * 100);
+
+                                }, (error) => {
+                                console.log('History error:', error);
+                            });
+                        }
+                    }, (error) => {
+                        console.log('Connection error:', error);
+                    });
+
+                    var param = {
+                        user: buyer.name,
+                        store: self.user.store_uuid,
+                        detected: 1
+                    };
+
+                    // send connection
+                    self.http
+                    .post(self.apiEndpoint + 'connection?user='+self.user.name+
+                        '&token='+self.user.auth, param, {headers: headers})
+                    .map(response => response.json())
+                    .subscribe((data) => {});
 
                     // prepare the text for the notification
                     text = (buyer.looking_for) ?

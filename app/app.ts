@@ -211,5 +211,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.0.123:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.0.123/'})]);
+    provide('CouchDBEndpoint', {useValue: 'http://127.0.0.1:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://cheers.dev/'})]);
