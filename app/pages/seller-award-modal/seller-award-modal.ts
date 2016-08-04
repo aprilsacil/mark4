@@ -117,7 +117,7 @@ export class SellerAwardModalPage {
         self.notif = {
             ids: [self.shopper.registration_id],
             data: {
-                title: self.user.store.store_name + ' awarded you:',
+                title: self.user.store.store_name + ' awarded you!',
                 text: self.award.message
             }
         }; 
@@ -142,7 +142,7 @@ export class SellerAwardModalPage {
                         loading.dismiss().then(() => {
                             setTimeout(() => {
                                 // show the message
-                                self.showToast('Something went while sending award notification.');
+                                self.showToast('Something went wrong while sending award notification.');
                             });
                         });
                     });
