@@ -101,14 +101,15 @@ export class SellerAwardModalPage {
 
         var param = self.award;
 
-        param.username  = self.shopper.name;
-        param.image     = self.user.image;
-        param.seller     = self.user.name;
-        param.store     = self.user.store_uuid;
-        param.store_image =  self.user.store.store_image;
+        param.username      = self.shopper.name;
+        param.image         = self.user.image;
+        param.seller        = self.user.name;
+        param.store         = self.user.store_uuid;
+        param.store_image   =  self.user.store.store_image;
 
         self.http
-            .post(self.apiEndpoint + 'history', param, {headers: headers})
+            .post(self.apiEndpoint + 'history?user=' + self.user.name +
+            '&token=' + self.user.auth, param, {headers: headers})
             .map(response => response.json())
             .subscribe((data) => {
                 if (!data.ok) {

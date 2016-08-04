@@ -30,7 +30,13 @@ import 'rxjs/add/operator/map';
 })
 export class SellerShopperViewPage {
     seller = new Seller({});
-    shopper = { _id: <string> null, image: <string> null };
+    shopper = { 
+        _id: <string> null,
+        name: <string> null, 
+        image: <string> null,
+        purchase: <number> 0,
+        conversion: <number> 0
+    };
     history = [];
 
     constructor(
@@ -80,28 +86,6 @@ export class SellerShopperViewPage {
             type: 'per_user_store',
             search: this.seller.name + '-' + this.shopper._id.replace('org.couchdb.user:', '')
         };
-
-        this.http
-            .get(this.apiEndpoint + 'history?type=' + param.type +
-                '&search=' + param.search, {headers: headers})
-            .map(response => response.json())
-            .subscribe((data) => {
-                for ( var i in data.rows ) {
-                    this.history.push(data.rows[i].value);
-                }
-            }, (error) => {
-                // show an alert
-                setTimeout(() => {
-                    var alert = Alert.create({
-                        title: 'Error!',
-                        subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
-                        buttons: ['OK']
-                    });
-
-                    // render in the template
-                    self.nav.present(alert);
-                }, 300);
-            });
     }
 
     /**

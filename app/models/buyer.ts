@@ -11,6 +11,8 @@ export class Buyer {
     store: any = {};
     auth: string;
     registration_id: any;
+    purchase: number = 0;
+    conversion: number = 0;
 
     constructor(userInfo: any) {
         // assign things

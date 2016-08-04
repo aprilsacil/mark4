@@ -71,10 +71,10 @@
                         <ion-icon name="star" bright></ion-icon> {{shopper.level}}
                     </span>
                     <span class="went-by">
-                        <ion-icon name="refresh" cheers></ion-icon> 0
+                        <ion-icon name="refresh" cheers></ion-icon> {{shopper.purchase}}
                     </span>
                     <span class="conversions">
-                        <ion-icon name="cash" secondary></ion-icon> 0%
+                        <ion-icon name="cash" secondary></ion-icon> {{shopper.conversion}}%
                     </span>
                 </p>
                 <p class="looking-for" *ngIf="shopper.looking_for">
