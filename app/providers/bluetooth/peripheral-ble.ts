@@ -46,7 +46,7 @@ export class PeripheralBle {
         this.advertising = setInterval(() => {
             console.log('advertising...');
             this.advertise();
-        }, 5000);
+        }, 2500);
 
         // on debug
         this.peripheral.onDebug((message) => {
@@ -56,6 +56,7 @@ export class PeripheralBle {
 
         // on peripheral callback
         this.peripheral.onInitPeripheral((response) => {
+            console.log('init peripheral', response);
             // if we are connected
             if(response.status === 'connected') {
                 this.central = response;
@@ -120,7 +121,7 @@ export class PeripheralBle {
                 // start interval
                 this.advertising = setInterval(() => {
                     this.advertise();
-                }, 10000);
+                }, 5000);
 
                 return;
             }
