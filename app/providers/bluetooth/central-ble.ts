@@ -311,7 +311,7 @@ export class CentralBle {
                     _id: user._id,
                     name: user.name,
                     fullname: user.fullname,
-                    store_name: user.store_name,
+                    store_name: user.store.store_name,
                     emote_message: message
                 }
 
