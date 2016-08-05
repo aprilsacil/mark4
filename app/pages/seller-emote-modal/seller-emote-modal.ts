@@ -104,8 +104,7 @@ export class SellerEmoteModalPage {
             var data = {
                 _id : user._id,
                 fullname: user.fullname,
-                image: user.image,
-                store: user.store,
+                store: { store_name: user.store.store_name},
                 emote: this.emote.message
             }
 

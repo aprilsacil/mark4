@@ -273,7 +273,7 @@ export class CentralBle {
 
             console.log('info', information);
 
-            if (!information.device.services) {
+            if (!information.device || !information.device.services) {
                 continue;
             }
 
@@ -340,8 +340,7 @@ export class CentralBle {
                     _id: user._id,
                     name: user.name,
                     fullname: user.fullname,
-                    image: user.image,
-                    store: user.store,
+                    store: {store_name: user.store.store_name},
                     emote_message: message
                 }
 

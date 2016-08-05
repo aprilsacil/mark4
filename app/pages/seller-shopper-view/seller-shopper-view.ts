@@ -96,7 +96,7 @@ export class SellerShopperViewPage {
             .map(response => response.json())
             .subscribe((data) => {
                 if(data.rows) {
-                    self.shopper.level = Math.floor((Math.sqrt(data.rows[0].value / 15) / 2));
+                    self.shopper.level = Math.floor((Math.sqrt(data.rows[0].value / 15) / 3));
                 }
 
             }, (error) => {
