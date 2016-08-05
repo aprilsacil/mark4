@@ -1,6 +1,7 @@
 import { Component, provide, ViewChild } from '@angular/core';
 import { Alert, Events, Platform, ionicBootstrap } from 'ionic-angular';
 import { Diagnostic, Network, StatusBar, LocalNotifications, Push } from 'ionic-native';
+
 import { BuyerSignupPage } from './pages/buyer-signup/buyer-signup';
 import { BuyerDashboardPage } from './pages/buyer-dashboard/buyer-dashboard';
 import { SellerDashboardPage } from './pages/seller-dashboard/seller-dashboard';
@@ -39,7 +40,7 @@ export class MyApp {
         });
 
         // run events when the application is in background mode
-        this.backgroundEvents();
+        // this.backgroundEvents();
     }
 
     /**
@@ -58,8 +59,8 @@ export class MyApp {
                     // check it's almost 10 minutes
                     if (difference >= 600) {
                         // if it's almost 10 minutes, set the root page to the relog page
-                        this.rootPage = ReloginPage;
-                        return;
+                        // this.rootPage = ReloginPage;
+                        // return;
                     }
 
                     // get the user
@@ -230,10 +231,7 @@ export class MyApp {
         // initialize this
         self.centralBle.init();
 
-        this.events.subscribe('central:start_scan', (eventData) => {
-            console.log('event: start scan');
-
-            // start scanning
+        this.events.subscribe('central:start_scan', () => {
             self.centralBle.scan();
         });
 

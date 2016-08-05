@@ -37,16 +37,21 @@ export class CheersAvatar {
      * Will run once the component was initialized
      */
     ngOnInit() {
-        this.localStorage.getFromLocal('user').then((data) => {
-            this.seller = JSON.parse(data);
+        var self = this;
 
-            // get the user details
-            if (!this.user.image) {
-                this.getUserDetails();
-            }
+        if (!self.user.image || self.user.image.length == 0) {
+            // check if the image already exists in the cache?
+            self.localStorage.getFromLocal('chimg_' + self.user._id).then(image => {
+                if (image) {
+                    self.user.image = image;
+                    return;
+                }
 
-            this.fetching = false;
-        });
+                // get user details from api
+                self.getUserDetails();
+                return;
+            })
+        }
     }
 
     /**

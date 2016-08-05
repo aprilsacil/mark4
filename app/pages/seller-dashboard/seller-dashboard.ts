@@ -56,6 +56,20 @@ export class SellerDashboardPage {
             // get user details again from the local storage
             this.getUser();
         });
+
+        // start scan?
+
+        // listen for event if the bluetooth or location services is turned off
+        this.events.subscribe('central:bluetooth_disabled', () => {
+            var alert = Alert.create({
+                title: 'Bluetooth is turned off',
+                message: 'Please enable bluetooth to detect nearby buyers.',
+                buttons: ['OK']
+            });
+
+            // render
+            this.nav.present(alert);
+        });
     }
 
     /**
