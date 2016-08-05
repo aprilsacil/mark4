@@ -24,6 +24,7 @@ import 'rxjs/add/operator/map';
 })
 export class CheersAvatar {
     @Input() user: any;
+    @Input() storeImage: boolean;
     seller = { name: <string> null, auth: <string> null };
     fetching = true;
 
@@ -39,19 +40,34 @@ export class CheersAvatar {
     ngOnInit() {
         var self = this;
 
-        if (!self.user.image || self.user.image.length == 0) {
-            // check if the image already exists in the cache?
-            self.localStorage.getFromLocal('chimg_' + self.user._id).then(image => {
-                if (image) {
-                    self.user.image = image;
-                    return;
-                }
+         this.localStorage.getFromLocal('user')
+            .then((response) => {
+                // assign response to the class variable
+                this.seller = JSON.parse(response);
+                
+                // check if the image already exists in the cache?
+                self.localStorage.getFromLocal('chimg_store_' + self.user._id).then(image => {
+                    if (image) {
+                        self.user.store.store_image = image;
+                        return;
+                    }
+                })
 
-                // get user details from api
-                self.getUserDetails();
-                return;
-            })
-        }
+                if (!self.user.image || self.user.image.length == 0) {
+                    // check if the image already exists in the cache?
+                    self.localStorage.getFromLocal('chimg_user_' + self.user._id).then(image => {
+                        if (image) {
+                            self.user.image = image;
+                            return;
+                        }
+
+                        // get user details from api
+                        self.getUserDetails();
+                        return;
+                    })
+                }
+            });
+
     }
 
     /**
@@ -83,9 +99,21 @@ export class CheersAvatar {
                         // save image data to cache if there's an image provided
                         if (this.user.image) {
                             // remove first
-                            this.localStorage.removeFromLocal('chimg_' + this.user._id);
+                            this.localStorage.removeFromLocal('chimg_user_' + this.user._id);
                             // set
-                            this.localStorage.setToLocal('chimg_' + this.user._id, this.user.image);
+                            this.localStorage.setToLocal('chimg_user_' + this.user._id, this.user.image);
+                        } else {
+                            this.user.image = null;
+                        }
+                        
+
+                        // save image data to cache if there's a store image provided
+                        if (this.user.store.store_image) {
+                            console.log('THERE IS A STORE IMAGE');
+                            // remove first
+                            this.localStorage.removeFromLocal('chimg_store_' + this.user._id);
+                            // set
+                            this.localStorage.setToLocal('chimg_store_' + this.user._id, this.user.store.store_image);
                         }
                         continue;
                     }
@@ -93,7 +121,15 @@ export class CheersAvatar {
             }, (error) => {
                 // most likely no internet connection
                 // check cache
-                this.localStorage.getFromLocal('chimg_' + this.user._id).then((data) => {
+                if (this.storeImage) {
+                    this.localStorage.getFromLocal('chimg_store_' + this.user._id).then((data) => {
+                        if (data) {
+                            this.user.store.store.image = data;
+                        }
+                    })
+                } 
+
+                this.localStorage.getFromLocal('chimg_user_' + this.user._id).then((data) => {
                     if (data) {
                         this.user.image = data;
                     }

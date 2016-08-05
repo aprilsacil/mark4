@@ -4,8 +4,12 @@
   See https://angular.io/docs/ts/latest/api/core/ComponentMetadata-class.html
   for more info on Angular 2 Components.
 -->
+<ion-avatar class="cheers-avatar avatar" *ngIf="user.store">
+    <img [src]="user.store.store_image" *ngIf="user.store.store_image"/>
+</ion-avatar>
+
 <ion-avatar class="cheers-avatar avatar" *ngIf="user">
-    <img src="img/default_avatar.jpg" *ngIf="!user.image && !fetching">
-    <img [src]="user.image" *ngIf="!fetching && user.image"/>
+    <img src="img/default_avatar.jpg" *ngIf="!user.image">
+    <img [src]="user.image" *ngIf="user.image"/>
     <!-- <p class="user-fullname" *ngIf="!fetching && !user.image">{{user.fullname}}</p> -->
 </ion-avatar>
