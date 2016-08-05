@@ -270,7 +270,6 @@ export class BuyerDashboardPage {
         }
 
         seller = new Seller(seller);
-        console.log(seller);
 
         // check if there are lists of sellers
         if (self.sellers || self.sellers.length !== 0) {
