@@ -214,7 +214,7 @@ export class SellerDashboardPage {
                         .subscribe((data) => {
                             console.log(data.rows);
                             if(data.rows) {
-                                self.shopper.level = Math.floor((Math.sqrt(data.rows[0].value / 15) / 2));
+                                self.shoppers[index].level = Math.floor((Math.sqrt(data.rows[0].value / 15) / 3));
                             }
 
                         }, (error) => {
