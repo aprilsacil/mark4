@@ -61,11 +61,6 @@ export class ReloginPage {
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = JSON.parse(data);
         });
-
-        // get registration id
-        this.localStorage.getFromLocal('registration_id').then((id) => {
-            this.relogin.registration_id = id || '';
-        });
     }
 
     /**
@@ -116,100 +111,104 @@ export class ReloginPage {
             'Content-Type': 'application/x-www-form-urlencoded'
         });
 
-        var param = {
-            username: this.user.name,
-            password: this.relogin.password,
-            registration_id : this.relogin.registration_id
-        };
+        // get registration id
+        this.localStorage.getFromLocal('registration_id').then((id) => {
+            this.relogin.registration_id = id || '';
 
-        this.http
-            .post(this.apiEndpoint + 'authenticate', param, {headers: headers})
-            .map(response => response.json())
-            .subscribe((data) => {
-                if(data.error) {
-                    // remove the loader
-                    loading.dismiss().then(() => {
+            var param = {
+                username: this.user.name,
+                password: this.relogin.password,
+                registration_id : this.relogin.registration_id
+            };
+        
+            this.http
+                .post(this.apiEndpoint + 'authenticate', param, {headers: headers})
+                .map(response => response.json())
+                .subscribe((data) => {
+                    if(data.error) {
+                        // remove the loader
+                        loading.dismiss().then(() => {
+                            // show an alert
+                            setTimeout(() => {
+                                var alert = Alert.create({
+                                    title: 'Error!',
+                                    subTitle: data.errors[0],
+                                    buttons: ['OK']
+                                });
+
+                                // render in the template
+                                self.nav.present(alert);
+                            }, 300);
+                        });
+
+                        return;
+                    }
+
+                    var user = data.user;
+                    user.level = Math.floor((Math.sqrt(user.experience / 15) / 2));
+
+                    // set the timestamp
+                    self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
+
+                    // if seller redirect to seller dashboard
+                    if(user.roles === 'seller') {
+                        /// save user data to the local storage
+                        self.localStorage.setToLocal('user', JSON.stringify(new Seller(user)));
+
+                        // broadcast event to start some event listeners
+                        this.events.publish('central:start', JSON.stringify(new Seller(user)));
+
+                        // remove loader and set the root page
+                        loading.dismiss().then(() => {
+                            this.nav.setRoot(SellerDashboardPage);
+                        });
+                    }
+
+                    // if buyer redirect to buyer dashboard
+                    if(user.roles === 'buyer') {
+                        var buyer = new Buyer(user);
+
+                        // save user data to the local storage
+                        self.localStorage.setToLocal('user', JSON.stringify(buyer));
+
+                        // broadcast event to start some event listeners
+                        this.events.publish('peripheral:start');
+
+                        // set the data to be advertised
+                        var advertiseData = {
+                            _id : buyer._id,
+                            fullname: buyer.fullname,
+                            name: buyer.name,
+                            job_description: buyer.job_description,
+                            company_name: buyer.company_name,
+                            level: buyer.level
+                        }
+
+                        // let's advertise
+                        this.events.publish('peripheral:set_buyer_data', advertiseData);
+
+                        // remove loader and set the root page
+                        loading.dismiss().then(() => {
+                            this.nav.setRoot(BuyerDashboardPage);
+                        });
+                    }
+                }, 
+                (error) => {
+                   loading.dismiss().then(() => {
                         // show an alert
                         setTimeout(() => {
                             var alert = Alert.create({
                                 title: 'Error!',
-                                subTitle: data.errors[0],
+                                subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
                                 buttons: ['OK']
                             });
 
                             // render in the template
                             self.nav.present(alert);
                         }, 300);
-                    });
-
-                    return;
-                }
-
-                var user = data.user;
-                user.level = Math.floor((Math.sqrt(user.experience / 15) / 2));
-
-                // set the timestamp
-                self.localStorage.setToLocal('timestamp', Math.round(new Date().getTime()/1000));
-
-                // if seller redirect to seller dashboard
-                if(user.roles === 'seller') {
-                    /// save user data to the local storage
-                    self.localStorage.setToLocal('user', JSON.stringify(new Seller(user)));
-
-                    // broadcast event to start some event listeners
-                    this.events.publish('central:start', JSON.stringify(new Seller(user)));
-
-                    // remove loader and set the root page
-                    loading.dismiss().then(() => {
-                        this.nav.setRoot(SellerDashboardPage);
-                    });
-                }
-
-                // if buyer redirect to buyer dashboard
-                if(user.roles === 'buyer') {
-                    var buyer = new Buyer(user);
-
-                    // save user data to the local storage
-                    self.localStorage.setToLocal('user', JSON.stringify(buyer));
-
-                    // broadcast event to start some event listeners
-                    this.events.publish('peripheral:start');
-
-                    // set the data to be advertised
-                    var advertiseData = {
-                        _id : buyer._id,
-                        fullname: buyer.fullname,
-                        name: buyer.name,
-                        job_description: buyer.job_description,
-                        company_name: buyer.company_name,
-                        level: buyer.level,
-                        registration_id: this.relogin.registration_id
-                    }
-
-                    // let's advertise
-                    this.events.publish('peripheral:set_buyer_data', advertiseData);
-
-                    // remove loader and set the root page
-                    loading.dismiss().then(() => {
-                        this.nav.setRoot(BuyerDashboardPage);
-                    });
-                }
-            }, 
-            (error) => {
-               loading.dismiss().then(() => {
-                    // show an alert
-                    setTimeout(() => {
-                        var alert = Alert.create({
-                            title: 'Error!',
-                            subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
-                            buttons: ['OK']
-                        });
-
-                        // render in the template
-                        self.nav.present(alert);
-                    }, 300);
+                   });
                });
-           });
+            });
     }
 
     /**

@@ -84,8 +84,7 @@ export class MyApp {
                             name: user.name,
                             job_description: user.job_description,
                             company_name: user.company_name,
-                            level: user.level,
-                            registration_id: user.registration_id
+                            level: user.level
                         }
 
                         // set data

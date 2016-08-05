@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { HTTP_PROVIDERS, Http, Headers } from '@angular/http';
-import { Events, Modal, NavController, NavParams, Alert } from 'ionic-angular';
+import { Events, Modal, NavController, NavParams, Alert, Toast } from 'ionic-angular';
 
 import { SellerAwardModalPage } from '../seller-award-modal/seller-award-modal';
 
@@ -73,6 +73,19 @@ export class SellerShopperViewPage {
     }
 
     /**
+     * Render and shows a toast message
+     */
+    showToast(message) {
+        var toast = Toast.create({
+            message: message,
+            duration: 3000
+        });
+
+        // render in the template
+        this.nav.present(toast);
+    }
+
+    /**
      * Fetches the list of awards/products given/bought by the user based on
      * the current store viewing.
      */
@@ -124,17 +137,10 @@ export class SellerShopperViewPage {
                     this.shopper.conversion = Math.round((this.shopper.purchase / connection) * 100);
                 });
             }, (error) => {
-                // show an alert
                 setTimeout(() => {
-                    var alert = Alert.create({
-                        title: 'Error!',
-                        subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
-                        buttons: ['OK']
-                    });
-
-                    // render in the template
-                    self.nav.present(alert);
-                }, 300);
+                    // show the message
+                    self.showToast('Something went wrong while fetching customer data.');
+                });
             });
     }
 
