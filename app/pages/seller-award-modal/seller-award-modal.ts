@@ -41,6 +41,7 @@ export class SellerAwardModalPage {
             text: null
         }
     };
+    registration_id = [];
     shopper: any;
     user = new Seller({});
 
@@ -60,6 +61,9 @@ export class SellerAwardModalPage {
         // get logged in user details
         this.localStorage.getFromLocal('user').then((data) => {
             this.user = new Seller(JSON.parse(data));
+
+            // get the customer details
+            this.getCustomerDetails();
         });
     }
 
@@ -117,15 +121,6 @@ export class SellerAwardModalPage {
         param.store_name    = self.user.store.store_name;
         param.store_image   = self.user.store.store_image;
 
-        // notification parameters
-        self.notif = {
-            ids: [self.shopper.registration_id],
-            data: {
-                title: self.user.store.store_name + ' awarded you!',
-                text: self.award.message
-            }
-        }; 
-
         // send history to api
         self.http
             .post(self.apiEndpoint + 'history?user=' + self.user.name +
@@ -136,20 +131,8 @@ export class SellerAwardModalPage {
                     return;
                 }
 
-                // send push notifications
-                self.http
-                    .post(self.apiEndpoint + 'push?user=' + self.user.name +
-                    '&token=' + self.user.auth, self.notif, {headers: headers})
-                    .map(response => response.json())
-                    .subscribe((data) => {}, (error) => {
-                        // there's an error, just show a message
-                        loading.dismiss().then(() => {
-                            setTimeout(() => {
-                                // show the message
-                                self.showToast('Something went wrong while sending award notification.');
-                            });
-                        });
-                    });
+                // award push notifications
+                self.awardPushNotifications();
 
                 loading.dismiss().then(() => {
                     // close the modal
@@ -172,6 +155,77 @@ export class SellerAwardModalPage {
                         // show the message
                         self.showToast('Something went wrong. Please try again later.');
                     });
+                });
+            });
+    }
+
+    /**
+     * Get the customer details for push notifications
+     */
+    getCustomerDetails() {
+        var self = this;
+
+        // set the headers
+        var headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
+
+        // parameter for search
+        var param = {
+            type: 'invite',
+            search: self.shopper.name
+        };
+
+        // pull details from the api
+        self.http
+            .post(self.apiEndpoint + 'users?user=' + self.user.name +
+            '&token=' + self.user.auth, param, {headers: headers})
+            .map(response => response.json())
+            .subscribe((data) => {
+                data = data.rows;
+                for ( var i in data ) {
+                    self.registration_id.push({
+                        registration_id: data[i].value[2]
+                    });
+                }
+
+            }, (error) => {
+                setTimeout(() => {
+                    // show the message
+                    self.showToast('Something went wrong while fetching customer data.');
+                });
+            });
+    }
+
+    /**
+     * Send award push notifications
+     */
+    awardPushNotifications() {
+        var self = this;
+
+        // set the headers
+        var headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
+
+        // notification parameters
+        self.notif = {
+            ids: self.registration_id[0]['registration_id'],
+            data: {
+                title: self.user.store.store_name + ' awarded you!',
+                text: self.award.message
+            }
+        }; 
+
+        // send push notifications
+        self.http
+            .post(self.apiEndpoint + 'push?user=' + self.user.name +
+            '&token=' + self.user.auth, self.notif, {headers: headers})
+            .map(response => response.json())
+            .subscribe((data) => {}, (error) => {
+                setTimeout(() => {
+                    // show the message
+                    self.showToast('Something went wrong while sending award notification.');
                 });
             });
     }

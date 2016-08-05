@@ -89,7 +89,7 @@ export class SellerAssociatesPage {
 						username: data[i].key,
 						fullname: data[i].value[0],
                         image: data[i].value[1],
-						registration_id: data[i].value[2][0]
+						registration_id: data[i].value[2]
 					});
 				}
 			}, (error) => {
@@ -138,7 +138,7 @@ export class SellerAssociatesPage {
                     this.associates.push({
                         fullname: data[i].value[0],
                         image: data[i].value[1],
-                        registration_id: data[i].value[2][0],
+                        registration_id: data[i].value[2]
                     });
                 }
             }, (error) => {
@@ -160,7 +160,7 @@ export class SellerAssociatesPage {
     	};
 
         this.notif = {
-            ids: [user.registration_id],
+            ids: user.registration_id,
             data: {
                 title: this.user.fullname + ' invited you!',
                 text: 'Work at ' + this.user.store.store_name

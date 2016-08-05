@@ -37,12 +37,7 @@ export class BuyerSignupPage {
         private http: Http,
         @Inject('CouchDBEndpoint') private couchDbEndpoint: string,
         @Inject('APIEndpoint') private apiEndpoint: string
-    ) {
-        // get registration id
-        this.localStorage.getFromLocal('registration_id').then((id) => {
-            this.buyer.registration_id = id || '';
-        });
-    }
+    ) {}
 
     /**
      * Redirects to the login page
@@ -105,53 +100,58 @@ export class BuyerSignupPage {
             'Content-Type': 'application/x-www-form-urlencoded'
         });
 
-        // set the role and the level
-        this.buyer.roles = 'buyer';
-        this.buyer.level = 0;
+        // get registration id
+        this.localStorage.getFromLocal('registration_id').then((id) => {
+            this.buyer.registration_id = id || '';
+        
+            // set the role and the level
+            this.buyer.roles = 'buyer';
+            this.buyer.level = 0;
+        
+            // perform request
+            this.http
+                .post(this.apiEndpoint + 'register', this.buyer, { headers: headers })
+                .map(response => response.json())
+                .subscribe((data) => {
+                    if(data.error) {
+                        // remove the loader
+                        loading.dismiss().then(() => {
+                            // show an alert
+                            setTimeout(() => {
+                                var alert = Alert.create({
+                                    title: 'Error!',
+                                    subTitle: data.errors[0],
+                                    buttons: ['OK']
+                                });
 
-        // perform request
-        this.http
-            .post(this.apiEndpoint + 'register', this.buyer, { headers: headers })
-            .map(response => response.json())
-            .subscribe((data) => {
-                if(data.error) {
-                    // remove the loader
+                                // render in the template
+                                self.nav.present(alert);
+                            }, 300);
+                        });
+
+                        return;
+                    }
+
                     loading.dismiss().then(() => {
+                        self.goToLoginPage();
+                    });
+
+                    return;
+                }, (error) => {
+                   loading.dismiss().then(() => {
                         // show an alert
                         setTimeout(() => {
                             var alert = Alert.create({
                                 title: 'Error!',
-                                subTitle: data.errors[0],
+                                subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
                                 buttons: ['OK']
                             });
 
                             // render in the template
                             self.nav.present(alert);
                         }, 300);
-                    });
-
-                    return;
-                }
-
-                loading.dismiss().then(() => {
-                    self.goToLoginPage();
+                   });
                 });
-
-                return;
-            }, (error) => {
-               loading.dismiss().then(() => {
-                    // show an alert
-                    setTimeout(() => {
-                        var alert = Alert.create({
-                            title: 'Error!',
-                            subTitle: 'It seems we cannot process your request. Make sure you are connected to the internet to proceed.',
-                            buttons: ['OK']
-                        });
-
-                        // render in the template
-                        self.nav.present(alert);
-                    }, 300);
-               });
             });
     }
 }
