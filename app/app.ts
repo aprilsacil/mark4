@@ -83,8 +83,7 @@ export class MyApp {
                             name: user.name,
                             job_description: user.job_description,
                             company_name: user.company_name,
-                            level: user.level,
-                            registration_id: user.registration_id
+                            level: user.level
                         }
 
                         // set data
@@ -264,5 +263,5 @@ export class MyApp {
 }
 
 ionicBootstrap(MyApp, [
-    provide('CouchDBEndpoint', {useValue: 'http://192.168.1.40:5984/'}),
-    provide('APIEndpoint', {useValue: 'http://192.168.1.40/'})]);
+    provide('CouchDBEndpoint', {useValue: 'http://208.113.130.196:5984/'}),
+    provide('APIEndpoint', {useValue: 'http://208.113.130.196/'})]);

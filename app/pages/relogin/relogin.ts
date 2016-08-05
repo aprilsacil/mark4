@@ -181,8 +181,7 @@ export class ReloginPage {
                             name: buyer.name,
                             job_description: buyer.job_description,
                             company_name: buyer.company_name,
-                            level: buyer.level,
-                            registration_id: this.relogin.registration_id
+                            level: buyer.level
                         }
 
                         // let's advertise
