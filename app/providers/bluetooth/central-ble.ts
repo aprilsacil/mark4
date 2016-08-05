@@ -340,7 +340,8 @@ export class CentralBle {
                     _id: user._id,
                     name: user.name,
                     fullname: user.fullname,
-                    store_name: user.store.store_name,
+                    image: user.image,
+                    store: user.store,
                     emote_message: message
                 }
 

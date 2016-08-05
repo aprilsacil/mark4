@@ -270,6 +270,7 @@ export class BuyerDashboardPage {
         }
 
         seller = new Seller(seller);
+        console.log(seller);
 
         // check if there are lists of sellers
         if (self.sellers || self.sellers.length !== 0) {
@@ -297,7 +298,7 @@ export class BuyerDashboardPage {
                 // notify
                 self.events.publish('app:local_notifications', {
                     title: 'There is a seller nearby!',
-                    text: seller.store_uuid + ' says: ' + seller.emote_message
+                    text: seller.store.store_name + ' says: ' + seller.emote_message
                 });
             });
         }

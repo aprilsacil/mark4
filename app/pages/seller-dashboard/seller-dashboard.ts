@@ -205,6 +205,22 @@ export class SellerDashboardPage {
                     .map(response => response.json())
                     .subscribe((data) => {});
 
+                    // pull level
+                    self.http
+                        .get(self.apiEndpoint + 'history?user='+self.user.name+
+                            '&token='+self.user.auth+'&search='+buyer.name+
+                            '&type=per_user_experience', {headers: headers})
+                        .map(response => response.json())
+                        .subscribe((data) => {
+                            console.log(data.rows);
+                            if(data.rows) {
+                                self.shopper.level = Math.floor((Math.sqrt(data.rows[0].value / 15) / 2));
+                            }
+
+                        }, (error) => {
+                        console.log('History error:', error);
+                    });
+
                     // prepare the text for the notification
                     text = (buyer.looking_for) ?
                         text + ' is looking for "' + buyer.looking_for +'"':

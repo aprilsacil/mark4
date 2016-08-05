@@ -35,7 +35,8 @@ export class SellerShopperViewPage {
         name: <string> null, 
         image: <string> null,
         purchase: <number> 0,
-        conversion: <number> 0
+        conversion: <number> 0,
+        level: <number> 0
     };
     history = [];
 
@@ -86,6 +87,21 @@ export class SellerShopperViewPage {
             type: 'per_user_store',
             search: this.seller.name + '-' + this.shopper._id.replace('org.couchdb.user:', '')
         };
+
+        // pull level
+        self.http
+            .get(self.apiEndpoint + 'history?user='+this.seller.name+
+                '&token='+this.seller.auth+'&search='+this.shopper.name+
+                '&type=per_user_experience', {headers: headers})
+            .map(response => response.json())
+            .subscribe((data) => {
+                if(data.rows) {
+                    self.shopper.level = Math.floor((Math.sqrt(data.rows[0].value / 15) / 2));
+                }
+
+            }, (error) => {
+            console.log('History error:', error);
+        });
 
         this.http
             .get(this.apiEndpoint + 'history?user='+this.seller.name+
